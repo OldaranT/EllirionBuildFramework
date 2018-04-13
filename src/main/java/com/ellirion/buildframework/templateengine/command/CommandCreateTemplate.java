@@ -66,6 +66,8 @@ public class CommandCreateTemplate implements CommandExecutor {
             }
             markers.substring(0, markers.length() - 3);
             player.sendMessage("Possible markers are: " + markers);
+
+            return true;
         }
 
         return false;

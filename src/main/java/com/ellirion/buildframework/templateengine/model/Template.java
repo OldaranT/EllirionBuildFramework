@@ -2,6 +2,8 @@ package com.ellirion.buildframework.templateengine.model;
 
 import com.ellirion.buildframework.BuildFramework;
 import com.sk89q.worldedit.bukkit.selections.Selection;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.server.v1_12_R1.Position;
 import org.bukkit.Location;
@@ -13,7 +15,7 @@ public class Template {
     /**
      * ID of the template.
      */
-    @Accessors
+    @Getter @Setter
     private int templateID;
 
     /**
@@ -24,13 +26,13 @@ public class Template {
     /**
      * Name of the template.
      */
-    @Accessors
+    @Getter @Setter
     private String templateName;
 
     /**
      * Map of all positions with corresponding TemplateBlocks.
      */
-    @Accessors
+    @Getter @Setter
     private TemplateBlock[][][] templateBlocks;
 
     /**
@@ -65,9 +67,6 @@ public class Template {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
                     templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(world.getBlockAt(x, y, z));
-//                    BuildFramework.getInstance().getLogger().log(Level.INFO, "(" + templateX + "," + templateY + "," + templateZ + ") " + temp
-// lateBlocks[templateX][templateY][templateZ].block.getType().name());
-
                     templateZ++;
                 }
                 templateZ = 0;
@@ -96,9 +95,9 @@ public class Template {
         int zDepth = templateBlocks[0][0].length;
 
         BuildFramework.getInstance().getLogger().log(Level.INFO, "Template " + templateName + ":");
-        for (int x = 0; x <= xDepth; x++) {
-            for (int y = 0; y <= yDepth; y++) {
-                for (int z = 0; z <= zDepth; z++) {
+        for (int x = 0; x < xDepth; x++) {
+            for (int y = 0; y < yDepth; y++) {
+                for (int z = 0; z < zDepth; z++) {
                     BuildFramework.getInstance().getLogger().log(Level.INFO, "(" + x + "," + y + "," + z + ") " + templateBlocks[x][y][z].block.getType().name());
                 }
             }

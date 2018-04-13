@@ -1,5 +1,6 @@
 package com.ellirion.buildframework;
 
+import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 
@@ -11,6 +12,7 @@ public class BuildFramework extends JavaPlugin {
         instance = this;
         getLogger().info("[Ellirion] BuildFramework is enabled.");
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
     }
     @Override
     public void onDisable() {
