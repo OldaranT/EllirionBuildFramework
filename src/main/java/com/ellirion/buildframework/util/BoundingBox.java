@@ -96,8 +96,8 @@ import net.minecraft.server.v1_12_R1.Position;
         z = (int) Math.round(pos.getY());
     }
 
-    public Position getOtherPosition() {
-        return new Position(x + width, y + height, z + depth);
+    public Position getPosition2() {
+        return new Position(getX2(), getY2(), getZ2());
     }
 
     public int getX2() {
