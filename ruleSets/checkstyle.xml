@@ -187,9 +187,9 @@
         <!-- See http://checkstyle.sf.net/config_blocks.html -->
         <module name="AvoidNestedBlocks"/>
         <module name="EmptyBlock"/>
-        <module name="LeftCurly">
-            <property name="maxLineLength" value="1200"/>
-        </module>
+        <!--<module name="LeftCurly">-->
+            <!--<property name="maxLineLength" value="1200"/>-->
+        <!--</module>-->
         <module name="NeedBraces"/>
         <module name="RightCurly"/>
         <module name="NestedIfDepth">
