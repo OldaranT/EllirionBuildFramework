@@ -1,9 +1,10 @@
-package com.ellirion.buildframework.util;
+package com.ellirion.buildframework.model;
 
 import lombok.Data;
 import net.minecraft.server.v1_12_R1.Position;
 
-@Data public class BoundingBox {
+@Data
+public class BoundingBox {
 
     private int x;
     private int y;
@@ -23,9 +24,9 @@ import net.minecraft.server.v1_12_R1.Position;
     /**
      * Create a BoundingBox at position (0,0,0) with dimensions (width,height,depth).
      *
-     * @param width The size along the X-axis
+     * @param width  The size along the X-axis
      * @param height The size along the Y-axis
-     * @param depth The size along the Z-axis
+     * @param depth  The size along the Z-axis
      */
     public BoundingBox(final int width, final int height, final int depth) {
         this(0, 0, 0, width, height, depth);
@@ -34,12 +35,12 @@ import net.minecraft.server.v1_12_R1.Position;
     /**
      * Create a BoundingBox at position (x,y,z) with dimensions (width,height,depth).
      *
-     * @param x The x component of the position
-     * @param y The y component of the position
-     * @param z The z component of the position
-     * @param width The size along the X-axis
+     * @param x      The x component of the position
+     * @param y      The y component of the position
+     * @param z      The z component of the position
+     * @param width  The size along the X-axis
      * @param height The size along the Y-axis
-     * @param depth The size along the Z-axis
+     * @param depth  The size along the Z-axis
      */
     public BoundingBox(final int x, final int y, final int z, final int width, final int height, final int depth) {
         this.x = x;
@@ -56,10 +57,10 @@ import net.minecraft.server.v1_12_R1.Position;
      * @param p The position to check
      * @return Whether the position lies within the bounds of this BoundingBox
      */
-    public boolean intersects(Position p) {
-        int px = (int) p.getX();
-        int py = (int) p.getY();
-        int pz = (int) p.getZ();
+    public boolean intersects(final Position p) {
+        final int px = (int) p.getX();
+        final int py = (int) p.getY();
+        final int pz = (int) p.getZ();
         return px >= x && px <= this.getX2()
                 && py >= y && py <= this.getY2()
                 && pz >= z && pz <= this.getZ2();
@@ -90,7 +91,7 @@ import net.minecraft.server.v1_12_R1.Position;
      *
      * @param pos The position to change to.
      */
-    public void setPosition(Position pos) {
+    public void setPosition(final Position pos) {
         x = (int) Math.round(pos.getX());
         y = (int) Math.round(pos.getY());
         z = (int) Math.round(pos.getY());
