@@ -1,44 +1,34 @@
 package com.ellirion.buildframework.terraincorrector;
 
-import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
+import org.bukkit.World;
 
 public class TerrainValidator {
     /***
      *
+     * @param boundingBox bla
+     * @param world the world that should
      * @return returns whether the terrain allows terrain generation
      */
-    public boolean validate() {
-        if (!validateNotFloating()) {
-            return false;
-        }
-        if (!validateConnectedToGround()) {
-            return false;
-        }
-        if (!validateNotSandwiched()) {
-            return false;
-        }
-        if (!validateBlocksChangedDoesNotExceedThreshold()) {
-            return false;
+    public double validate(final BoundingBox boundingBox, final World world) {
+
+        if (checkForBoundingBoxes()) {
+            return Double.POSITIVE_INFINITY;
         }
 
-        return true;
+        if
     }
 
-    private boolean validateBlocksChangedDoesNotExceedThreshold() {
-        return true;
+    private double calculateOverhang(final BoundingBox boundingBox, final World world) {
+        return 1;
     }
 
-    private boolean validateNotSandwiched() {
-        return true;
+    private int calculateBlocks(final BoundingBox boundingBox, final World world) {
+        return 1;
     }
 
-    private boolean validateConnectedToGround() {
-        final BuildFramework buildFramework = BuildFramework.getInstance();
-        final double connectionPercentage = buildFramework.getConfig().getDouble("GroundConnectionPercentage", 0.80);
-        return true;
+    private boolean checkForBoundingBoxes() {
+        return false;
     }
 
-    private boolean validateNotFloating() {
-        return true;
-    }
 }
