@@ -3,6 +3,9 @@ package com.ellirion.buildframework.terraincorrector;
 import com.ellirion.buildframework.BuildFramework;
 
 public class TerrainValidator {
+
+    private final BuildFramework buildFramework = BuildFramework.getInstance();
+
     /***
      *
      * @return returns whether the terrain allows terrain generation
@@ -33,12 +36,12 @@ public class TerrainValidator {
     }
 
     private boolean validateConnectedToGround() {
-        final BuildFramework buildFramework = BuildFramework.getInstance();
         final double connectionPercentage = buildFramework.getConfig().getDouble("GroundConnectionPercentage", 0.80);
         return true;
     }
 
     private boolean validateNotFloating() {
+        
         return true;
     }
 }
