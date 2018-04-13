@@ -3,4 +3,7 @@ main: com.ellirion.buildframework.BuildFramework
 version: 0.0.1
 description: Ellirion-BuildFramework
 authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink]
-
+commands:
+  CreateTemplate:
+    description: create a template of the selected area
+    usage: /CreateTemplate

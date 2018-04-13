@@ -80,7 +80,7 @@
         <!--</module>-->
 
         <!-- Checks for Javadoc comments.                     -->
-        <!-- See http://checkstyle.sf.net/config_javadoc.html
+        <!--See http://checkstyle.sf.net/config_javadoc.html -->
         <module name="JavadocMethod">
           <property name="allowMissingPropertyJavadoc" value="true"/>
           <property name="allowUndeclaredRTE" value="true"/>
@@ -91,11 +91,11 @@
           <property name="scope" value="protected"/>
         </module>
         <module name="JavadocStyle">
-           Disabling only because the current version of checkstyle fails
-               to recognize the new JDK 1.5 {@literal } and {@code } tags.
+           <!--Disabling only because the current version of checkstyle fails
+               to recognize the new JDK 1.5 {@literal } and {@code } tags. -->
           <property name="checkHtml" value="false"/>
         </module>
-        -->
+
         <!--<module name="JavadocType">-->
         <!--<property name="scope" value="public"/>-->
         <!--</module>-->
