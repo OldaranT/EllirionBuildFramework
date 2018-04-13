@@ -1,15 +1,26 @@
 package com.ellirion.buildframework;
 
-import lombok.Getter;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
 public class BuildFramework extends JavaPlugin {
 
-    @Getter
-    private static FileConfiguration config;
+    private static BuildFramework INSTANCE;
+    
+    private BuildFramework() {
+    }
+
+    /***
+     *
+     * @return instance
+     */
+    public static BuildFramework getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new BuildFramework();
+        }
+        return INSTANCE;
+    }
 
     @Override
     public void onEnable() {
@@ -31,6 +42,6 @@ public class BuildFramework extends JavaPlugin {
         } else {
             getLogger().info("config.yml found, loading!");
         }
-        config = getConfig();
     }
+
 }

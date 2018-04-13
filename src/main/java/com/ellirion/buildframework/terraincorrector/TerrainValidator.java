@@ -25,14 +25,16 @@ public class TerrainValidator {
     }
 
     private boolean validateBlocksChangedDoesNotExceedThreshold() {
+        return true;
     }
 
     private boolean validateNotSandwiched() {
-
+        return true;
     }
 
     private boolean validateConnectedToGround() {
-        final double connectionPercentage = BuildFramework.getConfig().getDouble("GroundConnectionPercentage", 0.80);
+        final BuildFramework buildFramework = BuildFramework.getInstance();
+        final double connectionPercentage = buildFramework.getConfig().getDouble("GroundConnectionPercentage", 0.80);
         return true;
     }
 

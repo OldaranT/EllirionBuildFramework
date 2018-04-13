@@ -113,7 +113,9 @@
         <module name="MethodCount"/>
         <module name="PackageName"/>
         <module name="ParameterName"/>
-        <module name="StaticVariableName"/>
+        <module name="StaticVariableName">
+            <property name="format" value="^[a-zA-Z0-9]*$"/>
+        </module>
         <module name="TypeName"/>
 
 
