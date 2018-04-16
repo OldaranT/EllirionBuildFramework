@@ -35,7 +35,7 @@ public class BoundingBoxTest {
         for (int x = 0; x < 2; x++) {
             for (int y = 0; y < 2; y++) {
                 for (int z = 0; z < 2; z++) {
-                    // range(0, 1) * 2 - 1 = range(-1, 1)
+                    // range(0, 1) * 2 - 1 => range(-1, 1)
                     bbb = new BoundingBox(x * 2 - 1, y * 2 - 1, z * 2 - 1);
                     assertTrue(bbb.intersects(bba));
                     assertTrue(bba.intersects(bbb));
@@ -54,7 +54,7 @@ public class BoundingBoxTest {
             int k = (i % 2) * 2 - 1; // direction of the axis (-1 or 1)
 
             int[] pos1 = new int[] { 0, 0, 0 }; // just outside bba
-            int[] pos2 = new int[] { 0, 0, 0 }; // same
+            int[] pos2 = new int[] { 0, 0, 0 }; // also just outside
 
             pos2[j] = k; // actually intersect on the face
 
@@ -157,6 +157,56 @@ public class BoundingBoxTest {
         assertEquals(6, bbb.getX2());
         assertEquals(6, bbb.getY2());
         assertEquals(6, bbb.getZ2());
+    }
+
+    @Test
+    public void toWorld_whenWorld_shouldBecomeNewWorld() {
+        BoundingBox bba = new BoundingBox(5, 5, 5, 6, 6, 6);
+        BoundingBox bbb = bba.toWorld(new Position(3, 3, 3));
+
+        assertEquals(3, bbb.getX1());
+        assertEquals(3, bbb.getY1());
+        assertEquals(3, bbb.getZ1());
+
+        assertEquals(4, bbb.getX2());
+        assertEquals(4, bbb.getY2());
+        assertEquals(4, bbb.getZ2());
+    }
+
+    @Test
+    public void getWidth_whenOnePosition_returnsOne() {
+        BoundingBox bb = new BoundingBox(0, 0, 0);
+        assertEquals(1, bb.getWidth());
+    }
+
+    @Test
+    public void getHeight_whenOnePosition_returnsOne() {
+        BoundingBox bb = new BoundingBox(0, 0, 0);
+        assertEquals(1, bb.getHeight());
+    }
+
+    @Test
+    public void getDepth_whenOnePosition_returnsOne() {
+        BoundingBox bb = new BoundingBox(0, 0, 0);
+        assertEquals(1, bb.getDepth());
+    }
+
+    @Test
+    public void getWidth_whenLarger_returnsWidth() {
+        BoundingBox bb = new BoundingBox(0, 0, 0, 2, 2, 2);
+        assertEquals(3, bb.getWidth());
+    }
+
+    @Test
+    public void getHeight_whenLarger_returnsWidth() {
+        BoundingBox bb = new BoundingBox(0, 0, 0, 2, 2, 2);
+        assertEquals(3, bb.getHeight());
+    }
+
+    @Test
+    public void getDepth_whenLarger_returnsWidth() {
+        BoundingBox bb = new BoundingBox(0, 0, 0, 2, 2, 2);
+        assertEquals(3, bb.getDepth());
     }
 
 }

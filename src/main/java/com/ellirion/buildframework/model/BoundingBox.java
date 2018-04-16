@@ -1,9 +1,7 @@
 package com.ellirion.buildframework.model;
 
-import lombok.Data;
 import lombok.Getter;
 import net.minecraft.server.v1_12_R1.Position;
-import org.bukkit.Location;
 
 public class BoundingBox {
 
@@ -73,9 +71,6 @@ public class BoundingBox {
         int px = (int) p.getX();
         int py = (int) p.getY();
         int pz = (int) p.getZ();
-//        return px >= x1 && px <= x2
-//                && py >= y1 && py <= y2
-//                && pz >= z1 && pz <= z2;
         return x1 <= px && px <= x2 && y1 <= py && py <= y2 && z1 <= pz && pz <= z2;
     }
 
@@ -101,11 +96,14 @@ public class BoundingBox {
      * @param pos The new origin
      */
     public BoundingBox toWorld(Position pos) {
+        BoundingBox local = toLocal();
         int px = (int) Math.round(pos.getX());
         int py = (int) Math.round(pos.getY());
         int pz = (int) Math.round(pos.getZ());
         return new BoundingBox(px, py, pz,
-                px + (x2 - x1), py + (y2 - y1), pz + (z2 - z1));
+                px + (local.x2 - local.x1),
+                py + (local.y2 - local.y1),
+                pz + (local.z2 - local.z1));
     }
 
     /**
