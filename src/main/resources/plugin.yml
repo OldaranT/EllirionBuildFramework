@@ -3,4 +3,8 @@ main: com.ellirion.buildframework.BuildFramework
 version: 0.0.1
 description: Ellirion-BuildFramework
 authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink]
+commands:
+  test:
+    discription: test
+    usage: /test
 

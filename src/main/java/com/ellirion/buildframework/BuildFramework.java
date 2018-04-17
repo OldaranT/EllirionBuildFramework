@@ -1,5 +1,6 @@
 package com.ellirion.buildframework;
 
+import com.ellirion.buildframework.terraincorrector.command.Test;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -23,6 +24,7 @@ public class BuildFramework extends JavaPlugin {
     public void onEnable() {
         getLogger().info("[Ellirion] BuildFramework is enabled.");
         createConfig();
+        getCommand("test").setExecutor(new Test());
 
     }
 

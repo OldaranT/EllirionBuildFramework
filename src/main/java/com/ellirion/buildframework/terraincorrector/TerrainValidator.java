@@ -14,9 +14,14 @@ public class TerrainValidator {
      *
      * @param boundingBox bla
      * @param world the world that should
+     * @param offset amount of blocks outside the bounding bocks that should be checked
      * @return returns whether the terrain allows terrain generation
      */
-    public double validate(final BoundingBox boundingBox, final World world) {
+    public double validate(final BoundingBox boundingBox, final World world, final int offset) {
+        int defaultOffset = 5;
+        if (Integer.valueOf(offset) != null) {
+            defaultOffset = offset;
+        }
 
         if (checkForBoundingBoxes()) {
             return Double.POSITIVE_INFINITY;
@@ -26,16 +31,15 @@ public class TerrainValidator {
             return Double.POSITIVE_INFINITY;
         }
 
-        if (calculateBlocks(boundingBox, world) > blocksLimit) {
+        if (calculateBlocks(boundingBox, world, defaultOffset) > blocksLimit) {
             return Double.POSITIVE_INFINITY;
         }
 
-        final Double total = calculateBlocks(boundingBox, world) + calculateOverhang(boundingBox, world);
+        final Double total = calculateBlocks(boundingBox, world, defaultOffset) + calculateOverhang(boundingBox, world);
 
         if (total > totalLimit) {
             return Double.POSITIVE_INFINITY;
         }
-
         return total;
     }
 
@@ -47,7 +51,7 @@ public class TerrainValidator {
     /*
      * TODO: calculate the blocks around the bounding box
      * */
-    private double calculateBlocks(final BoundingBox boundingBox, final World world) {
+    private double calculateBlocks(final BoundingBox boundingBox, final World world, final int offset) {
 
         double blockCounter = 0;
 
@@ -68,11 +72,11 @@ public class TerrainValidator {
 
         int bottomBlockZ = (l1.getBlockZ() > l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
 
-        for (int x = bottomBlockX; x <= topBlockX; x++) {
+        for (int x = bottomBlockX - offset; x <= topBlockX + offset; x++) {
 
-            for (int y = bottomBlockY; y <= topBlockY; y++) {
+            for (int y = bottomBlockY - offset; y <= topBlockY + offset; y++) {
 
-                for (int z = bottomBlockZ; z <= topBlockZ; z++) {
+                for (int z = bottomBlockZ - offset; z <= topBlockZ + offset; z++) {
 
                     if (l1.getWorld().getBlockAt(x, y, z).isLiquid()) {
                         return Double.POSITIVE_INFINITY;
