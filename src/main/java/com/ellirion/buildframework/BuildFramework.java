@@ -7,22 +7,22 @@ import java.io.File;
 
 public class BuildFramework extends JavaPlugin {
 
-    private static final BuildFramework INSTANCE = new BuildFramework();
+    private static BuildFramework instance;
 
-    private BuildFramework() {
-    }
 
     /***
      *
      * @return instance
      */
     public static BuildFramework getInstance() {
-        return INSTANCE;
+        return instance;
     }
 
     @Override
     public void onEnable() {
+        instance = this;
         getLogger().info("[Ellirion] BuildFramework is enabled.");
+        getCommand("Test").setExecutor(new Test());
         createConfig();
         getCommand("test").setExecutor(new Test());
 
