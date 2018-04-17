@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class TemplateManager {
     /**
-     * List of players with selected templates
+     * List of players with selected templates.
      */
     public static final HashMap<Player, Template> selectedTemplates = new HashMap<Player, Template>();
 }

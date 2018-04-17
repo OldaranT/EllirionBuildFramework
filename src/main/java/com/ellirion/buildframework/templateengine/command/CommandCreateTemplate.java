@@ -1,6 +1,5 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -12,8 +11,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.logging.Level;
 
 public class CommandCreateTemplate implements CommandExecutor {
     private enum Markers { DOOR, GROUND, PATH };
