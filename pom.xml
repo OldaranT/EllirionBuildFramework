@@ -8,6 +8,16 @@
     <version>0.0.1</version>
     <name>Ellirion-BuildFramework</name>
     <description>Useless</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <junit.version>4.12</junit.version>
+        <junit.jupiter.version>5.1.1</junit.jupiter.version>
+        <junit.vintage.version>5.1.1</junit.vintage.version>
+        <junit.platform.version>1.1.1</junit.platform.version>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -41,7 +51,7 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.8</version>
                 <configuration>
-                    <failOnViolation>false</failOnViolation> <!-- this is actually true by default, but can be disabled -->
+                    <failOnViolation>true</failOnViolation> <!-- this is actually true by default, but can be disabled -->
                     <printFailingErrors>true</printFailingErrors>
                     <rulesets>
                         <ruleset>/ruleSets/pmd-ruleset_xml.xml</ruleset>
@@ -68,10 +78,10 @@
                         <phase>validate</phase>
                         <configuration>
                             <configLocation>/ruleSets/checkstyle.xml</configLocation>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
-                            <failsOnError>false</failsOnError>
+                            <failsOnError>true</failsOnError>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -116,6 +126,27 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Unit testing -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/Test*.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>${junit.platform.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
     <repositories>
@@ -143,6 +174,32 @@
             <artifactId>HikariCP</artifactId>
             <version>2.4.3</version>
             <scope>compile</scope>
+        </dependency>
+
+        <!-- Unit testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.vintage.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

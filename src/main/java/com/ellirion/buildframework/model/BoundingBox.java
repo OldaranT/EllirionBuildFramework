@@ -1,116 +1,153 @@
 package com.ellirion.buildframework.model;
 
-import lombok.Data;
+import lombok.Getter;
 import net.minecraft.server.v1_12_R1.Position;
 
-@Data
 public class BoundingBox {
 
-    private int x;
-    private int y;
-    private int z;
-
-    private int width;
-    private int height;
-    private int depth;
+    @Getter private int x1, x2;
+    @Getter private int y1, y2;
+    @Getter private int z1, z2;
 
     /**
-     * Create a BoundingBox at position (0,0,0) with dimensions (0,0,0).
+     * Create a BoundingBox between (inclusive) position (0,0,0) and position (0,0,0).
      */
     public BoundingBox() {
         this(0, 0, 0, 0, 0, 0);
     }
 
     /**
-     * Create a BoundingBox at position (0,0,0) with dimensions (width,height,depth).
-     *
-     * @param width  The size along the X-axis
-     * @param height The size along the Y-axis
-     * @param depth  The size along the Z-axis
+     * Creates a BoundingBox at exactly the given position {@code p}.
+     * @param p The position the BoundingBox should be created at
      */
-    public BoundingBox(final int width, final int height, final int depth) {
-        this(0, 0, 0, width, height, depth);
+    public BoundingBox(final Position p) {
+        this(p, p);
     }
 
     /**
-     * Create a BoundingBox at position (x,y,z) with dimensions (width,height,depth).
-     *
-     * @param x      The x component of the position
-     * @param y      The y component of the position
-     * @param z      The z component of the position
-     * @param width  The size along the X-axis
-     * @param height The size along the Y-axis
-     * @param depth  The size along the Z-axis
+     * Creates a BoundingBox at exactly the given position (x1,y1,z1).
+     * @param x1 The x-component
+     * @param y1 The y-component
+     * @param z1 The z-component
      */
-    public BoundingBox(final int x, final int y, final int z, final int width, final int height, final int depth) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.width = width;
-        this.height = height;
-        this.depth = depth;
+    public BoundingBox(final int x1, final int y1, final int z1) {
+        this(x1, y1, z1, x1, y1, z1);
+    }
+
+    /**
+     * Creates a BoundingBox between (inclusive) position {@code p1} and {@code p2}.
+     * @param p1 The first position
+     * @param p2 The second position
+     */
+    public BoundingBox(final Position p1, final Position p2) {
+        this((int) Math.round(p1.getX()), (int) Math.round(p1.getY()), (int) Math.round(p1.getZ()),
+                (int) Math.round(p2.getX()), (int) Math.round(p2.getY()), (int) Math.round(p2.getZ()));
+    }
+
+    /**
+     * Create a BoundingBox between (inclusive) position (x1,y1,z1) and position (x2,y2,z2).
+     * @param x1 The first x-component
+     * @param y1 The first y-component
+     * @param z1 The first z-component
+     * @param x2 The second x-component
+     * @param y2 The second y-component
+     * @param z2 The second z-component
+     */
+    public BoundingBox(final int x1, final int y1, final int z1, final int x2, final int y2, final int z2) {
+        this.x1 = Math.min(x1, x2);
+        this.y1 = Math.min(y1, y2);
+        this.z1 = Math.min(z1, z2);
+
+        this.x2 = Math.max(x1, x2);
+        this.y2 = Math.max(y1, y2);
+        this.z2 = Math.max(z1, z2);
     }
 
     /**
      * Checks if the position {@code p} lies within the blocks contained in this BoundingBox.
-     *
      * @param p The position to check
      * @return Whether the position lies within the bounds of this BoundingBox
      */
+
     public boolean intersects(final Position p) {
         final int px = (int) p.getX();
         final int py = (int) p.getY();
         final int pz = (int) p.getZ();
-        return px >= x && px <= this.getX2()
-                && py >= y && py <= this.getY2()
-                && pz >= z && pz <= this.getZ2();
+        return x1 <= px && px <= x2 && y1 <= py && py <= y2 && z1 <= pz && pz <= z2;
     }
 
     /**
      * Checks if the BoundingBox {@code bb} intersects with the current BoundingBox.
-     *
      * @param bb The BoundingBox to check for intersection with
      * @return Whether the two BoundingBoxes intersect
      */
     public boolean intersects(final BoundingBox bb) {
-        return this.getX() < bb.getX2()
-                && this.getX2() > bb.getX()
-                && this.getY() > bb.getY2()
-                && this.getY2() < bb.getY()
-                && this.getZ() > bb.getZ()
-                && this.getZ2() < bb.getZ();
-    }
-
-    public Position getPosition() {
-        return new Position(x, y, z);
+        return x1 <= bb.x2 && bb.x1 <= x2 && y1 <= bb.y2 && bb.y1 <= y2 && z1 <= bb.z2 && bb.z1 <= z2;
     }
 
     /**
-     * Sets the (x,y,z) components of this BoundingBox to those of the Position {@code pos}.
-     * The doubles are rounded and cast to integers before assignment.
-     *
-     * @param pos The position to change to.
+     * Translates the BoundingBox to local coordinates.
+     * @return A new BoundingBox with local coordinates
      */
-    public void setPosition(final Position pos) {
-        x = (int) Math.round(pos.getX());
-        y = (int) Math.round(pos.getY());
-        z = (int) Math.round(pos.getY());
+    public BoundingBox toLocal() {
+        return new BoundingBox(0, 0, 0, x2 - x1, y2 - y1, z2 - z1);
     }
 
+    /**
+     * Translates the BoundingBox to world coordinates, with {@code pos} as the origin.
+     * @param pos The new origin
+     * @return The BoundingBox at the world coordinates
+     */
+
+    public BoundingBox toWorld(final Position pos) {
+        final BoundingBox local = toLocal();
+        final int px = (int) Math.round(pos.getX());
+        final int py = (int) Math.round(pos.getY());
+        final int pz = (int) Math.round(pos.getZ());
+        return new BoundingBox(px, py, pz,
+                px + (local.x2 - local.x1),
+                py + (local.y2 - local.y1),
+                pz + (local.z2 - local.z1));
+    }
+
+    /**
+     * Gets the smallest-component position of this BoundingBox.
+     * @return The smallest-component position of this BoundingBox
+     */
+    public Position getPosition1() {
+        return new Position(x1, y1, z1);
+    }
+
+    /**
+     * Gets the largest-component position of this BoundingBox.
+     * @return The largest-component position of this BoundingBox
+     */
     public Position getPosition2() {
-        return new Position(getX2(), getY2(), getZ2());
+        return new Position(x2, y2, z2);
     }
 
-    public int getX2() {
-        return x + width - 1;
+    /**
+     * Get the width (x-axis) of this BoundingBox.
+     * @return the width
+     */
+    public int getWidth() {
+        return x2 - x1 + 1;
     }
 
-    public int getY2() {
-        return y + height - 1;
+    /**
+     * Gets the height (y-axis) of this BoundingBox.
+     * @return the height
+     */
+    public int getHeight() {
+        return y2 - y1 + 1;
     }
 
-    public int getZ2() {
-        return z + depth - 1;
+    /**
+     * Gets the depth (z-axis) of this BoundingBox.
+     * @return the depth
+     */
+    public int getDepth() {
+        return z2 - z1 + 1;
     }
 
 }
