@@ -51,7 +51,8 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.8</version>
                 <configuration>
-                    <failOnViolation>true</failOnViolation><!-- this is actually true by default, but can be disabled -->
+                    <failOnViolation>true
+                    </failOnViolation><!-- this is actually true by default, but can be disabled -->
                     <printFailingErrors>true</printFailingErrors>
                     <rulesets>
                         <ruleset>/ruleSets/pmd-ruleset_xml.xml</ruleset>
@@ -203,5 +204,13 @@
             <version>${junit.vintage.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.5</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 </project>

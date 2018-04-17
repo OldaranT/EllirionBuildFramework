@@ -41,9 +41,12 @@ public class TerrainValidator {
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {
 
-        return 1;
+        return 0;
     }
 
+    /*
+     * TODO: calculate the blocks around the bounding box
+     * */
     private double calculateBlocks(final BoundingBox boundingBox, final World world) {
 
         double blockCounter = 0;
