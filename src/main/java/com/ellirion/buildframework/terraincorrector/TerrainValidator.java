@@ -46,15 +46,15 @@ public class TerrainValidator {
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {
         double total = 0D;
-        final int z = boundingBox.getZ1();
-        for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
-            for (int y = boundingBox.getY1(); x < boundingBox.getY2(); y++) {
-                final Block block = world.getBlockAt(x, y, z);
-                if (block.isLiquid() || block.isEmpty()) {
-                    total += findClosestBlock(new Position(x, y, z), boundingBox, world);
-                }
-            }
-        }
+//        final int z = boundingBox.getZ1();
+//        for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
+//            for (int y = boundingBox.getY1(); y < boundingBox.getY2(); y++) {
+//                final Block block = world.getBlockAt(x, y, z);
+//                if (block.isLiquid() || block.isEmpty()) {
+//                    total += findClosestBlock(new Position(x, y, z), boundingBox, world);
+//                }
+//            }
+//        }
         return total;
     }
 
