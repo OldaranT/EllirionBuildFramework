@@ -18,6 +18,7 @@ public class BoundingBox {
 
     /**
      * Creates a BoundingBox at exactly the given position {@code p}.
+     *
      * @param p The position the BoundingBox should be created at
      */
     public BoundingBox(final Position p) {
@@ -26,6 +27,7 @@ public class BoundingBox {
 
     /**
      * Creates a BoundingBox at exactly the given position (x1,y1,z1).
+     *
      * @param x1 The x-component
      * @param y1 The y-component
      * @param z1 The z-component
@@ -36,6 +38,7 @@ public class BoundingBox {
 
     /**
      * Creates a BoundingBox between (inclusive) position {@code p1} and {@code p2}.
+     *
      * @param p1 The first position
      * @param p2 The second position
      */
@@ -46,6 +49,7 @@ public class BoundingBox {
 
     /**
      * Create a BoundingBox between (inclusive) position (x1,y1,z1) and position (x2,y2,z2).
+     *
      * @param x1 The first x-component
      * @param y1 The first y-component
      * @param z1 The first z-component
@@ -65,6 +69,7 @@ public class BoundingBox {
 
     /**
      * Checks if the position {@code p} lies within the blocks contained in this BoundingBox.
+     *
      * @param p The position to check
      * @return Whether the position lies within the bounds of this BoundingBox
      */
@@ -78,6 +83,7 @@ public class BoundingBox {
 
     /**
      * Checks if the BoundingBox {@code bb} intersects with the current BoundingBox.
+     *
      * @param bb The BoundingBox to check for intersection with
      * @return Whether the two BoundingBoxes intersect
      */
@@ -87,6 +93,7 @@ public class BoundingBox {
 
     /**
      * Translates the BoundingBox to local coordinates.
+     *
      * @return A new BoundingBox with local coordinates
      */
     public BoundingBox toLocal() {
@@ -95,6 +102,7 @@ public class BoundingBox {
 
     /**
      * Translates the BoundingBox to world coordinates, with {@code pos} as the origin.
+     *
      * @param pos The new origin
      * @return The BoundingBox at the world coordinates
      */
@@ -112,6 +120,7 @@ public class BoundingBox {
 
     /**
      * Gets the smallest-component position of this BoundingBox.
+     *
      * @return The smallest-component position of this BoundingBox
      */
     public Position getPosition1() {
@@ -120,6 +129,7 @@ public class BoundingBox {
 
     /**
      * Gets the largest-component position of this BoundingBox.
+     *
      * @return The largest-component position of this BoundingBox
      */
     public Position getPosition2() {
@@ -128,6 +138,7 @@ public class BoundingBox {
 
     /**
      * Get the width (x-axis) of this BoundingBox.
+     *
      * @return the width
      */
     public int getWidth() {
@@ -136,6 +147,7 @@ public class BoundingBox {
 
     /**
      * Gets the height (y-axis) of this BoundingBox.
+     *
      * @return the height
      */
     public int getHeight() {
@@ -144,6 +156,7 @@ public class BoundingBox {
 
     /**
      * Gets the depth (z-axis) of this BoundingBox.
+     *
      * @return the depth
      */
     public int getDepth() {
