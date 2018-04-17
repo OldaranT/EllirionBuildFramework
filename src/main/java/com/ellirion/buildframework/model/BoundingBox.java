@@ -5,9 +5,9 @@ import net.minecraft.server.v1_12_R1.Position;
 
 public class BoundingBox {
 
-    private @Getter int x1, x2;
-    private @Getter int y1, y2;
-    private @Getter int z1, z2;
+    @Getter private int x1, x2;
+    @Getter private int y1, y2;
+    @Getter private int z1, z2;
 
     /**
      * Create a BoundingBox between (inclusive) position (0,0,0) and position (0,0,0).
@@ -18,6 +18,7 @@ public class BoundingBox {
 
     /**
      * Creates a BoundingBox at exactly the given position {@code p}.
+     * @param p The position the BoundingBox should be created at
      */
     public BoundingBox(final Position p) {
         this(p, p);
@@ -94,6 +95,7 @@ public class BoundingBox {
     /**
      * Translates the BoundingBox to world coordinates, with {@code pos} as the origin.
      * @param pos The new origin
+     * @return The BoundingBox at the world coordinates
      */
     public BoundingBox toWorld(Position pos) {
         BoundingBox local = toLocal();
