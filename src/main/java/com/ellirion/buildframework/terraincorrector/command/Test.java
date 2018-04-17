@@ -1,4 +1,4 @@
-package com.ellirion.buildframework.terraincorrector.Command;
+package com.ellirion.buildframework.terraincorrector.command;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

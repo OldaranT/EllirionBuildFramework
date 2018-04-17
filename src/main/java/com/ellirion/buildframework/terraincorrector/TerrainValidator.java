@@ -43,6 +43,7 @@ public class TerrainValidator {
     }
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {
+
         return 1;
     }
 

@@ -6,8 +6,8 @@ import java.io.File;
 
 public class BuildFramework extends JavaPlugin {
 
-    private static BuildFramework INSTANCE;
-    
+    private static final BuildFramework INSTANCE = new BuildFramework();
+
     private BuildFramework() {
     }
 
@@ -16,9 +16,6 @@ public class BuildFramework extends JavaPlugin {
      * @return instance
      */
     public static BuildFramework getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new BuildFramework();
-        }
         return INSTANCE;
     }
 
