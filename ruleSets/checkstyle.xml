@@ -31,6 +31,11 @@
 -->
 
 <module name="Checker">
+
+    <module name="SuppressionFilter">
+        <property name="file" value="ruleSets/checkstyleSuppression.xml"/>
+    </module>
+
     <!--
         If you set the basedir property below, then all reported file
         names will be relative to the specified directory. See
@@ -74,6 +79,7 @@
         <property name="cacheFile" value="${checkstyle.cache.file}"/>
 
         <property name="tabWidth" value="4"/>
+
 
         <!--<module name="Indentation">-->
         <!--<property name="caseIndent" value="0"/>-->

@@ -19,11 +19,14 @@ public class GraphTest {
     @Test
     public void find_whenDataNotSameButEquals_shouldReturnVertex() {
         Graph<Integer> g = new Graph<>();
-        g.add(new Integer(2));
 
-        Vertex<Integer> v = g.find(new Integer(2));
+        final Integer integer = 2;
+
+        g.add(integer);
+
+        Vertex<Integer> v = g.find(integer);
         assertNotNull(v);
-        assertEquals(new Integer(2), v.getData());
+        assertEquals(integer, v.getData());
     }
 
     @Test
@@ -38,8 +41,10 @@ public class GraphTest {
     public void findOrCreate_whenExists_shouldReturnOriginal() {
         Graph<Integer> g = new Graph<>();
 
-        Vertex<Integer> v1 = g.add(new Integer(2));
-        Vertex<Integer> v2 = g.findOrCreate(new Integer(2));
+        final Integer integer = 2;
+
+        Vertex<Integer> v1 = g.add(integer);
+        Vertex<Integer> v2 = g.findOrCreate(integer);
 
         assertNotNull(v1);
         assertNotNull(v2);
@@ -50,10 +55,12 @@ public class GraphTest {
     public void findOrCreate_whenNotExists_shouldReturnNew() {
         Graph<Integer> g = new Graph<>();
 
-        Vertex<Integer> v = g.findOrCreate(2);
+        final Integer integer = 2;
+
+        Vertex<Integer> v = g.findOrCreate(integer);
 
         assertNotNull(v);
-        assertEquals(new Integer(2), v.getData());
+        assertEquals(integer, v.getData());
     }
 
     @Test
@@ -124,7 +131,7 @@ public class GraphTest {
         assertEquals(1, v1.size());
         assertEquals(1, v2.size());
 
-        g.connect(1,2, 3);
+        g.connect(1, 2, 3);
 
         assertTrue(v1.isConnectedTo(v2));
         assertTrue(v2.isConnectedTo(v1));
@@ -169,26 +176,26 @@ public class GraphTest {
         Graph<Integer> g = new Graph<>();
         g.add(1);
         g.add(2);
-        g.connect(1,2, 1);
+        g.connect(1, 2, 1);
 
         assertTrue(g.areConnected(1, 2));
 
-        g.disconnect(1,2);
+        g.disconnect(1, 2);
 
-        assertFalse(g.areConnected(1,2));
+        assertFalse(g.areConnected(1, 2));
     }
 
     @Test
     public void areConnected_whenNotConnected_shouldReturnFalse() {
         Graph<Integer> g = new Graph<>();
-        assertFalse(g.areConnected(1,2));
+        assertFalse(g.areConnected(1, 2));
     }
 
     @Test
     public void areConnected_whenConnected_shouldReturnTrue() {
         Graph<Integer> g = new Graph<>();
         g.connect(1, 2, 1);
-        assertTrue(g.areConnected(1,2));
+        assertTrue(g.areConnected(1, 2));
     }
 
     @Test
