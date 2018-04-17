@@ -1,17 +1,15 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.logging.Level;
 
 public class CommandPutTemplate implements CommandExecutor {
 
@@ -42,7 +40,9 @@ public class CommandPutTemplate implements CommandExecutor {
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    w.getBlockAt((int) loc.getX() + x, (int) loc.getY() + y, (int) loc.getZ() + z).setType(template.getTemplateBlocks()[x][y][z].block.getType());
+                    Block b = w.getBlockAt((int) loc.getX() + x, (int) loc.getY() + y, (int) loc.getZ() + z);
+                    b.setType(template.getTemplateBlocks()[x][y][z].getBlock().getType());
+                    b.getState().setData(template.getTemplateBlocks()[x][y][z].getMetadata().getData());
                 }
             }
         }

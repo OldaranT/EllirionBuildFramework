@@ -5,10 +5,10 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import net.minecraft.server.v1_12_R1.Position;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
 
 import java.util.logging.Level;
 
@@ -60,7 +60,10 @@ public class Template {
         int templateY = 0;
         int templateZ = 0;
 
-        templateBlocks = new TemplateBlock[endX - startX + 1][endY - startY + 1][endZ - startZ + 1];
+        int xDepth = endX - startX + 1;
+        int yDepth = endY - startY + 1;
+        int zDepth = endZ - startZ + 1;
+        templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
 
         World world = selection.getWorld();
 
@@ -68,6 +71,8 @@ public class Template {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
                     templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(world.getBlockAt(x, y, z));
+                    BlockState metadata = templateBlocks[templateX][templateY][templateZ].getBlock().getState();
+                    templateBlocks[templateX][templateY][templateZ].setMetadata(templateBlocks[templateX][templateY][templateZ].getBlock().getState());
                     templateZ++;
                 }
                 templateZ = 0;
@@ -99,20 +104,24 @@ public class Template {
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    BuildFramework.getInstance().getLogger().log(Level.INFO, "(" + x + "," + y + "," + z + ") " + templateBlocks[x][y][z].block.getType().name());
+                    BuildFramework.getInstance().getLogger().log(Level.INFO, "(" + x + "," + y + "," + z + ") " + templateBlocks[x][y][z].getBlock().getType().name());
                 }
             }
         }
     }
 
-    public BoundingBox getBoundingBox(){
-        int x = templateBlocks[0][0][0].block.getX();
-        int y = templateBlocks[0][0][0].block.getY();
-        int z = templateBlocks[0][0][0].block.getZ();
+    /**
+     *
+     * @return boundingbox of the template
+     */
+    public BoundingBox getBoundingBox() {
+        int x = templateBlocks[0][0][0].getBlock().getX();
+        int y = templateBlocks[0][0][0].getBlock().getY();
+        int z = templateBlocks[0][0][0].getBlock().getZ();
 
-        int x2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].block.getX();
-        int y2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].block.getY();
-        int z2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].block.getZ();
+        int x2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].getBlock().getX();
+        int y2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].getBlock().getY();
+        int z2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].getBlock().getZ();
 
         return new BoundingBox(x, y, z, x2 - x, y2 - y, z2 - z);
     }
