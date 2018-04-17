@@ -1,6 +1,7 @@
 package com.ellirion.buildframework.templateengine.model;
 
 import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
@@ -102,5 +103,17 @@ public class Template {
                 }
             }
         }
+    }
+
+    public BoundingBox getBoundingBox(){
+        int x = templateBlocks[0][0][0].block.getX();
+        int y = templateBlocks[0][0][0].block.getY();
+        int z = templateBlocks[0][0][0].block.getZ();
+
+        int x2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].block.getX();
+        int y2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].block.getY();
+        int z2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].block.getZ();
+
+        return new BoundingBox(x, y, z, x2 - x, y2 - y, z2 - z);
     }
 }
