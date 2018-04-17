@@ -54,8 +54,47 @@ public class TerrainValidator {
         return total;
     }
 
-    private int calculateBlocks(final BoundingBox boundingBox, final World world) {
-        return 1;
+    private double calculateBlocks(final BoundingBox boundingBox, final World world) {
+
+        double blockCounter = 0;
+
+        final Location l1 = new Location(world, boundingBox.getX1(), boundingBox.getY1(), boundingBox.getZ1());
+        final Location l2 = new Location(world, boundingBox.getX2(), boundingBox.getY2(), boundingBox.getZ2());
+
+        final int topBlockX = (l1.getBlockX() < l2.getBlockX() ? l2.getBlockX() : l1.getBlockX());
+
+        final int bottomBlockX = (l1.getBlockX() > l2.getBlockX() ? l2.getBlockX() : l1.getBlockX());
+
+
+        final int topBlockY = (l1.getBlockY() < l2.getBlockY() ? l2.getBlockY() : l1.getBlockY());
+
+        final int bottomBlockY = (l1.getBlockY() > l2.getBlockY() ? l2.getBlockY() : l1.getBlockY());
+
+
+        final int topBlockZ = (l1.getBlockZ() < l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
+
+        final int bottomBlockZ = (l1.getBlockZ() > l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
+
+        for (int x = bottomBlockX; x <= topBlockX; x++) {
+
+            for (int y = bottomBlockY; y <= topBlockY; y++) {
+
+                for (int z = bottomBlockZ; z <= topBlockZ; z++) {
+
+                    if (l1.getWorld().getBlockAt(x, y, z).isLiquid()) {
+                        return Double.POSITIVE_INFINITY;
+                    }
+
+                    if (!l1.getWorld().getBlockAt(x, y, z).isEmpty()) {
+                        blockCounter++;
+                    }
+                }
+
+            }
+
+        }
+
+        return blockCounter;
     }
 
     private boolean checkForBoundingBoxes() {

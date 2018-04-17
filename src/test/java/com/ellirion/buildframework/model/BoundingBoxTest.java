@@ -17,7 +17,7 @@ public class BoundingBoxTest {
             int j = i / 2; // index in component array (what axis?)
             int k = (i % 2) * 2 - 1; // direction of the axis (-1 or 1)
 
-            int[] components = new int[] { 0, 0, 0 };
+            int[] components = new int[]{0, 0, 0};
             components[j] = k * 2 - 1; // (0, 1) to (-1, 1)
 
             bbb = new BoundingBox(components[0], components[1], components[2]);
@@ -53,8 +53,8 @@ public class BoundingBoxTest {
             int j = i / 2; // index of the axis are we going to intersect with
             int k = (i % 2) * 2 - 1; // direction of the axis (-1 or 1)
 
-            int[] pos1 = new int[] { 0, 0, 0 }; // just outside bba
-            int[] pos2 = new int[] { 0, 0, 0 }; // also just outside
+            int[] pos1 = new int[]{0, 0, 0}; // just outside bba
+            int[] pos2 = new int[]{0, 0, 0}; // also just outside
 
             pos2[j] = k; // actually intersect on the face
 
@@ -68,7 +68,7 @@ public class BoundingBoxTest {
     @Test
     public void intersectsBoundingBox_whenContained_shouldReturnTrue() {
         BoundingBox bba = new BoundingBox(-1, -1, -1, 1, 1, 1);
-        BoundingBox bbb = new BoundingBox(0,0,0);
+        BoundingBox bbb = new BoundingBox(0, 0, 0);
         assertTrue(bba.intersects(bbb));
         assertTrue(bbb.intersects(bba));
     }
@@ -94,11 +94,17 @@ public class BoundingBoxTest {
         Position p;
 
         for (int x = -2; x <= 2; x++) {
-            if (x >= -1 || x <= 1) continue;
+            if (x >= -1 && x <= 1) {
+                continue;
+            }
             for (int y = -2; y <= 2; y++) {
-                if (y >= -1 || y <= 1) continue;
+                if (y >= -1 && y <= 1) {
+                    continue;
+                }
                 for (int z = -2; z <= 2; z++) {
-                    if (z >= -1 || z <= 1) continue;
+                    if (z >= -1 && z <= 1) {
+                        continue;
+                    }
                     p = new Position(x, y, z);
                     assertFalse(bb.intersects(p));
                 }
@@ -108,7 +114,7 @@ public class BoundingBoxTest {
 
     @Test
     public void toLocal_whenNotLocal_shouldBecomeLocal() {
-        BoundingBox bba = new BoundingBox(2,2,2,3,3,3);
+        BoundingBox bba = new BoundingBox(2, 2, 2, 3, 3, 3);
         BoundingBox bbb = bba.toLocal();
 
         assertEquals(0, bbb.getX1());
@@ -119,7 +125,7 @@ public class BoundingBoxTest {
         assertEquals(1, bbb.getY2());
         assertEquals(1, bbb.getZ2());
 
-        bba = new BoundingBox(-2,-2,-2,-1,-1,-1);
+        bba = new BoundingBox(-2, -2, -2, -1, -1, -1);
         bbb = bba.toLocal();
 
         assertEquals(0, bbb.getX1());
@@ -133,7 +139,7 @@ public class BoundingBoxTest {
 
     @Test
     public void toLocal_whenLocal_shouldStayLocal() {
-        BoundingBox bba = new BoundingBox(0,0,0,1,1,1);
+        BoundingBox bba = new BoundingBox(0, 0, 0, 1, 1, 1);
         BoundingBox bbb = bba.toLocal();
 
         assertEquals(0, bbb.getX1());

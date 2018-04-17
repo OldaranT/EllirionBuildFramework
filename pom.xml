@@ -51,7 +51,7 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.8</version>
                 <configuration>
-                    <failOnViolation>false</failOnViolation> <!-- this is actually true by default, but can be disabled -->
+                    <failOnViolation>true</failOnViolation><!-- this is actually true by default, but can be disabled -->
                     <printFailingErrors>true</printFailingErrors>
                     <rulesets>
                         <ruleset>/ruleSets/pmd-ruleset_xml.xml</ruleset>
@@ -82,6 +82,7 @@
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -99,6 +100,7 @@
                     <xmlOutput>true</xmlOutput>
                     <failOnError>true</failOnError>
                     <excludeFilterFile>/ruleSets/findbugs_exclude.xml</excludeFilterFile>
+                    <includeTests>true</includeTests>
                 </configuration>
                 <executions>
                     <execution>
