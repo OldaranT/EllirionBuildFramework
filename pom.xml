@@ -41,7 +41,7 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.8</version>
                 <configuration>
-                    <failOnViolation>false</failOnViolation> <!-- this is actually true by default, but can be disabled -->
+                    <failOnViolation>true</failOnViolation> <!-- this is actually true by default, but can be disabled -->
                     <printFailingErrors>true</printFailingErrors>
                     <rulesets>
                         <ruleset>/ruleSets/pmd-ruleset_xml.xml</ruleset>
@@ -68,10 +68,10 @@
                         <phase>validate</phase>
                         <configuration>
                             <configLocation>/ruleSets/checkstyle.xml</configLocation>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
-                            <failsOnError>false</failsOnError>
+                            <failsOnError>true</failsOnError>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -87,7 +87,7 @@
                     <effort>Max</effort>
                     <threshold>low</threshold>
                     <xmlOutput>true</xmlOutput>
-                    <failOnError>false</failOnError>
+                    <failOnError>true</failOnError>
                     <excludeFilterFile>/ruleSets/findbugs_exclude.xml</excludeFilterFile>
                 </configuration>
                 <executions>
