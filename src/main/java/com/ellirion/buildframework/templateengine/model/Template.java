@@ -5,11 +5,17 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.Position;
+import net.minecraft.server.v1_12_R1.TileEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 
+import java.util.HashMap;
 import java.util.logging.Level;
 
 public class Template {
@@ -36,6 +42,9 @@ public class Template {
     @Getter @Setter
     private TemplateBlock[][][] templateBlocks;
 
+    @Getter @Setter
+    private HashMap<Location, Sign> signList;
+
     /**
      *
      * @param name Name of the template
@@ -43,6 +52,7 @@ public class Template {
      */
     public Template(final String name, final Selection selection) {
         templateName = name;
+        signList = new HashMap<Location, Sign>();
 
         //get all blocks from the area
         Location start = selection.getMinimumPoint();
@@ -66,13 +76,21 @@ public class Template {
         templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
 
         World world = selection.getWorld();
+        CraftWorld w = (CraftWorld) world;
 
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
-                    templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(world.getBlockAt(x, y, z));
-                    BlockState metadata = templateBlocks[templateX][templateY][templateZ].getBlock().getState();
-                    templateBlocks[templateX][templateY][templateZ].setMetadata(templateBlocks[templateX][templateY][templateZ].getBlock().getState());
+                    templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(world.getBlockAt(x, y, z).getType());
+
+                    Block b = world.getBlockAt(x, y, z);
+                    BlockState state = b.getState();
+                    templateBlocks[templateX][templateY][templateZ].setMetadata(state);
+
+                    TileEntity te = w.getTileEntityAt(x, y, z);
+                    if (te != null) {
+                        templateBlocks[templateX][templateY][templateZ].setData(te.save(new NBTTagCompound()));
+                    }
                     templateZ++;
                 }
                 templateZ = 0;
@@ -82,7 +100,7 @@ public class Template {
             templateX++;
         }
 
-        logBlocks();
+//        logBlocks();
     }
 
     /**
@@ -104,7 +122,7 @@ public class Template {
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    BuildFramework.getInstance().getLogger().log(Level.INFO, "(" + x + "," + y + "," + z + ") " + templateBlocks[x][y][z].getBlock().getType().name());
+                    BuildFramework.getInstance().getLogger().log(Level.INFO, "(" + x + "," + y + "," + z + ") " + templateBlocks[x][y][z].getMaterial().name());
                 }
             }
         }
@@ -115,14 +133,10 @@ public class Template {
      * @return boundingbox of the template
      */
     public BoundingBox getBoundingBox() {
-        int x = templateBlocks[0][0][0].getBlock().getX();
-        int y = templateBlocks[0][0][0].getBlock().getY();
-        int z = templateBlocks[0][0][0].getBlock().getZ();
+        int xDepth = templateBlocks.length;
+        int yDepth = templateBlocks[0].length;
+        int zDepth = templateBlocks[0][0].length;
 
-        int x2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].getBlock().getX();
-        int y2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].getBlock().getY();
-        int z2 = templateBlocks[templateBlocks.length - 1][templateBlocks[0].length - 1][templateBlocks[0][0].length - 1].getBlock().getZ();
-
-        return new BoundingBox(x, y, z, x2 - x, y2 - y, z2 - z);
+        return new BoundingBox(0, 0, 0, xDepth, yDepth, zDepth);
     }
 }
