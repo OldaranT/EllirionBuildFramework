@@ -12,3 +12,6 @@ commands:
     description: Places the current selected tempalte.
     usage: /PutTemplate, /pt
     aliases: [pt]
+  Chest:
+    description: make chest
+    usage: /chest
