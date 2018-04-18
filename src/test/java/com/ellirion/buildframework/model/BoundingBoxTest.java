@@ -1,7 +1,5 @@
 package com.ellirion.buildframework.model;
 
-
-import net.minecraft.server.v1_12_R1.Position;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -74,14 +72,14 @@ public class BoundingBoxTest {
     }
 
     @Test
-    public void intersectsPosition_whenIntersecting_shouldReturnTrue() {
+    public void intersectsPoint_whenIntersecting_shouldReturnTrue() {
         BoundingBox bb = new BoundingBox(-1, -1, -1, 1, 1, 1);
-        Position p;
+        Point p;
 
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 for (int z = -1; z <= 1; z++) {
-                    p = new Position(x, y, z);
+                    p = new Point(x, y, z);
                     assertTrue(bb.intersects(p));
                 }
             }
@@ -89,9 +87,9 @@ public class BoundingBoxTest {
     }
 
     @Test
-    public void intersectsPosition_whenNotIntersecting_shouldReturnFalse() {
+    public void intersectsPoint_whenNotIntersecting_shouldReturnFalse() {
         BoundingBox bb = new BoundingBox(-1, -1, -1, 1, 1, 1);
-        Position p;
+        Point p;
 
         for (int x = -2; x <= 2; x++) {
             if (x >= -1 || x <= 1) continue;
@@ -99,7 +97,7 @@ public class BoundingBoxTest {
                 if (y >= -1 || y <= 1) continue;
                 for (int z = -2; z <= 2; z++) {
                     if (z >= -1 || z <= 1) continue;
-                    p = new Position(x, y, z);
+                    p = new Point(x, y, z);
                     assertFalse(bb.intersects(p));
                 }
             }
@@ -148,7 +146,7 @@ public class BoundingBoxTest {
     @Test
     public void toWorld_whenLocal_shouldBecomeWorld() {
         BoundingBox bba = new BoundingBox(0, 0, 0, 1, 1, 1);
-        BoundingBox bbb = bba.toWorld(new Position(5, 5, 5));
+        BoundingBox bbb = bba.toWorld(new Point(5, 5, 5));
 
         assertEquals(5, bbb.getX1());
         assertEquals(5, bbb.getY1());
@@ -162,7 +160,7 @@ public class BoundingBoxTest {
     @Test
     public void toWorld_whenWorld_shouldBecomeNewWorld() {
         BoundingBox bba = new BoundingBox(5, 5, 5, 6, 6, 6);
-        BoundingBox bbb = bba.toWorld(new Position(3, 3, 3));
+        BoundingBox bbb = bba.toWorld(new Point(3, 3, 3));
 
         assertEquals(3, bbb.getX1());
         assertEquals(3, bbb.getY1());
@@ -174,19 +172,19 @@ public class BoundingBoxTest {
     }
 
     @Test
-    public void getWidth_whenOnePosition_returnsOne() {
+    public void getWidth_whenOnePoint_returnsOne() {
         BoundingBox bb = new BoundingBox(0, 0, 0);
         assertEquals(1, bb.getWidth());
     }
 
     @Test
-    public void getHeight_whenOnePosition_returnsOne() {
+    public void getHeight_whenOnePoint_returnsOne() {
         BoundingBox bb = new BoundingBox(0, 0, 0);
         assertEquals(1, bb.getHeight());
     }
 
     @Test
-    public void getDepth_whenOnePosition_returnsOne() {
+    public void getDepth_whenOnePoint_returnsOne() {
         BoundingBox bb = new BoundingBox(0, 0, 0);
         assertEquals(1, bb.getDepth());
     }

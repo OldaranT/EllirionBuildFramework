@@ -1,7 +1,6 @@
 package com.ellirion.buildframework.model;
 
 import lombok.Getter;
-import net.minecraft.server.v1_12_R1.Position;
 
 public class BoundingBox {
 
@@ -10,22 +9,22 @@ public class BoundingBox {
     @Getter private int z1, z2;
 
     /**
-     * Create a BoundingBox between (inclusive) position (0,0,0) and position (0,0,0).
+     * Create a BoundingBox between (inclusive) point (0,0,0) and point (0,0,0).
      */
     public BoundingBox() {
         this(0, 0, 0, 0, 0, 0);
     }
 
     /**
-     * Creates a BoundingBox at exactly the given position {@code p}.
-     * @param p The position the BoundingBox should be created at
+     * Creates a BoundingBox at exactly the given point {@code p}.
+     * @param p The point the BoundingBox should be created at
      */
-    public BoundingBox(final Position p) {
+    public BoundingBox(final Point p) {
         this(p, p);
     }
 
     /**
-     * Creates a BoundingBox at exactly the given position (x1,y1,z1).
+     * Creates a BoundingBox at exactly the given point (x1,y1,z1).
      * @param x1 The x-component
      * @param y1 The y-component
      * @param z1 The z-component
@@ -35,17 +34,25 @@ public class BoundingBox {
     }
 
     /**
-     * Creates a BoundingBox between (inclusive) position {@code p1} and {@code p2}.
-     * @param p1 The first position
-     * @param p2 The second position
+     * Creates a BoundingBox between (inclusive) point {@code p1} and {@code p2}.
+     * @param p1 The first point
+     * @param p2 The second point
      */
-    public BoundingBox(final Position p1, final Position p2) {
-        this((int) Math.round(p1.getX()), (int) Math.round(p1.getY()), (int) Math.round(p1.getZ()),
-                (int) Math.round(p2.getX()), (int) Math.round(p2.getY()), (int) Math.round(p2.getZ()));
+    public BoundingBox(final Point p1, final Point p2) {
+        Point pMin = p1.min(p2).floor();
+        Point pMax = p1.max(p2).floor();
+
+        this.x1 = pMin.getBlockX();
+        this.y1 = pMin.getBlockY();
+        this.z1 = pMin.getBlockZ();
+
+        this.x2 = pMax.getBlockX();
+        this.y2 = pMax.getBlockY();
+        this.z2 = pMax.getBlockZ();
     }
 
     /**
-     * Create a BoundingBox between (inclusive) position (x1,y1,z1) and position (x2,y2,z2).
+     * Create a BoundingBox between (inclusive) point (x1,y1,z1) and point (x2,y2,z2).
      * @param x1 The first x-component
      * @param y1 The first y-component
      * @param z1 The first z-component
@@ -64,14 +71,14 @@ public class BoundingBox {
     }
 
     /**
-     * Checks if the position {@code p} lies within the blocks contained in this BoundingBox.
-     * @param p The position to check
-     * @return Whether the position lies within the bounds of this BoundingBox
+     * Checks if the point {@code p} lies within the blocks contained in this BoundingBox.
+     * @param p The point to check
+     * @return Whether the point lies within the bounds of this BoundingBox
      */
-    public boolean intersects(Position p) {
-        int px = (int) p.getX();
-        int py = (int) p.getY();
-        int pz = (int) p.getZ();
+    public boolean intersects(Point p) {
+        int px = p.getBlockX();
+        int py = p.getBlockY();
+        int pz = p.getBlockZ();
         return x1 <= px && px <= x2 && y1 <= py && py <= y2 && z1 <= pz && pz <= z2;
     }
 
@@ -97,7 +104,7 @@ public class BoundingBox {
      * @param pos The new origin
      * @return The BoundingBox at the world coordinates
      */
-    public BoundingBox toWorld(Position pos) {
+    public BoundingBox toWorld(Point pos) {
         BoundingBox local = toLocal();
         int px = (int) Math.round(pos.getX());
         int py = (int) Math.round(pos.getY());
@@ -109,19 +116,19 @@ public class BoundingBox {
     }
 
     /**
-     * Gets the smallest-component position of this BoundingBox.
-     * @return The smallest-component position of this BoundingBox
+     * Gets the smallest-component point of this BoundingBox.
+     * @return The smallest-component point of this BoundingBox
      */
-    public Position getPosition1() {
-        return new Position(x1, y1, z1);
+    public Point getPoint1() {
+        return new Point(x1, y1, z1);
     }
 
     /**
-     * Gets the largest-component position of this BoundingBox.
-     * @return The largest-component position of this BoundingBox
+     * Gets the largest-component point of this BoundingBox.
+     * @return The largest-component point of this BoundingBox
      */
-    public Position getPosition2() {
-        return new Position(x2, y2, z2);
+    public Point getPoint2() {
+        return new Point(x2, y2, z2);
     }
 
     /**
