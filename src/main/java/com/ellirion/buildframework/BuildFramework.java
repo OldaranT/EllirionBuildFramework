@@ -29,6 +29,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("Test").setExecutor(new Test());
         getCommand("Validate").setExecutor(new ValidateCommand());
         createConfig();
+        getCommand("test").setExecutor(new Test());
 
     }
 

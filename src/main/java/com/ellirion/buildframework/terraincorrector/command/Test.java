@@ -1,41 +1,58 @@
 package com.ellirion.buildframework.terraincorrector.command;
 
-import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.terraincorrector.TerrainValidator;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.bukkit.entity.Player;
 
 public class Test implements CommandExecutor {
-    private static final Logger LOGGER = Logger.getGlobal();
     @Override
     public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] strings) {
+        if (commandSender instanceof Player) {
+            final Player player = (Player) commandSender;
 
-        final FileConfiguration config = BuildFramework.getPlugin(BuildFramework.class).getConfig();
 
-        if (LOGGER.isLoggable(Level.INFO))
-        {
-            LOGGER.info("" + config.getInt("TerrainValidation_OverheadLimit", 0));
-        }
+            final TerrainValidator validator = new TerrainValidator();
 
-//        if (commandSender instanceof Player) {
-//            final Player player = (Player) commandSender;
-//
-//            final TerrainValidator validator = new TerrainValidator();
+            final Location location = player.getLocation();
+            BoundingBox b = new BoundingBox(location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getBlockX() + 1, location.getBlockY() + 1, location.getBlockZ() + 1);
+
+            final World world = player.getWorld();
+            int offset = 4;
+            if (strings.length > 0 && isParsable(strings[0])) {
+                offset = Integer.parseInt(strings[0]);
+                player.sendMessage(Integer.toString(offset));
+            }
+            String string = "" + (validator.validate(b, world, offset));
+
+
+            player.sendMessage(string);
+
 //
 //            final BoundingBox boundingBox = new BoundingBox(0, 0, 0, 10, 10, 10);
-//            final Location loc =  player.getLocation();
-//            final Position pos = new Position(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+//            final Position position = new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ());
 //
-//            final StringBuilder stringBuilder = new StringBuilder();
-//            stringBuilder.append("X : ").append(pos.getX()).append(", Y : ").append(pos.getY()).append(", Z : ").append(pos.getZ());
-//            player.sendMessage(stringBuilder.toString());
-//            final Double score = validator.calculateOverhang(boundingBox.toWorld(pos), player.getWorld());
-//            player.sendMessage("score is : " + score);
-//        }
+//            final StringBuilder sb = new StringBuilder();
+//            sb.append("X : ").append(position.getX()).append(", Y : ").append(position.getY()).append(", Z : ").append(position.getZ());
+//            player.sendMessage(sb.toString());
+//            final Double distance = validator.findClosestBlock(position, boundingBox.toWorld(position), player.getWorld());
+//            player.sendMessage("Closest block is : " + distance);
+        }
+
         return false;
+    }
+
+    private boolean isParsable(String s) {
+        boolean parsable = true;
+        try {
+            Integer.parseInt(s);
+        } catch (Exception e) {
+            parsable = false;
+        }
+        return parsable;
     }
 }

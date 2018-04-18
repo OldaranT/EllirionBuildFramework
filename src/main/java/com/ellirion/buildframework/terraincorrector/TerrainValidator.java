@@ -12,17 +12,16 @@ import java.util.logging.Logger;
 
 
 public class TerrainValidator {
-
     private static final Logger LOGGER = BuildFramework.getInstance().getLogger();
-
 
     /***
      * Validate if the impact on the terrain is within acceptable levels.
      * @param boundingBox this should be a BoundingBox using world coordinates where the bottom of the BoundingBox is
      * @param world the world that should
+     * @param offset amount of blocks outside the bounding bocks that should be checked
      * @return returns whether the terrain allows terrain generation
      */
-    public boolean validate(final BoundingBox boundingBox, final World world) {
+    public boolean validate(final BoundingBox boundingBox, final World world, final int offset) {
         final double overhangLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_OverheadLimit", 50);
         final double blocksLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_BocksLimit", 100);
         final double totalLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_TotalLimit", 200);
@@ -34,7 +33,7 @@ public class TerrainValidator {
             return false;
         }
 
-        final double blocksScore = calculateBlocks(boundingBox, world);
+        final double blocksScore = calculateBlocks(boundingBox, world, offset);
         if (blocksScore > blocksLimit) {
             return false;
         }
@@ -45,10 +44,12 @@ public class TerrainValidator {
         }
 
         return true;
+
     }
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {
         double total = 0D;
+
         final double totalArea = boundingBox.getWidth() * boundingBox.getDepth();
         final int y = boundingBox.getY1() - 1;
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
@@ -75,7 +76,10 @@ public class TerrainValidator {
         return (distance / area);
     }
 
-    private double calculateBlocks(final BoundingBox boundingBox, final World world) {
+    /*
+     * TODO: calculate using the type of block.
+     * */
+    private double calculateBlocks(final BoundingBox boundingBox, final World world, final int offset) {
 
         double blockCounter = 0;
 
@@ -96,11 +100,11 @@ public class TerrainValidator {
 
         final int bottomBlockZ = (l1.getBlockZ() > l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
 
-        for (int x = bottomBlockX; x <= topBlockX; x++) {
+        for (int x = bottomBlockX - offset; x <= topBlockX + offset; x++) {
 
-            for (int y = bottomBlockY; y <= topBlockY; y++) {
+            for (int y = bottomBlockY - offset; y <= topBlockY + offset; y++) {
 
-                for (int z = bottomBlockZ; z <= topBlockZ; z++) {
+                for (int z = bottomBlockZ - offset; z <= topBlockZ + offset; z++) {
 
                     if (l1.getWorld().getBlockAt(x, y, z).isLiquid()) {
                         return Double.POSITIVE_INFINITY;
@@ -135,6 +139,7 @@ public class TerrainValidator {
 
         for (double loopX = x; loopX >= boundingBox.getX1(); loopX--)
         {
+
             finalDistance = loopTroughBlocks(finalDistance, world, loopX, boundingBox, startingPosition);
         }
 
@@ -146,17 +151,14 @@ public class TerrainValidator {
         final double z = startingPosition.getZ();
         final double y = boundingBox.getY1();
 
-        for (double loopZ = z; loopZ <= boundingBox.getZ2(); loopZ++)
-            {
+        for (double loopZ = z; loopZ <= boundingBox.getZ2(); loopZ++) {
             final Block block = world.getBlockAt((int) x, (int) y, (int) loopZ);
             final double distance = getDistance(startingPosition, new Position(x, y, loopZ));
-            if (currentDistance < distance)
-            {
+            if (currentDistance < distance) {
                 break;
             }
-            if (!block.isEmpty() && !block.isLiquid())
-            {
-                currentDistance =  distance;
+            if (!block.isEmpty() && !block.isLiquid()) {
+                currentDistance = distance;
             }
         }
 
@@ -167,7 +169,7 @@ public class TerrainValidator {
                 break;
             }
             if (!block.isEmpty() && !block.isLiquid()) {
-                    currentDistance = distance;
+                currentDistance = distance;
             }
         }
 
@@ -175,8 +177,7 @@ public class TerrainValidator {
     }
 
 
-    private double getDistance(final Position p1, final Position p2)
-    {
+    private double getDistance(final Position p1, final Position p2) {
         final double x1 = Math.min(p1.getX(), p2.getX());
         final double y1 = Math.min(p1.getY(), p2.getY());
         final double z1 = Math.min(p1.getZ(), p2.getZ());
