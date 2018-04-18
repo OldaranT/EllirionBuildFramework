@@ -2,7 +2,6 @@ package com.ellirion.buildframework.terraincorrector.command;
 
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.terraincorrector.TerrainValidator;
-import net.minecraft.server.v1_12_R1.Position;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -23,21 +22,37 @@ public class Test implements CommandExecutor {
             BoundingBox b = new BoundingBox(location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getBlockX() + 1, location.getBlockY() + 1, location.getBlockZ() + 1);
 
             final World world = player.getWorld();
-            String string = "" + (validator.validate(b, world, 1));
+            int offset = 4;
+            if (strings.length > 0 && isParsable(strings[0])) {
+                offset = Integer.parseInt(strings[0]);
+                player.sendMessage(Integer.toString(offset));
+            }
+            String string = "" + (validator.validate(b, world, offset));
+
 
             player.sendMessage(string);
 
-
-            final BoundingBox boundingBox = new BoundingBox(0, 0, 0, 10, 10, 10);
-            final Position position = new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-
-            final StringBuilder sb = new StringBuilder();
-            sb.append("X : ").append(position.getX()).append(", Y : ").append(position.getY()).append(", Z : ").append(position.getZ());
-            player.sendMessage(sb.toString());
-            final Double distance = validator.findClosestBlock(position, boundingBox.toWorld(position), player.getWorld());
-            player.sendMessage("Closest block is : " + distance);
+//
+//            final BoundingBox boundingBox = new BoundingBox(0, 0, 0, 10, 10, 10);
+//            final Position position = new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+//
+//            final StringBuilder sb = new StringBuilder();
+//            sb.append("X : ").append(position.getX()).append(", Y : ").append(position.getY()).append(", Z : ").append(position.getZ());
+//            player.sendMessage(sb.toString());
+//            final Double distance = validator.findClosestBlock(position, boundingBox.toWorld(position), player.getWorld());
+//            player.sendMessage("Closest block is : " + distance);
         }
 
         return false;
+    }
+
+    private boolean isParsable(String s) {
+        boolean parsable = true;
+        try {
+            Integer.parseInt(s);
+        } catch (Exception e) {
+            parsable = false;
+        }
+        return parsable;
     }
 }

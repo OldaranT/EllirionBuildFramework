@@ -7,6 +7,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 public class TerrainValidator {
+//    private static final Logger LOGGER = BuildFramework.getInstance().getLogger();
 
     /***
      * Validate if the impact on the terrain is within acceptable levels.
@@ -15,6 +16,7 @@ public class TerrainValidator {
      * @param offset amount of blocks outside the bounding bocks that should be checked
      * @return returns whether the terrain allows terrain generation
      */
+
     public double validate(final BoundingBox boundingBox, final World world, final int offset) {
         int defaultOffset = 5;
         if (Integer.valueOf(offset) != null) {
@@ -59,7 +61,7 @@ public class TerrainValidator {
     }
 
     /*
-     * TODO: calculate the blocks around the bounding box
+     * TODO: calculate using the type of block.
      * */
     private double calculateBlocks(final BoundingBox boundingBox, final World world, final int offset) {
 

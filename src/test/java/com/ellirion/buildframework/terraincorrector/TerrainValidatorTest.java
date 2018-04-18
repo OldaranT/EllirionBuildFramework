@@ -1,25 +1,57 @@
 package com.ellirion.buildframework.terraincorrector;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({BuildFramework.class})
 public class TerrainValidatorTest {
 
+    @Mock
+    private Logger logger;
+//
+//    private BuildFramework spyFramework;
+//
+//    @Before
+//    public void setup() {
+//        spyFramework = spy(new BuildFramework());
+//        when(spyFramework.getLogger()).thenReturn(logger);
+//    }
 
     @Test
-    public void CalculateBlocks_WhenOnlyContainsAir_ShouldReturnZero() {
+    public void CalculateBlocks_WhenOnlyContainsAir_ShouldReturnZero() throws Exception {
+        PowerMockito.mockStatic(BuildFramework.class);
+        System.out.println("got here 2");
+//        PowerMockito.;
+        System.out.println("past when then return logger");
+
+//        PowerMockito.spy(new TerrainValidator());
+//        given(TerrainValidator.getLogger()).willReturn(logger);
+//        suppressConstructor(BuildFramework.class);
+//        mockStatic(BuildFramework.class);
+//        BuildFramework mockFramework = mock(BuildFramework.class);
+
         TerrainValidator t = new TerrainValidator();
         World mockWorld = mock(World.class);
         Block mockBlockAir = mock(Block.class);
         BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
 
+//        when(mockFramework.getInstance().getLogger()).thenReturn((Logger) LoggerFactory.getLogger(t.getClass()));
 
         when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
 
@@ -31,6 +63,7 @@ public class TerrainValidatorTest {
 
     @Test
     public void CalculateBlocks_WhenContainsLiquid_ShouldReturnPositiveInfinity() {
+
         TerrainValidator t = new TerrainValidator();
         World mockWorld = mock(World.class);
         Block mockBlockAir = mock(Block.class);
