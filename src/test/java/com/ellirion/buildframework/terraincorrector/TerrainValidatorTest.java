@@ -74,6 +74,7 @@ public class TerrainValidatorTest {
         when(mockBlockNormal.isEmpty()).thenReturn(false);
         when(mockBlockNormal.isLiquid()).thenReturn(false);
 
+
         assertEquals(3, t.validate(bb, mockWorld, 4));
     }
 
@@ -106,6 +107,7 @@ public class TerrainValidatorTest {
     @Test
     public void CalculateBlocks_WhenThreeNormalBlocksOneBlockOutSideTheBoundingBox_ShouldReturnThree() {
         TerrainValidator t = new TerrainValidator();
+
         World mockWorld = mock(World.class);
         Block mockBlockAir = mock(Block.class);
         Block mockBlockNormal = mock(Block.class);
@@ -123,5 +125,28 @@ public class TerrainValidatorTest {
         when(mockBlockNormal.isLiquid()).thenReturn(false);
 
         assertEquals(3, t.validate(bb, mockWorld, 4));
+    }
+
+    @Test
+    public void CalculateBlocks_WhenBlocksAreOutsideValidationArea_ShouldReturnZero() {
+        TerrainValidator t = new TerrainValidator();
+
+        World mockWorld = mock(World.class);
+        Block mockBlockAir = mock(Block.class);
+        Block mockBlockNormal = mock(Block.class);
+        BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
+
+        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
+        when(mockWorld.getBlockAt(-5, 0, 0)).thenReturn(mockBlockNormal);
+        when(mockWorld.getBlockAt(6, -1, 0)).thenReturn(mockBlockNormal);
+        when(mockWorld.getBlockAt(2, 8, 2)).thenReturn(mockBlockNormal);
+
+        when(mockBlockAir.isEmpty()).thenReturn(true);
+        when(mockBlockAir.isLiquid()).thenReturn(false);
+
+        when(mockBlockNormal.isEmpty()).thenReturn(false);
+        when(mockBlockNormal.isLiquid()).thenReturn(false);
+
+        assertEquals(0, t.validate(bb, mockWorld, 4));
     }
 }
