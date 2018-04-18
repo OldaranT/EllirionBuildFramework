@@ -47,7 +47,7 @@ public class TemplateBlock {
      *
      * @param material create a templateblock with the given block
      */
-    protected TemplateBlock(final Material material) {
+    public TemplateBlock(final Material material) {
         this.material = material;
 
         markers = new LinkedList<String>();

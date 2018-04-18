@@ -12,10 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-
-import java.util.HashMap;
 import java.util.logging.Level;
 
 public class Template {
@@ -42,8 +39,6 @@ public class Template {
     @Getter @Setter
     private TemplateBlock[][][] templateBlocks;
 
-    @Getter @Setter
-    private HashMap<Location, Sign> signList;
 
     /**
      *
@@ -52,7 +47,6 @@ public class Template {
      */
     public Template(final String name, final Selection selection) {
         templateName = name;
-        signList = new HashMap<Location, Sign>();
 
         //get all blocks from the area
         Location start = selection.getMinimumPoint();

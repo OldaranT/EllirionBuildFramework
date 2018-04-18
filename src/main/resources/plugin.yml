@@ -12,6 +12,7 @@ commands:
     description: Places the current selected tempalte.
     usage: /PutTemplate, /pt
     aliases: [pt]
-  Chest:
-    description: make chest
-    usage: /chest
+  ExportTemplate:
+    description: Export current selected template to a json file.
+    usage: /ExportTemplate, /et
+    aliases: [et]

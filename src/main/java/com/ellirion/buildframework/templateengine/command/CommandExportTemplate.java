@@ -1,10 +1,12 @@
 package com.ellirion.buildframework.templateengine.command;
 
+import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 import com.ellirion.buildframework.util.JsonWriter;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.google.gson.Gson;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,6 +20,7 @@ public class CommandExportTemplate implements CommandExecutor {
             Player player = (Player) commandSender;
 
             Template t = TemplateManager.selectedTemplates.get(player);
+            TemplateBlock tb = new TemplateBlock(Material.AIR);
 
             if (t == null) {
                 player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
@@ -27,7 +30,6 @@ public class CommandExportTemplate implements CommandExecutor {
             Gson templateJson = new Gson();
             String json = templateJson.toJson(t);
 
-
             if (JsonWriter.writeJsonToFile(json, t.getTemplateName())) {
                 player.sendMessage(ChatColor.GREEN + "Template has been successfully exported.");
                 return true;
@@ -35,6 +37,7 @@ public class CommandExportTemplate implements CommandExecutor {
                 player.sendMessage(ChatColor.DARK_RED + "Template failed to export.");
                 return false;
             }
+
         }
         return false;
     }
