@@ -1,6 +1,6 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.Util.JsonWriter;
+import com.ellirion.buildframework.util.JsonWriter;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.google.gson.Gson;
@@ -28,7 +28,7 @@ public class CommandExportTemplate implements CommandExecutor {
             String json = templateJson.toJson(t);
 
 
-            if (JsonWriter.WriteJsonToFile(json, t.getTemplateName())) {
+            if (JsonWriter.writeJsonToFile(json, t.getTemplateName())) {
                 player.sendMessage(ChatColor.GREEN + "Template has been successfully exported.");
                 return true;
             } else {

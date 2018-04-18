@@ -14,6 +14,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.entity.Player;
+import org.bukkit.material.MaterialData;
+
 import java.util.Random;
 
 public class CommandPutTemplate implements CommandExecutor {
@@ -50,11 +52,11 @@ public class CommandPutTemplate implements CommandExecutor {
                     int locY = (int) loc.getY() + y;
                     int locZ = (int) loc.getZ() + z;
                     Block b = w.getBlockAt(locX, locY, locZ);
-                    BlockState copiedState = template.getTemplateBlocks()[x][y][z].getMetadata();
+                    MaterialData copiedState = template.getTemplateBlocks()[x][y][z].getMetadata();
                     b.setType(template.getTemplateBlocks()[x][y][z].getMaterial());
                     b.getState().update();
                     BlockState blockState = b.getState();
-                    blockState.setData(copiedState.getData());
+                    blockState.setData(copiedState);
                     blockState.update();
 
                     TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));

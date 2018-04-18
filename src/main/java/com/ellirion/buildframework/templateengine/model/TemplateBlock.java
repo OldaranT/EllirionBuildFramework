@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
-import org.bukkit.block.BlockState;
+import org.bukkit.material.MaterialData;
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
@@ -37,7 +37,7 @@ public class TemplateBlock {
     @Nullable
     @Getter
     @Setter
-    private BlockState metadata;
+    private MaterialData metadata;
 
     @Getter
     @Setter
