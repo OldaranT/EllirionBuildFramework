@@ -3,9 +3,9 @@ package com.ellirion.buildframework.templateengine.command;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import net.md_5.bungee.api.ChatColor;
-//import net.minecraft.server.v1_12_R1.TileEntity;
-//import net.minecraft.server.v1_12_R1.BlockPosition;
-//import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import net.minecraft.server.v1_12_R1.TileEntity;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import net.minecraft.server.v1_12_R1.BlockPosition;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -14,6 +14,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.entity.Player;
+import java.util.Random;
 
 public class CommandPutTemplate implements CommandExecutor {
 
@@ -40,6 +41,7 @@ public class CommandPutTemplate implements CommandExecutor {
         int yDepth = template.getTemplateBlocks()[0].length;
         int zDepth = template.getTemplateBlocks()[0][0].length;
         CraftWorld w = (CraftWorld) loc.getWorld();
+        Random random = new Random();
 
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
@@ -55,12 +57,14 @@ public class CommandPutTemplate implements CommandExecutor {
                     blockState.setData(copiedState.getData());
                     blockState.update();
 
-//                    TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
-//                    if (te != null) {
-//                        NBTTagCompound ntc = template.getTemplateBlocks()[x][y][z].getData();
-//                        te.load(ntc.g());
-//                        te.update();
-//                    }
+                    TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
+                    if (te != null) {
+                        NBTTagCompound ntc = template.getTemplateBlocks()[x][y][z].getData();
+                        ntc.setInt("x", locX);
+                        ntc.setInt("y", locY);
+                        ntc.setInt("z", locZ);
+                        te.load(ntc);
+                    }
                 }
             }
         }
