@@ -7,5 +7,8 @@ commands:
   Test:
     description: test
     usage: /Test
-    aliases: [ct]
+  Validate:
+    description: Validates the terrain for terrain smoothing.
+    usage: /Validate
+
 

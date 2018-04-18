@@ -1,11 +1,20 @@
 package com.ellirion.buildframework.terraincorrector;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import net.minecraft.server.v1_12_R1.Position;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
 public class TerrainValidator {
+
+    private static final Logger LOGGER = BuildFramework.getInstance().getLogger();
+
 
     /***
      * Validate if the impact on the terrain is within acceptable levels.
@@ -13,45 +22,57 @@ public class TerrainValidator {
      * @param world the world that should
      * @return returns whether the terrain allows terrain generation
      */
-    public double validate(final BoundingBox boundingBox, final World world) {
-        final double overhangLimit = 10;
-        final double blocksLimit = 300;
-        final double totalLimit = 400;
+    public boolean validate(final BoundingBox boundingBox, final World world) {
+        final double overhangLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_OverheadLimit", 50);
+        final double blocksLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_BocksLimit", 100);
+        final double totalLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_TotalLimit", 200);
 
-        if (checkForBoundingBoxes()) {
-            return Double.POSITIVE_INFINITY;
+        //TODO implement checking for BoundingBoxes in the world once these are saved in the database
+
+        final double overhangScore = calculateOverhang(boundingBox, world);
+        if (overhangScore > overhangLimit) {
+            return false;
         }
 
-        if (calculateOverhang(boundingBox, world) > overhangLimit) {
-            return Double.POSITIVE_INFINITY;
+        final double blocksScore = calculateBlocks(boundingBox, world);
+        if (blocksScore > blocksLimit) {
+            return false;
         }
 
-        if (calculateBlocks(boundingBox, world) > blocksLimit) {
-            return Double.POSITIVE_INFINITY;
+
+        if (blocksScore + overhangScore > totalLimit) {
+            return false;
         }
 
-        final Double total = calculateBlocks(boundingBox, world) + calculateOverhang(boundingBox, world);
-
-        if (total > totalLimit) {
-            return Double.POSITIVE_INFINITY;
-        }
-
-        return total;
+        return true;
     }
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {
         double total = 0D;
-        double totalarea = 
-        final int z = boundingBox.getZ1();
+        final double totalArea = boundingBox.getWidth() * boundingBox.getDepth();
+        final int y = boundingBox.getY1() - 1;
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
-            for (int y = boundingBox.getY1(); x < boundingBox.getY2(); y++) {
+            for (int z = boundingBox.getZ1(); z < boundingBox.getZ2(); z++) {
                 final Block block = world.getBlockAt(x, y, z);
                 if (block.isLiquid() || block.isEmpty()) {
-                    total += findClosestBlock(new Position(x, y, z), boundingBox, world);
+                    final double distance = findClosestBlock(new Position(x, y, z), boundingBox, world);
+                    final Double score =  calculateOverhangScore(totalArea, distance);
+
+                    total += score;
+                    if (LOGGER.isLoggable(Level.INFO)) {
+                        LOGGER.info("[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y + " and z : " + z);
+                    }
                 }
             }
         }
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info("[TerrainValidator] Total score : " + total);
+        }
         return total;
+    }
+
+    private double calculateOverhangScore(final double area, final double distance) {
+        return (distance / area);
     }
 
     private double calculateBlocks(final BoundingBox boundingBox, final World world) {
@@ -94,32 +115,25 @@ public class TerrainValidator {
 
         }
 
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info("[TerrainValidator] Total block counter : " + blockCounter);
+        }
+
         return blockCounter;
     }
 
-    private boolean checkForBoundingBoxes() {
-        return false;
-    }
-
-    /***
-     *
-     * @param startingPosition bla
-     * @param boundingBox bla
-     * @param world bla
-     * @return bla
-     */
-    public double findClosestBlock(final Position startingPosition, final BoundingBox boundingBox, final World world) {
+    private double findClosestBlock(final Position startingPosition, final BoundingBox boundingBox, final World world) {
 
         final double x = startingPosition.getX();
 
         double finalDistance = Double.POSITIVE_INFINITY;
 
-        for (double loopX = x;loopX <= boundingBox.getX2();loopX++)
+        for (double loopX = x; loopX <= boundingBox.getX2(); loopX++)
         {
             finalDistance = loopTroughBlocks(finalDistance, world, loopX, boundingBox, startingPosition);
         }
 
-        for (double loopX = x;loopX >= boundingBox.getX1();loopX--)
+        for (double loopX = x; loopX >= boundingBox.getX1(); loopX--)
         {
             finalDistance = loopTroughBlocks(finalDistance, world, loopX, boundingBox, startingPosition);
         }
