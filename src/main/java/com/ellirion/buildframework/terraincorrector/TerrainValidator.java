@@ -3,7 +3,6 @@ package com.ellirion.buildframework.terraincorrector;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import net.minecraft.server.v1_12_R1.Position;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
@@ -13,6 +12,7 @@ import java.util.logging.Logger;
 
 public class TerrainValidator {
     private static final Logger LOGGER = BuildFramework.getInstance().getLogger();
+    private static final BuildFramework BUILD_FRAMEWORK = BuildFramework.getInstance();
 
     /***
      * Validate if the impact on the terrain is within acceptable levels.
@@ -21,10 +21,10 @@ public class TerrainValidator {
      * @return returns whether the terrain allows terrain generation
      */
     public boolean validate(final BoundingBox boundingBox, final World world) {
-        final double overhangLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_OverheadLimit", 50);
-        final double blocksLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_BocksLimit", 100);
-        final double totalLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_TotalLimit", 200);
-        final int offset = BuildFramework.getInstance().getConfig().getInt("Terrainvalidation_offset", 5);
+        final double overhangLimit = BUILD_FRAMEWORK.getConfig().getInt("TerrainValidation_OverheadLimit", 50);
+        final double blocksLimit = BUILD_FRAMEWORK.getConfig().getInt("TerrainValidation_BocksLimit", 100);
+        final double totalLimit = BUILD_FRAMEWORK.getConfig().getInt("TerrainValidation_TotalLimit", 200);
+        final int offset = BUILD_FRAMEWORK.getConfig().getInt("Terrainvalidation_offset", 5);
 
         //TODO implement checking for BoundingBoxes in the world once these are saved in the database
 
@@ -83,36 +83,30 @@ public class TerrainValidator {
 
         double blockCounter = 0;
 
-        final Location l1 = new Location(world, boundingBox.getX1(), boundingBox.getY1(), boundingBox.getZ1());
-        final Location l2 = new Location(world, boundingBox.getX2(), boundingBox.getY2(), boundingBox.getZ2());
-
-        final int topBlockX = (l1.getBlockX() < l2.getBlockX() ? l2.getBlockX() : l1.getBlockX());
-
-        final int bottomBlockX = (l1.getBlockX() > l2.getBlockX() ? l2.getBlockX() : l1.getBlockX());
+        final int bottomBlockX = boundingBox.getX1() - offset;
+        final int topBlockX = boundingBox.getX2() + offset;
 
 
-        final int topBlockY = (l1.getBlockY() < l2.getBlockY() ? l2.getBlockY() : l1.getBlockY());
+        final int bottomBlockY = boundingBox.getY1();
+        final int topBlockY = boundingBox.getY2() + offset;
 
-        final int bottomBlockY = (l1.getBlockY() > l2.getBlockY() ? l2.getBlockY() : l1.getBlockY());
 
+        final int bottomBlockZ = boundingBox.getZ1() - offset;
+        final int topBlockZ = boundingBox.getZ2() + offset;
 
-        final int topBlockZ = (l1.getBlockZ() < l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
+        for (int x = bottomBlockX; x <= topBlockX; x++) {
 
-        final int bottomBlockZ = (l1.getBlockZ() > l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
+            for (int y = bottomBlockY; y <= topBlockY; y++) {
 
-        for (int x = bottomBlockX - offset; x <= topBlockX + offset; x++) {
+                for (int z = bottomBlockZ; z <= topBlockZ; z++) {
 
-            for (int y = bottomBlockY; y <= topBlockY + offset; y++) {
+                    Block b = world.getBlockAt(x, y, z);
 
-                for (int z = bottomBlockZ - offset; z <= topBlockZ + offset; z++) {
-
-                    if (l1.getWorld().getBlockAt(x, y, z).isLiquid()) {
+                    if (b.isLiquid()) {
                         return Double.POSITIVE_INFINITY;
                     }
 
-                    if (!l1.getWorld().getBlockAt(x, y, z).isEmpty()) {
-                        blockCounter++;
-                    }
+                    blockCounter += BUILD_FRAMEWORK.getBlockValueConfig().getInt(b.getType().toString(), 1);
                 }
 
             }

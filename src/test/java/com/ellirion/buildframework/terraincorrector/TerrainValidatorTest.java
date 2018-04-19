@@ -40,13 +40,13 @@ public class TerrainValidatorTest {
 
         return mockBlock;
     }
-    
+
     private static World createDefaultWorld() {
         final World mockWorld = mock(World.class);
         when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
         return mockWorld;
     }
-            
+
     @Before
     public void setup() {
         mockStatic(BuildFramework.class);
@@ -70,11 +70,13 @@ public class TerrainValidatorTest {
         final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
 
         when(MOCK_WORLD.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
+        System.out.println("material stone:");
+        System.out.println(Material.STONE.toString());
 
         assertEquals(0, t.validate(bb, MOCK_WORLD));
     }
 
-        @Test
+    @Test
     public void CalculateBlocks_WhenContainsLiquid_ShouldReturnPositiveInfinity() {
 
         final TerrainValidator t = new TerrainValidator();

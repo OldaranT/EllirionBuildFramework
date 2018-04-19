@@ -22,12 +22,7 @@ public class Test implements CommandExecutor {
             BoundingBox b = new BoundingBox(location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getBlockX() + 1, location.getBlockY() + 1, location.getBlockZ() + 1);
 
             final World world = player.getWorld();
-            int offset = 4;
-            if (strings.length > 0 && isParsable(strings[0])) {
-                offset = Integer.parseInt(strings[0]);
-                player.sendMessage(Integer.toString(offset));
-            }
-            String string = "" + (validator.validate(b, world, offset));
+            String string = "" + (validator.validate(b, world));
 
 
             player.sendMessage(string);
