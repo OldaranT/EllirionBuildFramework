@@ -2,6 +2,7 @@ package com.ellirion.buildframework.terraincorrector;
 
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,7 +25,28 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 @PrepareForTest({BuildFramework.class})
 public class TerrainValidatorTest {
 
+    private static final Block MOCK_BLOCK_AIR = createMockBlock(true, false, Material.AIR);
+    private static final Block MOCK_BLOCK_LIQUID = createMockBlock(false, true, Material.WATER);
+    private static final Block MOCK_BLOCK_STONE = createMockBlock(false, false, Material.STONE);
+    private static final World MOCK_WORLD = createDefaultWorld();
 
+
+    private static Block createMockBlock(boolean isAir, boolean isLiquid, Material material) {
+        final Block mockBlock = mock(Block.class);
+        when(mockBlock.isEmpty()).thenReturn(isAir);
+        when(mockBlock.isLiquid()).thenReturn(isLiquid);
+
+        when(mockBlock.getType()).thenReturn(material);
+
+        return mockBlock;
+    }
+    
+    private static World createDefaultWorld() {
+        final World mockWorld = mock(World.class);
+        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
+        return mockWorld;
+    }
+            
     @Before
     public void setup() {
         mockStatic(BuildFramework.class);
@@ -45,137 +67,73 @@ public class TerrainValidatorTest {
     @Test
     public void CalculateBlocks_WhenOnlyContainsAir_ShouldReturnZero() {
         final TerrainValidator t = new TerrainValidator();
-        final World mockWorld = mock(World.class);
-        final Block mockBlockAir = mock(Block.class);
         final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
 
-        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
+        when(MOCK_WORLD.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
 
-        when(mockBlockAir.isEmpty()).thenReturn(true);
-        when(mockBlockAir.isLiquid()).thenReturn(false);
-
-        assertEquals(0, t.validate(bb, mockWorld, 4));
+        assertEquals(0, t.validate(bb, MOCK_WORLD));
     }
 
-    //    @Test
-//    public void CalculateBlocks_WhenContainsLiquid_ShouldReturnPositiveInfinity() {
-//
-//        final TerrainValidator t = new TerrainValidator();
-//        final World mockWorld = mock(World.class);
-//        final Block mockBlockAir = mock(Block.class);
-//        final Block mockBlockLiquid = mock(Block.class);
-//        final Block mockBlockNormal = mock(Block.class);
-//        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
-//
-//        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
-//        when(mockWorld.getBlockAt(1, 0, 0)).thenReturn(mockBlockNormal);
-//        when(mockWorld.getBlockAt(1, 1, 0)).thenReturn(mockBlockLiquid);
-//        when(mockWorld.getBlockAt(0, 0, 1)).thenReturn(mockBlockNormal);
-//
-//        when(mockBlockAir.isEmpty()).thenReturn(true);
-//        when(mockBlockAir.isLiquid()).thenReturn(false);
-//
-//        when(mockBlockLiquid.isEmpty()).thenReturn(false);
-//        when(mockBlockLiquid.isLiquid()).thenReturn(true);
-//
-//        when(mockBlockNormal.isEmpty()).thenReturn(false);
-//        when(mockBlockNormal.isLiquid()).thenReturn(false);
-//
-//        assertEquals(false, t.validate(bb, mockWorld, 4));
-//    }
-//
-//    @Test
-//    public void CalculateBlocks_WhenHasThreeNormalBlocks_ShouldReturnThree() {
-//        final TerrainValidator t = new TerrainValidator();
-//        final World mockWorld = mock(World.class);
-//        final Block mockBlockAir = mock(Block.class);
-//        final Block mockBlockNormal = mock(Block.class);
-//        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
-//
-//        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
-//        when(mockWorld.getBlockAt(1, 0, 0)).thenReturn(mockBlockNormal);
-//        when(mockWorld.getBlockAt(1, 1, 0)).thenReturn(mockBlockNormal);
-//        when(mockWorld.getBlockAt(0, 0, 1)).thenReturn(mockBlockNormal);
-//
-//        when(mockBlockAir.isEmpty()).thenReturn(true);
-//        when(mockBlockAir.isLiquid()).thenReturn(false);
-//
-//        when(mockBlockNormal.isEmpty()).thenReturn(false);
-//        when(mockBlockNormal.isLiquid()).thenReturn(false);
-//
-//
-//        assertEquals(3, t.validate(bb, mockWorld, 4));
-//    }
-//
-//    @Test
-//    public void CalculateBlocks_WhenLiquidOneBlockOutsideBoundingBox_ShouldReturnPositiveInfinity() {
-//        final TerrainValidator t = new TerrainValidator();
-//        final World mockWorld = mock(World.class);
-//        final Block mockBlockAir = mock(Block.class);
-//        final Block mockBlockLiquid = mock(Block.class);
-//        final Block mockBlockNormal = mock(Block.class);
-//        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
-//
-//        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
-//        when(mockWorld.getBlockAt(1, 0, 0)).thenReturn(mockBlockNormal);
-//        when(mockWorld.getBlockAt(0, 0, 1)).thenReturn(mockBlockNormal);
-//        when(mockWorld.getBlockAt(-1, 1, 0)).thenReturn(mockBlockLiquid);
-//
-//        when(mockBlockAir.isEmpty()).thenReturn(true);
-//        when(mockBlockAir.isLiquid()).thenReturn(false);
-//
-//        when(mockBlockLiquid.isEmpty()).thenReturn(false);
-//        when(mockBlockLiquid.isLiquid()).thenReturn(true);
-//
-//        when(mockBlockNormal.isEmpty()).thenReturn(false);
-//        when(mockBlockNormal.isLiquid()).thenReturn(false);
-//
-//        assertEquals(Double.POSITIVE_INFINITY, t.validate(bb, mockWorld, 4));
-//    }
-//
-//    @Test
-//    public void CalculateBlocks_WhenThreeNormalBlocksOneBlockOutSideTheBoundingBox_ShouldReturnThree() {
-//        final TerrainValidator t = new TerrainValidator();
-//
-//        final World mockWorld = mock(World.class);
-//        final Block mockBlockAir = mock(Block.class);
-//        final Block mockBlockNormal = mock(Block.class);
-//        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
-//
-//        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
-//        when(mockWorld.getBlockAt(-1, 0, 0)).thenReturn(mockBlockNormal);
-//        when(mockWorld.getBlockAt(2, -1, 0)).thenReturn(mockBlockNormal);
-//        when(mockWorld.getBlockAt(2, 2, 2)).thenReturn(mockBlockNormal);
-//
-//        when(mockBlockAir.isEmpty()).thenReturn(true);
-//        when(mockBlockAir.isLiquid()).thenReturn(false);
-//
-//        when(mockBlockNormal.isEmpty()).thenReturn(false);
-//        when(mockBlockNormal.isLiquid()).thenReturn(false);
-//
-//        assertEquals(3, t.validate(bb, mockWorld, 4));
-//    }
-//
+        @Test
+    public void CalculateBlocks_WhenContainsLiquid_ShouldReturnPositiveInfinity() {
+
+        final TerrainValidator t = new TerrainValidator();
+        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
+
+        when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
+        when(MOCK_WORLD.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
+
+        assertEquals(false, t.validate(bb, MOCK_WORLD));
+    }
+
+    @Test
+    public void CalculateBlocks_WhenHasThreeNormalBlocks_ShouldReturnThree() {
+        final TerrainValidator t = new TerrainValidator();
+        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
+
+        when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
+
+        assertEquals(3, t.validate(bb, MOCK_WORLD));
+    }
+
+    @Test
+    public void CalculateBlocks_WhenLiquidOneBlockOutsideBoundingBox_ShouldReturnPositiveInfinity() {
+        final TerrainValidator t = new TerrainValidator();
+        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
+
+        when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(-1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
+
+        assertEquals(Double.POSITIVE_INFINITY, t.validate(bb, MOCK_WORLD));
+    }
+
+    @Test
+    public void CalculateBlocks_WhenThreeNormalBlocksOneBlockOutSideTheBoundingBox_ShouldReturnThree() {
+        final TerrainValidator t = new TerrainValidator();
+
+        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
+
+        when(MOCK_WORLD.getBlockAt(-1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(2, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(2, 2, 2)).thenReturn(MOCK_BLOCK_STONE);
+
+        assertEquals(3, t.validate(bb, MOCK_WORLD));
+    }
+
     @Test
     public void CalculateBlocks_WhenBlocksAreOutsideValidationArea_ShouldReturnZero() {
         final TerrainValidator t = new TerrainValidator();
-
-        final World mockWorld = mock(World.class);
-        final Block mockBlockAir = mock(Block.class);
-        final Block mockBlockNormal = mock(Block.class);
         final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
 
-        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockBlockAir);
-        when(mockWorld.getBlockAt(-5, 0, 0)).thenReturn(mockBlockNormal);
-        when(mockWorld.getBlockAt(6, -1, 0)).thenReturn(mockBlockNormal);
-        when(mockWorld.getBlockAt(2, 8, 2)).thenReturn(mockBlockNormal);
+        when(MOCK_WORLD.getBlockAt(-5, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(6, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(2, 8, 2)).thenReturn(MOCK_BLOCK_STONE);
 
-        when(mockBlockAir.isEmpty()).thenReturn(true);
-        when(mockBlockAir.isLiquid()).thenReturn(false);
-
-        when(mockBlockNormal.isEmpty()).thenReturn(false);
-        when(mockBlockNormal.isLiquid()).thenReturn(false);
-
-        assertEquals(0, t.validate(bb, mockWorld, 4));
+        assertEquals(0, t.validate(bb, MOCK_WORLD));
     }
+
 }

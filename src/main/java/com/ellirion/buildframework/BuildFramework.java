@@ -44,6 +44,7 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainValidation_OverheadLimit", 0);
         config.addDefault("TerrainValidation_BocksLimit", 0);
         config.addDefault("TerrainValidation_TotalLimit", 0);
+        config.addDefault("TerrainValidation_offset", 5);
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();

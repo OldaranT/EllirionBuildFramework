@@ -18,13 +18,13 @@ public class TerrainValidator {
      * Validate if the impact on the terrain is within acceptable levels.
      * @param boundingBox this should be a BoundingBox using world coordinates where the bottom of the BoundingBox is
      * @param world the world that should
-     * @param offset amount of blocks outside the bounding bocks that should be checked
      * @return returns whether the terrain allows terrain generation
      */
-    public boolean validate(final BoundingBox boundingBox, final World world, final int offset) {
+    public boolean validate(final BoundingBox boundingBox, final World world) {
         final double overhangLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_OverheadLimit", 50);
         final double blocksLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_BocksLimit", 100);
         final double totalLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_TotalLimit", 200);
+        final int offset = BuildFramework.getInstance().getConfig().getInt("Terrainvalidation_offset", 5);
 
         //TODO implement checking for BoundingBoxes in the world once these are saved in the database
 
@@ -57,7 +57,7 @@ public class TerrainValidator {
                 final Block block = world.getBlockAt(x, y, z);
                 if (block.isLiquid() || block.isEmpty()) {
                     final double distance = findClosestBlock(new Position(x, y, z), boundingBox, world);
-                    final Double score =  calculateOverhangScore(totalArea, distance);
+                    final Double score = calculateOverhangScore(totalArea, distance);
 
                     total += score;
                     if (LOGGER.isLoggable(Level.INFO)) {
@@ -102,7 +102,7 @@ public class TerrainValidator {
 
         for (int x = bottomBlockX - offset; x <= topBlockX + offset; x++) {
 
-            for (int y = bottomBlockY - offset; y <= topBlockY + offset; y++) {
+            for (int y = bottomBlockY; y <= topBlockY + offset; y++) {
 
                 for (int z = bottomBlockZ - offset; z <= topBlockZ + offset; z++) {
 
@@ -132,13 +132,11 @@ public class TerrainValidator {
 
         double finalDistance = Double.POSITIVE_INFINITY;
 
-        for (double loopX = x; loopX <= boundingBox.getX2(); loopX++)
-        {
+        for (double loopX = x; loopX <= boundingBox.getX2(); loopX++) {
             finalDistance = loopTroughBlocks(finalDistance, world, loopX, boundingBox, startingPosition);
         }
 
-        for (double loopX = x; loopX >= boundingBox.getX1(); loopX--)
-        {
+        for (double loopX = x; loopX >= boundingBox.getX1(); loopX--) {
 
             finalDistance = loopTroughBlocks(finalDistance, world, loopX, boundingBox, startingPosition);
         }
