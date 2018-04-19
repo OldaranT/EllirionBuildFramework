@@ -1,6 +1,7 @@
 package com.ellirion.buildframework.model;
 
 import lombok.Getter;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 
 public class BoundingBox {
 
@@ -153,6 +154,37 @@ public class BoundingBox {
      */
     public int getDepth() {
         return z2 - z1 + 1;
+    }
+
+    /**
+     * Serialize BoundingBox {@code bb} to an NBTTagCompound.
+     * @param bb The BoundingBox to serialize
+     * @return The resulting NBTTagCompound
+     */
+    public static NBTTagCompound toNBT(BoundingBox bb) {
+        NBTTagCompound root = new NBTTagCompound();
+        root.setInt("x1", bb.x1);
+        root.setInt("y1", bb.y1);
+        root.setInt("z1", bb.z1);
+        root.setInt("x2", bb.x2);
+        root.setInt("y2", bb.y2);
+        root.setInt("z2", bb.z2);
+        return root;
+    }
+
+    /**
+     * Deserialize a BoundingBox from NBTTagCompound {@code root}.
+     * @param root The NBTTagCompound to deserialize from
+     * @return The resulting BoundingBox
+     */
+    public static BoundingBox fromNBT(NBTTagCompound root) {
+        return new BoundingBox(
+                root.getInt("x1"),
+                root.getInt("y1"),
+                root.getInt("z1"),
+                root.getInt("x2"),
+                root.getInt("y2"),
+                root.getInt("z2"));
     }
 
 }
