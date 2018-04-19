@@ -28,7 +28,7 @@
         <exclude name="ShortVariable"/>
         <exclude name="VariableNamingConventions"/>
         <exclude name="ShortClassName"/>
-        
+        <exclude name="GenericsNaming"/>
     </rule>
 
     <rule ref="rulesets/java/strictexception.xml/AvoidRethrowingException"/>
