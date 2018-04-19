@@ -5,14 +5,17 @@ import com.ellirion.buildframework.model.BoundingBox;
 import net.minecraft.server.v1_12_R1.Position;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 public class TerrainValidator {
-    private static final Logger LOGGER = BuildFramework.getInstance().getLogger();
     private static final BuildFramework BUILD_FRAMEWORK = BuildFramework.getInstance();
+    private static final Logger LOGGER = BUILD_FRAMEWORK.getLogger();
+    private static final FileConfiguration CONFIG = BUILD_FRAMEWORK.getConfig();
+    private static final FileConfiguration BLOCK_VALUE_CONFIG = BUILD_FRAMEWORK.getBlockValueConfig();
 
     /***
      * Validate if the impact on the terrain is within acceptable levels.
@@ -21,10 +24,10 @@ public class TerrainValidator {
      * @return returns whether the terrain allows terrain generation
      */
     public boolean validate(final BoundingBox boundingBox, final World world) {
-        final double overhangLimit = BUILD_FRAMEWORK.getConfig().getInt("TerrainValidation_OverheadLimit", 50);
-        final double blocksLimit = BUILD_FRAMEWORK.getConfig().getInt("TerrainValidation_BocksLimit", 100);
-        final double totalLimit = BUILD_FRAMEWORK.getConfig().getInt("TerrainValidation_TotalLimit", 200);
-        final int offset = BUILD_FRAMEWORK.getConfig().getInt("Terrainvalidation_offset", 5);
+        final double overhangLimit = CONFIG.getInt("TerrainValidation_OverheadLimit", 50);
+        final double blocksLimit = CONFIG.getInt("TerrainValidation_BocksLimit", 100);
+        final double totalLimit = CONFIG.getInt("TerrainValidation_TotalLimit", 200);
+        final int offset = CONFIG.getInt("Terrainvalidation_offset", 5);
 
         //TODO implement checking for BoundingBoxes in the world once these are saved in the database
 
@@ -105,8 +108,9 @@ public class TerrainValidator {
                     if (b.isLiquid()) {
                         return Double.POSITIVE_INFINITY;
                     }
-
-                    blockCounter += BUILD_FRAMEWORK.getBlockValueConfig().getInt(b.getType().toString(), 1);
+                    if (!b.isEmpty()) {
+                        blockCounter += BLOCK_VALUE_CONFIG.getInt(b.getType().toString(), 1);
+                    }
                 }
 
             }

@@ -37,6 +37,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("Test").setExecutor(new Test());
         getCommand("Validate").setExecutor(new ValidateCommand());
         createConfig();
+        createBlockValueConfig();
         getCommand("test").setExecutor(new Test());
 
     }
@@ -78,6 +79,11 @@ public class BuildFramework extends JavaPlugin {
         }
 
         blockValueConfig.addDefault(Material.STONE.toString(), 1);
-        blockValueConfig.addDefault(Material.AIR.toString(), 0);
+
+        try {
+            blockValueConfig.save(blockValueConfigFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
