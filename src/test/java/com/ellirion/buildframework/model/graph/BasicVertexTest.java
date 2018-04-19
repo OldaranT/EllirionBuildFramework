@@ -199,7 +199,7 @@ public class BasicVertexTest {
         IVertex<Integer> v2 = g.add(2);
         IVertex<Integer> v3 = g.add(3);
         IEdge<Integer> e = new BasicEdge<>(v2, v3, 1);
-        v1.connect(v2,1 );
+        v1.connect(v2, 1);
 
         assertEquals(1, v1.getEdgeCount());
         assertEquals(1, v2.getEdgeCount());

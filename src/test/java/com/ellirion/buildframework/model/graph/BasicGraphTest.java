@@ -170,7 +170,7 @@ public class BasicGraphTest {
         assertEquals(1, v1.getEdgeCount());
         assertEquals(1, v2.getEdgeCount());
 
-        g.connect(1,2, 3);
+        g.connect(1, 2, 3);
 
         assertTrue(v1.isConnectedTo(v2));
         assertTrue(v2.isConnectedTo(v1));
@@ -218,20 +218,20 @@ public class BasicGraphTest {
         IGraph<Integer> g = new BasicGraph<>();
         g.add(1);
         g.add(2);
-        g.connect(1,2, 1);
+        g.connect(1, 2, 1);
 
         assertTrue(g.areConnected(1, 2));
 
-        g.disconnect(1,2);
+        g.disconnect(1, 2);
 
-        assertFalse(g.areConnected(1,2));
+        assertFalse(g.areConnected(1, 2));
     }
 
     @Test
     public void areConnected_whenNotConnected_shouldReturnFalse() {
         IGraph<Integer> g = new BasicGraph<>();
 
-        assertFalse(g.areConnected(1,2));
+        assertFalse(g.areConnected(1, 2));
     }
 
     @Test
@@ -239,7 +239,7 @@ public class BasicGraphTest {
         IGraph<Integer> g = new BasicGraph<>();
         g.connect(1, 2, 1);
 
-        assertTrue(g.areConnected(1,2));
+        assertTrue(g.areConnected(1, 2));
     }
 
     @Test
