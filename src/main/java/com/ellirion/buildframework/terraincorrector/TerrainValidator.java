@@ -21,7 +21,7 @@ public class TerrainValidator {
      * @param offset amount of blocks outside the bounding bocks that should be checked
      * @return returns whether the terrain allows terrain generation
      */
-    public boolean validate(final BoundingBox boundingBox, final World world, final int offset) {
+    public double  validate(final BoundingBox boundingBox, final World world, final int offset) {
         final double overhangLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_OverheadLimit", 50);
         final double blocksLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_BocksLimit", 100);
         final double totalLimit = BuildFramework.getInstance().getConfig().getInt("TerrainValidation_TotalLimit", 200);
@@ -30,20 +30,20 @@ public class TerrainValidator {
 
         final double overhangScore = calculateOverhang(boundingBox, world);
         if (overhangScore > overhangLimit) {
-            return false;
+            return Double.POSITIVE_INFINITY;
         }
 
         final double blocksScore = calculateBlocks(boundingBox, world, offset);
         if (blocksScore > blocksLimit) {
-            return false;
+            return Double.POSITIVE_INFINITY;
         }
 
-
-        if (blocksScore + overhangScore > totalLimit) {
-            return false;
+        final double total = blocksScore + overhangScore;
+        if (total > totalLimit) {
+            return Double.POSITIVE_INFINITY;
         }
 
-        return true;
+        return total;
 
     }
 
@@ -52,14 +52,20 @@ public class TerrainValidator {
 
         final double totalArea = boundingBox.getWidth() * boundingBox.getDepth();
         final int y = boundingBox.getY1() - 1;
+
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z < boundingBox.getZ2(); z++) {
+
                 final Block block = world.getBlockAt(x, y, z);
+
                 if (block.isLiquid() || block.isEmpty()) {
+
                     final double distance = findClosestBlock(new Position(x, y, z), boundingBox, world);
                     final Double score =  calculateOverhangScore(totalArea, distance);
 
                     total += score;
+
+                    //TODO
                     if (LOGGER.isLoggable(Level.INFO)) {
                         LOGGER.info("[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y + " and z : " + z);
                     }
@@ -87,17 +93,14 @@ public class TerrainValidator {
         final Location l2 = new Location(world, boundingBox.getX2(), boundingBox.getY2(), boundingBox.getZ2());
 
         final int topBlockX = (l1.getBlockX() < l2.getBlockX() ? l2.getBlockX() : l1.getBlockX());
-
         final int bottomBlockX = (l1.getBlockX() > l2.getBlockX() ? l2.getBlockX() : l1.getBlockX());
 
 
         final int topBlockY = (l1.getBlockY() < l2.getBlockY() ? l2.getBlockY() : l1.getBlockY());
-
         final int bottomBlockY = (l1.getBlockY() > l2.getBlockY() ? l2.getBlockY() : l1.getBlockY());
 
 
         final int topBlockZ = (l1.getBlockZ() < l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
-
         final int bottomBlockZ = (l1.getBlockZ() > l2.getBlockZ() ? l2.getBlockZ() : l1.getBlockZ());
 
         for (int x = bottomBlockX - offset; x <= topBlockX + offset; x++) {

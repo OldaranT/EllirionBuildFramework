@@ -1,8 +1,8 @@
 package com.ellirion.buildframework.terraincorrector.command;
 
 import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.TerrainValidator;
-import net.minecraft.server.v1_12_R1.Position;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,12 +20,12 @@ public class ValidateCommand implements CommandExecutor {
 
             final BoundingBox boundingBox = new BoundingBox(-10, 0, -10, 10, 10, 10);
             final Location location =  player.getLocation();
-            final Position position = new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+            final Point position = new Point(location.getBlockX(), location.getBlockY(), location.getBlockZ());
 
             final StringBuilder sb = new StringBuilder();
             sb.append("X : ").append(position.getX()).append(", Y : ").append(position.getY()).append(", Z : ").append(position.getZ());
             player.sendMessage(sb.toString());
-            final boolean result = validator.validate(boundingBox.toWorld(position), player.getWorld(),1 );
+            final double result = validator.validate(boundingBox.toWorld(position), player.getWorld(),1);
             player.sendMessage(" Result  : " + result);
         }
         return false;
