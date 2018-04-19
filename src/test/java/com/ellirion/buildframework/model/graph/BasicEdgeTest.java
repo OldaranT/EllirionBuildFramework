@@ -33,7 +33,7 @@ public class BasicEdgeTest {
         IGraph<Integer> g = new BasicGraph<>();
         IVertex<Integer> v1 = g.add(1);
         IVertex<Integer> v2 = g.add(2);
-        IVertex<Integer> v3 = g.add(3);
+        g.add(3);
         IEdge<Integer> e = new BasicEdge<>(v1, v2, 1);
 
         assertFalse(e.involves(3));

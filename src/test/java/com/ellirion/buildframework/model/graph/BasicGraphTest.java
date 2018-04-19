@@ -56,7 +56,7 @@ public class BasicGraphTest {
         IVertex<Integer> v = g.findOrCreate(2);
 
         assertNotNull(v);
-        assertEquals(new Integer(2), v.getData());
+        assertEquals(Integer.valueOf(2), v.getData());
     }
 
     @Test
