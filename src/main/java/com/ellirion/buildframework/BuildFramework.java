@@ -56,7 +56,7 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainValidation_OverheadLimit", 0);
         config.addDefault("TerrainValidation_BocksLimit", 0);
         config.addDefault("TerrainValidation_TotalLimit", 0);
-        config.addDefault("TerrainValidation_offset", 5);
+        config.addDefault("TerrainValidation_Offset", 5);
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
@@ -78,6 +78,8 @@ public class BuildFramework extends JavaPlugin {
             e.printStackTrace();
         }
 
+        blockValueConfig.options().header("The values for each block type of block material.\n" +
+                "These values are used by the terrain validator.");
         blockValueConfig.addDefault(Material.STONE.toString(), 1);
 
         try {

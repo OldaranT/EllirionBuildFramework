@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -30,7 +31,6 @@ public class TerrainValidatorTest {
     private static final Block MOCK_BLOCK_STONE = createMockBlock(false, false, Material.STONE);
     private static final World MOCK_WORLD = createDefaultWorld();
     private static final BoundingBox BOUNDINGBOX = new BoundingBox(1, 1, 1, 10, 10, 10);
-
 
 
     private static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
@@ -50,6 +50,14 @@ public class TerrainValidatorTest {
         return mockWorld;
     }
 
+    private static void setFloor(boolean floor) {
+        if (floor) {
+            when(MOCK_WORLD.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
+        } else {
+            when(MOCK_WORLD.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_AIR);
+        }
+    }
+
     @Before
     public void setup() {
         mockStatic(BuildFramework.class);
@@ -62,10 +70,15 @@ public class TerrainValidatorTest {
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
         when(mockPlugin.getLogger()).thenReturn(mockLogger);
+        when(mockPlugin.getBlockValueConfig()).thenReturn(mockConfig);
 
-        when(mockConfig.getInt("TerrainValidation_OverheadLimit")).thenReturn(1);
-        when(mockConfig.getInt("TerrainValidation_BocksLimit")).thenReturn(1);
-        when(mockConfig.getInt("TerrainValidation_TotalLimit")).thenReturn(1);
+        when(mockConfig.getInt("TerrainValidation_OverheadLimit", 50)).thenReturn(10);
+        when(mockConfig.getInt("TerrainValidation_BocksLimit", 100)).thenReturn(10);
+        when(mockConfig.getInt("TerrainValidation_TotalLimit", 200)).thenReturn(100);
+        when(mockConfig.getInt("TerrainValidation_Offset", 5)).thenReturn(5);
+
+        when(mockConfig.getInt(MOCK_BLOCK_STONE.getType().toString(), 1)).thenReturn(1);
+
         when(mockLogger.isLoggable(Level.INFO)).thenReturn(true);
     }
 
@@ -74,61 +87,75 @@ public class TerrainValidatorTest {
         //ARRANGE
         final TerrainValidator validator = new TerrainValidator();
 
-        when(MOCK_WORLD.getBlockAt(anyInt(), 0, anyInt())).thenReturn(MOCK_BLOCK_STONE);
+        setFloor(true);
 
         //ACT
 
-        final boolean result = validator.validate( BOUNDINGBOX ,MOCK_WORLD);
+        final boolean result = validator.validate(BOUNDINGBOX, MOCK_WORLD);
 
         //ASSERT
 
         assertEquals(true, result);
     }
 
+//    @Test
+//    public void Validate_WhenFloorMissingIsBelowThresholdAndAreaToCheckISAir_ShouldReturnTrue() {
+//        //ARRANGE
+//        final TerrainValidator validator = new TerrainValidator();
+//
+//        setFloor(false);
+//
+//
+//        //ACT
+//
+//        boolean result = validator.validate(BOUNDINGBOX, MOCK_WORLD);
+//        //ASSERT
+//        assertEquals(true, result);
+//
+//    }
+
+
     @Test
-    public void Validate_WhenFloorMissingIsBelowThresholdAndAreaToCheckISAir_ShouldReturnTrue() {
+    public void Validate_WhenFlooredAndAreaToCheckContainsLiquid_ShouldReturnFalse() {
         //ARRANGE
-        final TerrainValidator validator = new TerrainValidator();
-        final World mockWorld = mock(World.class);
-
-
-        //ACT
-
-        validator.validate(BOUNDINGBOX,MOCK_WORLD);
-        //ASSERT
-
-
-    }
-
-
-    @Test
-    public void CalculateBlocks_WhenContainsLiquid_ShouldReturnPositiveInfinity() {
-
         final TerrainValidator t = new TerrainValidator();
-        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
 
+        setFloor(true);
         when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(MOCK_WORLD.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
         when(MOCK_WORLD.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
 
-        assertEquals(false, t.validate(bb, MOCK_WORLD));
+        //ACT
+
+        final boolean result = t.validate(BOUNDINGBOX, MOCK_WORLD);
+        //ASSERT
+        assertEquals(false, result);
     }
 
     @Test
-    public void CalculateBlocks_WhenHasThreeNormalBlocks_ShouldReturnThree() {
+    public void Validate_WhenFlooredAndHasThreeNormalBlocks_ShouldReturnTrue() {
+        //ARRANGE
         final TerrainValidator t = new TerrainValidator();
-        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
 
+        when(MOCK_WORLD.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
         when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(1, 7, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(MOCK_WORLD.getBlockAt(0, 0, 5)).thenReturn(MOCK_BLOCK_STONE);
 
-        assertEquals(3, t.validate(bb, MOCK_WORLD));
+        //ACT
+        final boolean result = t.validate(BOUNDINGBOX, MOCK_WORLD);
+
+        //ASSERT
+        assertEquals(true, result);
     }
 
     @Test
-    public void CalculateBlocks_WhenLiquidOneBlockOutsideBoundingBox_ShouldReturnPositiveInfinity() {
+    public void Validate_WhenFlooredAndHasLiquidOneBlockOutsideBoundingBox_ShouldReturnFalse() {
+        //ARRANGE
+        final TerrainValidator t = new TerrainValidator();
 
+        setFloor(true);
+        assertEquals(1, 1);
 
     }
 

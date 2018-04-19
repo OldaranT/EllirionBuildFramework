@@ -27,7 +27,7 @@ public class TerrainValidator {
         final double overhangLimit = CONFIG.getInt("TerrainValidation_OverheadLimit", 50);
         final double blocksLimit = CONFIG.getInt("TerrainValidation_BocksLimit", 100);
         final double totalLimit = CONFIG.getInt("TerrainValidation_TotalLimit", 200);
-        final int offset = CONFIG.getInt("Terrainvalidation_offset", 5);
+        final int offset = CONFIG.getInt("TerrainValidation_Offset", 5);
 
         //TODO implement checking for BoundingBoxes in the world once these are saved in the database
 
