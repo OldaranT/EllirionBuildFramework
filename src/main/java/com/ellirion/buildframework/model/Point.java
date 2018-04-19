@@ -169,4 +169,9 @@ public class Point {
         return x;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Point(x=%d, y=%d, z=%d)", x, y, z);
+    }
+
 }
