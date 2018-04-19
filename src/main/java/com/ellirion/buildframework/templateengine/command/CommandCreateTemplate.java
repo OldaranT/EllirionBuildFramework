@@ -2,11 +2,10 @@ package com.ellirion.buildframework.templateengine.command;
 
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.ellirion.buildframework.util.WorldEditHelper;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -40,7 +39,7 @@ public class CommandCreateTemplate implements CommandExecutor {
             }
 
             //get selection
-            Selection sel = getSelection(player);
+            Selection sel = WorldEditHelper.getSelection(player);
             if (!(sel instanceof CuboidSelection)) {
                 player.sendMessage(ChatColor.DARK_RED + "Invalid Selection!");
                 return false;
@@ -66,18 +65,6 @@ public class CommandCreateTemplate implements CommandExecutor {
 
             return true;
         }
-
         return false;
-    }
-
-    private Selection getSelection(Player player) {
-        WorldEditPlugin worldEditPlugin = null;
-        worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-        if (worldEditPlugin == null) {
-            player.sendMessage("Error with region undoing! Error: WorldEdit is null.");
-        }
-        Selection sel = worldEditPlugin.getSelection(player);
-
-        return sel;
     }
 }

@@ -1,12 +1,10 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import net.md_5.bungee.api.ChatColor;
 import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,7 +22,6 @@ public class CommandExportTemplate implements CommandExecutor {
             Player player = (Player) commandSender;
 
             Template t = TemplateManager.selectedTemplates.get(player);
-            TemplateBlock tb = new TemplateBlock(Material.AIR);
 
             if (t == null) {
                 player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
@@ -40,9 +37,7 @@ public class CommandExportTemplate implements CommandExecutor {
             } catch (Exception e) {
                 player.sendMessage(ChatColor.DARK_RED + "Something went wrong when trying to save the file");
             }
-
         }
         return false;
     }
-
 }

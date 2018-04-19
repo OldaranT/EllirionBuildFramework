@@ -1,13 +1,12 @@
 package com.ellirion.buildframework.templateengine.model;
 
-import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.NBTTagList;
-import net.minecraft.server.v1_12_R1.Position;
 import net.minecraft.server.v1_12_R1.TileEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,8 +16,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 
-import java.util.logging.Level;
-
 public class Template {
     private static String data = "data";
 
@@ -27,11 +24,6 @@ public class Template {
      */
     @Getter @Setter
     private int templateID;
-
-    /**
-     *
-     */
-    //BoundingBox boundingBox;
 
     /**
      * Name of the template.
@@ -105,30 +97,48 @@ public class Template {
             templateY = 0;
             templateX++;
         }
-
-//        logBlocks();
     }
+
 
     /**
-     *
-     * @param pos Position of the block to place a marker
-     * @param marker Name of the marker
-     * @return whether the marker was added
+     * Place a template in the world at a given location.
+     * @param loc location to place the template.
      */
-    public boolean addMarker(Position pos, final String marker) {
-        return templateBlocks[(int) pos.getX()][(int) pos.getY()][(int) pos.getZ()].addMarker(marker);
-    }
+    public void putTemplateInWorld(Location loc) {
 
-    private void logBlocks() {
-        int xDepth = templateBlocks.length;
-        int yDepth = templateBlocks[0].length;
-        int zDepth = templateBlocks[0][0].length;
+        int xDepth = this.getTemplateBlocks().length;
+        int yDepth = this.getTemplateBlocks()[0].length;
+        int zDepth = this.getTemplateBlocks()[0][0].length;
 
-        BuildFramework.getInstance().getLogger().log(Level.INFO, "Template " + templateName + ":");
+        CraftWorld w = (CraftWorld) loc.getWorld();
+
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    BuildFramework.getInstance().getLogger().log(Level.INFO, "(" + x + "," + y + "," + z + ") " + templateBlocks[x][y][z].getMaterial().name());
+
+                    int locX = (int) loc.getX() + x;
+                    int locY = (int) loc.getY() + y;
+                    int locZ = (int) loc.getZ() + z;
+
+                    Block b = w.getBlockAt(locX, locY, locZ);
+
+                    b.setType(this.getTemplateBlocks()[x][y][z].getMaterial());
+                    b.getState().update();
+
+                    MaterialData copiedState = this.getTemplateBlocks()[x][y][z].getMetadata();
+                    BlockState blockState = b.getState();
+                    blockState.setData(copiedState);
+                    blockState.update();
+
+                    TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
+
+                    if (te != null) {
+                        NBTTagCompound ntc = this.getTemplateBlocks()[x][y][z].getData();
+                        ntc.setInt("x", locX);
+                        ntc.setInt("y", locY);
+                        ntc.setInt("z", locZ);
+                        te.load(ntc);
+                    }
                 }
             }
         }
