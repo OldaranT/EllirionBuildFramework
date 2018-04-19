@@ -115,6 +115,48 @@ public class Point {
     }
 
     /**
+     * @return A new Point exactly 1 unit towards positive X.
+     */
+    public Point east() {
+        return new Point(x + 1, y, z);
+    }
+
+    /**
+     * @return A new Point exactly 1 unit towards negative X.
+     */
+    public Point west() {
+        return new Point(x - 1, y, z);
+    }
+
+    /**
+     * @return A new Point exactly 1 unit towards negative Z.
+     */
+    public Point north() {
+        return new Point(x, y, z - 1);
+    }
+
+    /**
+     * @return A new Point exactly 1 unit towards positive Z.
+     */
+    public Point south() {
+        return new Point(x, y, z + 1);
+    }
+
+    /**
+     * @return A new Point exactly 1 unit towards positive Y.
+     */
+    public Point up() {
+        return new Point(x, y + 1, z);
+    }
+
+    /**
+     * @return A new Point exactly 1 unit towards negative Y.
+     */
+    public Point down() {
+        return new Point(x, y - 1, z);
+    }
+
+    /**
      * Converts this Point to a Position.
      * @return The resulting position
      */
@@ -171,7 +213,7 @@ public class Point {
 
     @Override
     public String toString() {
-        return String.format("Point(x=%d, y=%d, z=%d)", x, y, z);
+        return String.format("Point(x=%f, y=%f, z=%f)", x, y, z);
     }
 
 }
