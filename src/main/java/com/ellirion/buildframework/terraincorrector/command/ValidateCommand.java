@@ -19,13 +19,13 @@ public class ValidateCommand implements CommandExecutor {
             final TerrainValidator validator = new TerrainValidator();
 
             final BoundingBox boundingBox = new BoundingBox(-10, 0, -10, 10, 10, 10);
-            final Location location =  player.getLocation();
+            final Location location = player.getLocation();
             final Position position = new Position(location.getBlockX(), location.getBlockY(), location.getBlockZ());
 
             final StringBuilder sb = new StringBuilder();
             sb.append("X : ").append(position.getX()).append(", Y : ").append(position.getY()).append(", Z : ").append(position.getZ());
             player.sendMessage(sb.toString());
-            final boolean result = validator.validate(boundingBox.toWorld(position), player.getWorld(),1 );
+            final boolean result = validator.validate(boundingBox.toWorld(position), player.getWorld(), 1);
             player.sendMessage(" Result  : " + result);
         }
         return false;
