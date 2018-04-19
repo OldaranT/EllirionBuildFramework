@@ -23,7 +23,7 @@ public class TerrainValidator {
      * @param world the world that should
      * @return returns whether the terrain allows terrain generation
      */
-    public double validate(final BoundingBox boundingBox, final World world) {
+    public boolean validate(final BoundingBox boundingBox, final World world) {
         final double overhangLimit = CONFIG.getInt("TerrainValidation_OverheadLimit", 50);
         final double blocksLimit = CONFIG.getInt("TerrainValidation_BocksLimit", 100);
         final double totalLimit = CONFIG.getInt("TerrainValidation_TotalLimit", 200);
@@ -33,20 +33,19 @@ public class TerrainValidator {
 
         final double overhangScore = calculateOverhang(boundingBox, world);
         if (overhangScore > overhangLimit) {
-            return Double.POSITIVE_INFINITY;
+            return false;
         }
 
         final double blocksScore = calculateBlocks(boundingBox, world, offset);
         if (blocksScore > blocksLimit) {
-            return Double.POSITIVE_INFINITY;
+            return false;
         }
 
-        final double total = blocksScore + overhangScore;
-        if (total > totalLimit) {
-            return Double.POSITIVE_INFINITY;
+        if (blocksScore + overhangScore > totalLimit) {
+            return false;
         }
 
-        return total;
+        return true;
 
     }
 
@@ -108,7 +107,7 @@ public class TerrainValidator {
 
                 for (int z = bottomBlockZ; z <= topBlockZ; z++) {
 
-                    Block b = world.getBlockAt(x, y, z);
+                    final Block b = world.getBlockAt(x, y, z);
 
                     if (b.isLiquid()) {
                         return Double.POSITIVE_INFINITY;
