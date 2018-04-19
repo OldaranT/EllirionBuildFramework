@@ -3,4 +3,20 @@ main: com.ellirion.buildframework.BuildFramework
 version: 0.0.1
 description: Ellirion-BuildFramework
 authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink]
-
+commands:
+  CreateTemplate:
+    description: create a template of the selected area
+    usage: /CreateTemplate <name>, /ct <name>
+    aliases: [ct]
+  PutTemplate:
+    description: Places the current selected tempalte.
+    usage: /PutTemplate, /pt
+    aliases: [pt]
+  ExportTemplate:
+    description: Export current selected template to a json file.
+    usage: /ExportTemplate, /et
+    aliases: [et]
+  AddMarker:
+    description: Add marker DOOR, GROUND or PATH to a template.
+    usage: /AddMarker <name>, /am <name>
+    aliases: [am]

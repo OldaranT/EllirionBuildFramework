@@ -1,6 +1,6 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.model.Point;
+
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import net.md_5.bungee.api.ChatColor;
@@ -9,11 +9,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-
-
-
-public class CommandAddMarker implements CommandExecutor {
-
+public class CommandRemoveMarker implements CommandExecutor {
     /**
      * Enum of markers.
      */
@@ -23,10 +19,6 @@ public class CommandAddMarker implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
-
-            double playerX = player.getLocation().getX();
-            double blockUnderPlayer = player.getLocation().getY() - 1;
-            double playerZ = player.getLocation().getZ();
 
             Template t = TemplateManager.selectedTemplates.get(player);
             if (t == null) {
@@ -63,15 +55,15 @@ public class CommandAddMarker implements CommandExecutor {
             try {
                 switch (marker) {
                     case DOOR:
-                        t.addMarker(Template.Markers.DOOR.toString(), new Point(playerX, blockUnderPlayer, playerZ));
+                        t.removeMarker(Template.Markers.DOOR.toString());
                         player.sendMessage(ChatColor.GREEN + "The following marker has been added: " + Template.Markers.DOOR.toString());
                         break;
                     case GROUND:
-                        t.addMarker(Template.Markers.GROUND.toString(), new Point(playerX, blockUnderPlayer, playerZ));
+                        t.removeMarker(Template.Markers.DOOR.toString());
                         player.sendMessage(ChatColor.GREEN + "The following marker has been added: " + Template.Markers.GROUND.toString());
                         break;
                     case PATH:
-                        t.addMarker(Template.Markers.PATH.toString(), new Point(playerX, blockUnderPlayer, playerZ));
+                        t.removeMarker(Template.Markers.DOOR.toString());
                         player.sendMessage(ChatColor.GREEN + "The following marker has been added: " + Template.Markers.PATH.toString());
                         break;
                     default:

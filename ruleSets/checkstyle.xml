@@ -97,9 +97,9 @@
             <property name="scope" value="protected"/>
         </module>
         <module name="JavadocStyle">
-            <!-- Disabling only because the current version of checkstyle fails
-                 to recognize the new JDK 1.5 {@literal } and {@code } tags. -->
-            <property name="checkHtml" value="false"/>
+           <!--Disabling only because the current version of checkstyle fails
+               to recognize the new JDK 1.5 {@literal } and {@code } tags. -->
+          <property name="checkHtml" value="false"/>
         </module>
 
         <!--<module name="JavadocType">-->
