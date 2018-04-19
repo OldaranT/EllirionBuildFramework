@@ -2,7 +2,6 @@ package com.ellirion.buildframework.templateengine.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
@@ -15,12 +14,6 @@ public class TemplateBlock {
     @Getter
     @Setter
     private Material material;
-
-    /**
-     * ID.
-     */
-    @Accessors
-    private int templateBlockID;
 
     /**
      * If the block has metadata, we can store it here.

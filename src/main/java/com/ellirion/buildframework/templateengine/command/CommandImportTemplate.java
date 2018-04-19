@@ -20,13 +20,14 @@ public class CommandImportTemplate implements CommandExecutor {
             Player player = (Player) commandSender;
 
             //check name of the template
-            String templateName = "";
+            StringBuilder sbName = new StringBuilder();
             for (int i = 0; i < strings.length; i++) {
-                templateName += strings[i];
+                sbName.append(strings[i]);
                 if (i != strings.length - 1) {
-                    templateName += " ";
+                    sbName.append(' ');
                 }
             }
+            String templateName = sbName.toString();
 
             //load template
             String path = "plugins/Ellirion/BuildFramework/templates/" + templateName + ".nbt";
@@ -40,10 +41,10 @@ public class CommandImportTemplate implements CommandExecutor {
             Template t = Template.fromNBT(ntc);
 
             //update templatemanager
-            if (TemplateManager.selectedTemplates.get(player) != null) {
-                TemplateManager.selectedTemplates.remove(player);
+            if (TemplateManager.getSelectedTemplates().get(player) != null) {
+                TemplateManager.getSelectedTemplates().remove(player);
             }
-            TemplateManager.selectedTemplates.put(player, t);
+            TemplateManager.getSelectedTemplates().put(player, t);
 
             //tell player what happened
             player.sendMessage(ChatColor.GREEN + "The template " + ChatColor.BOLD + templateName + ChatColor.RESET + ChatColor.GREEN + " has been loaded");

@@ -98,7 +98,7 @@
                     <effort>Max</effort>
                     <threshold>low</threshold>
                     <xmlOutput>true</xmlOutput>
-                    <failOnError>false</failOnError>
+                    <failOnError>true</failOnError>
                     <excludeFilterFile>/ruleSets/findbugs_exclude.xml</excludeFilterFile>
                     <includeTests>true</includeTests>
                 </configuration>

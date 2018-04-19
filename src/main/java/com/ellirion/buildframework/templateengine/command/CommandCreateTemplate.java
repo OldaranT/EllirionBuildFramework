@@ -25,17 +25,18 @@ public class CommandCreateTemplate implements CommandExecutor {
                 return false;
             }
 
-            String name = "";
+            StringBuilder sb = new StringBuilder();
             for (String s1 : strings) {
-                name += s1;
-                if (s1 != strings[strings.length - 1]) {
-                    name += " ";
+                sb.append(s1);
+                if (!s1.equals(strings[strings.length - 1])) {
+                    sb.append(' ');
                 }
             }
+            String name = sb.toString();
 
             //check if player is in template manager list
-            if (TemplateManager.selectedTemplates.get(player) != null) {
-                TemplateManager.selectedTemplates.remove(player);
+            if (TemplateManager.getSelectedTemplates().get(player) != null) {
+                TemplateManager.getSelectedTemplates().remove(player);
             }
 
             //get selection
@@ -49,17 +50,19 @@ public class CommandCreateTemplate implements CommandExecutor {
             Template template = new Template(strings[0], sel);
 
             //add player to template manager list
-            TemplateManager.selectedTemplates.put(player, template);
+            TemplateManager.getSelectedTemplates().put(player, template);
 
             player.sendMessage("Template with name " + name + " started");
             player.sendMessage("Add markers before saving your template");
-            String markers = "";
+            StringBuilder sbMarkers = new StringBuilder();
             for (Markers m : CommandCreateTemplate.Markers.values()) {
-                markers += "§l" + m.name().toLowerCase();
+                sbMarkers.append("§l");
+                sbMarkers.append(m.name().toLowerCase());
                 if (m != Markers.values()[Markers.values().length - 1]) {
-                        markers += "§r, ";
+                        sbMarkers.append("§r, ");
                 }
             }
+            String markers = sbMarkers.toString();
             markers = markers.substring(0, markers.length() - 3);
             player.sendMessage("Possible markers are: " + markers);
 
