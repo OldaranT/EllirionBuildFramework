@@ -42,7 +42,7 @@ public class PointTest {
 
     @Test
     public void min_whenInvoked_shouldReturnNewPointWithMinimumComponents() {
-        Point p1 = new Point(1,5,3);
+        Point p1 = new Point(1, 5, 3);
         Point p2 = new Point(2, 0, 4);
         Point p3 = p1.min(p2);
         Point p4 = p2.min(p1);
@@ -60,7 +60,7 @@ public class PointTest {
 
     @Test
     public void max_whenInvoked_shouldReturnNewPointWithMaximumComponents() {
-        Point p1 = new Point(1,5,3);
+        Point p1 = new Point(1, 5, 3);
         Point p2 = new Point(2, 0, 4);
         Point p3 = p1.max(p2);
         Point p4 = p2.max(p1);
