@@ -1,6 +1,5 @@
 package com.ellirion.buildframework;
 
-
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,7 +18,6 @@ public class BuildFramework extends JavaPlugin {
         instance =  this;
         getLogger().info("[Ellirion] BuildFramework is enabled.");
         createConfig();
-
     }
     @Override
     public void onDisable() {
