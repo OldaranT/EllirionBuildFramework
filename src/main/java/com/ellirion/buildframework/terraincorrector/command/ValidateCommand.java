@@ -25,7 +25,7 @@ public class ValidateCommand implements CommandExecutor {
             final StringBuilder sb = new StringBuilder();
             sb.append("X : ").append(position.getX()).append(", Y : ").append(position.getY()).append(", Z : ").append(position.getZ());
             player.sendMessage(sb.toString());
-            final boolean result = validator.validate(boundingBox.toWorld(position), player.getWorld());
+            final boolean result = validator.validate(boundingBox.toWorld(position), player.getWorld(),1 );
             player.sendMessage(" Result  : " + result);
         }
         return false;
