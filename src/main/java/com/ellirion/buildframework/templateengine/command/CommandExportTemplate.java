@@ -1,16 +1,20 @@
 package com.ellirion.buildframework.templateengine.command;
 
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
-import com.ellirion.buildframework.util.JsonWriter;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
-import com.google.gson.Gson;
 import net.md_5.bungee.api.ChatColor;
+import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 public class CommandExportTemplate implements CommandExecutor {
 
@@ -27,15 +31,14 @@ public class CommandExportTemplate implements CommandExecutor {
                 return false;
             }
 
-            Gson templateJson = new Gson();
-            String json = templateJson.toJson(t);
+            String path = "plugins/Ellirion/BuildFramework/templates/" + t.getTemplateName() + ".nbt";
 
-            if (JsonWriter.writeJsonToFile(json, t.getTemplateName())) {
-                player.sendMessage(ChatColor.GREEN + "Template has been successfully exported.");
-                return true;
-            } else {
-                player.sendMessage(ChatColor.DARK_RED + "Template failed to export.");
-                return false;
+            NBTTagCompound ntc = Template.toNBT(t);
+            try {
+                OutputStream out = new FileOutputStream(new File(path));
+                NBTCompressedStreamTools.a(ntc, out);
+            } catch (Exception e) {
+                player.sendMessage(ChatColor.DARK_RED + "Something went wrong when trying to save the file");
             }
 
         }

@@ -16,3 +16,7 @@ commands:
     description: Export current selected template to a json file.
     usage: /ExportTemplate, /et
     aliases: [et]
+  ImportTemplate:
+    description: Import a template from a json file
+    usage: /ImportTemplate, /it
+    aliases: [it]

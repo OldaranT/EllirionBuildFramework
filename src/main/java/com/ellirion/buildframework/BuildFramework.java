@@ -1,6 +1,7 @@
 package com.ellirion.buildframework;
 
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,6 +18,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
         getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
         getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
         createConfig();
         getLogger().info("BuildFramework is enabled.");
     }

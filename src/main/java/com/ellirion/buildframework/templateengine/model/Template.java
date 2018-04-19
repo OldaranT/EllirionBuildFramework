@@ -6,16 +6,22 @@ import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import net.minecraft.server.v1_12_R1.NBTTagList;
 import net.minecraft.server.v1_12_R1.Position;
 import net.minecraft.server.v1_12_R1.TileEntity;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.material.MaterialData;
+
 import java.util.logging.Level;
 
 public class Template {
+    private static String data = "data";
+
     /**
      * ID of the template.
      */
@@ -39,6 +45,12 @@ public class Template {
     @Getter @Setter
     private TemplateBlock[][][] templateBlocks;
 
+    /**
+     * Empty constructor.
+     */
+    public Template() {
+        //
+    }
 
     /**
      *
@@ -131,6 +143,102 @@ public class Template {
         int yDepth = templateBlocks[0].length;
         int zDepth = templateBlocks[0][0].length;
 
-        return new BoundingBox(0, 0, 0, xDepth, yDepth, zDepth);
+        return new BoundingBox(0, 0, 0, xDepth - 1, yDepth - 1, zDepth - 1);
+    }
+
+    /**
+     * Creates an NBTTagCompound from a given template.
+     * @param t The template to convert to NBT
+     * @return The NBT data for the given template
+     */
+    public static NBTTagCompound toNBT(Template t) {
+        NBTTagCompound ntc = new NBTTagCompound();
+
+        ntc.setString("templateName", t.getTemplateName());
+        ntc.set("boundingBox", BoundingBox.toNBT(t.getBoundingBox()));
+
+        TemplateBlock[][][] templateBlocks = t.getTemplateBlocks();
+        int xDepth = templateBlocks.length;
+        int yDepth = templateBlocks[0].length;
+        int zDepth = templateBlocks[0][0].length;
+
+        NBTTagList ntcArrayX = new NBTTagList();
+        for (int x = 0; x < xDepth; x++) {
+            for (int y = 0; y < yDepth; y++) {
+                for (int z = 0; z < zDepth; z++) {
+
+                    TemplateBlock tb = templateBlocks[x][y][z];
+                    NBTTagCompound block = new NBTTagCompound();
+
+                    //type of the block
+                    block.setString("material", tb.getMaterial().name());
+
+                    //metadata of the block
+                    NBTTagCompound metadata = new NBTTagCompound();
+                    metadata.setInt("type", tb.getMetadata().getItemTypeId());
+                    metadata.setByte(data, tb.getMetadata().getData());
+                    block.set("metadata", metadata);
+
+                    //nbt data of the block
+                    if (tb.getData() != null) {
+                        block.set(data, tb.getData());
+                    }
+
+                    ntcArrayX.add(block);
+                }
+            }
+        }
+        ntc.set("templateBlocks", ntcArrayX);
+
+        return ntc;
+    }
+
+    /**
+     * Creates a template based on NBT data.
+     * @param ntc The NBT data to construct the template out of
+     * @return The created template
+     */
+    public static Template fromNBT(final NBTTagCompound ntc) {
+        Template t = new Template();
+
+        t.setTemplateName(ntc.getString("templateName"));
+
+        NBTTagList arrayX = ntc.getList("templateBlocks", 9 + 1);
+        BoundingBox bb = BoundingBox.fromNBT(ntc.getCompound("boundingBox"));
+        int xDepth = bb.getWidth();
+        int yDepth = bb.getHeight();
+        int zDepth = bb.getDepth();
+        TemplateBlock[][][] tBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
+        for (int x = 0; x < xDepth; x++) {
+            for (int y = 0; y < yDepth; y++) {
+                for (int z = 0; z < zDepth; z++) {
+                    int offZ = z;
+                    int offY = y * zDepth;
+                    int offX = x * zDepth * yDepth;
+                    int i = offX + offY + offZ;
+
+                    NBTTagCompound blockData = arrayX.get(i);
+
+                    //get the material of the block
+                    String material = blockData.getString("material");
+                    TemplateBlock tb = new TemplateBlock(Material.valueOf(material));
+
+                    //get the metadata of the block
+                    NBTTagCompound metadata = blockData.getCompound("metadata");
+                    MaterialData meta = new MaterialData(metadata.getInt("type"), metadata.getByte(data));
+                    tb.setMetadata(meta);
+                    tBlocks[x][y][z] = tb;
+
+                    //get the nbt data of the block
+                    NBTTagCompound nbtdata = blockData.getCompound(data);
+                    if (nbtdata != null) {
+                        tb.setData(nbtdata);
+                    }
+                }
+            }
+        }
+        t.setTemplateBlocks(tBlocks);
+
+        return t;
     }
 }
