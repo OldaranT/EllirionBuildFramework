@@ -1,7 +1,5 @@
 package com.ellirion.buildframework.model.graph;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,8 +87,8 @@ public class BasicGraph<TData> implements IGraph<TData> {
     }
 
     @Override
-    public Collection<IVertex<TData>> getVertices() {
-        return Collections.unmodifiableCollection(vertices.values());
+    public Iterable<IVertex<TData>> getVertices() {
+        return vertices.values();
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.ellirion.buildframework.model.graph;
 
-import java.util.Collection;
-
 public interface IVertex<TData>  {
 
     /**
@@ -81,13 +79,13 @@ public interface IVertex<TData>  {
      * Gets all edges of this vertex.
      * @return An Itererable for iterating the edges of this vertex
      */
-    Collection<IEdge<TData>> getEdges();
+    Iterable<? extends IEdge<TData>> getEdges();
 
     /**
      * Gets all connected vertices.
      * @return An Iterable for iterating the vertices connected to this vertex
      */
-    Collection<IVertex<TData>> getAdjacents();
+    Iterable<? extends IVertex<TData>> getAdjacents();
 
     /**
      * Gets the amount of edges.
