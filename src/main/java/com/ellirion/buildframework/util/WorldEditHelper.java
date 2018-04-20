@@ -13,13 +13,12 @@ public class WorldEditHelper {
      * @return Worldedit selection.
      */
     public static Selection getSelection(Player player) {
-        WorldEditPlugin worldEditPlugin = null;
-        worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+        WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
         if (worldEditPlugin == null) {
             player.sendMessage("Error with region undoing! Error: WorldEdit is null.");
+            return null;
         }
         Selection sel = worldEditPlugin.getSelection(player);
-
         return sel;
     }
 }

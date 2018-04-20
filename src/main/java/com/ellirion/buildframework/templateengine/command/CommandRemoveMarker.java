@@ -24,7 +24,7 @@ public class CommandRemoveMarker implements CommandExecutor {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
 
-            Template t = TemplateManager.selectedTemplates.get(player);
+            Template t = TemplateManager.getSelectedTemplates().get(player);
             String markers = Template.markersToString();
 
             if (t == null) {

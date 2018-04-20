@@ -20,3 +20,7 @@ commands:
     description: Add marker DOOR, GROUND or PATH to a template.
     usage: /AddMarker <name>, /am <name>
     aliases: [am]
+  ImportTemplate:
+    description: Import a template from a json file
+    usage: /ImportTemplate, /it
+    aliases: [it]

@@ -11,60 +11,46 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+
 public class CommandCreateTemplate implements CommandExecutor {
-    private enum Markers { DOOR, GROUND, PATH };
+    private enum Marker { DOOR, GROUND, PATH };
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (commandSender instanceof Player) {
-            Player player = (Player) commandSender;
+        if (!(commandSender instanceof Player)) { return false; }
+        Player player = (Player) commandSender;
 
-            //check if a name was entered
-            if (strings.length == 0) {
-                player.sendMessage(ChatColor.DARK_RED + "Please give the template a name");
-                return false;
-            }
-
-            String name = "";
-            for (String s1 : strings) {
-                name += s1;
-                if (s1 != strings[strings.length - 1]) {
-                    name += " ";
-                }
-            }
-
-            //check if player is in template manager list
-            if (TemplateManager.selectedTemplates.get(player) != null) {
-                TemplateManager.selectedTemplates.remove(player);
-            }
-
-            //get selection
-            Selection sel = WorldEditHelper.getSelection(player);
-            if (!(sel instanceof CuboidSelection)) {
-                player.sendMessage(ChatColor.DARK_RED + "Invalid Selection!");
-                return false;
-            }
-
-            //create template
-            Template template = new Template(strings[0], sel);
-
-            //add player to template manager list
-            TemplateManager.selectedTemplates.put(player, template);
-
-            player.sendMessage("Template with name " + name + " started");
-            player.sendMessage("Add markers before saving your template");
-            String markers = "";
-            for (Markers m : CommandCreateTemplate.Markers.values()) {
-                markers += "§l" + m.name().toLowerCase();
-                if (m != Markers.values()[Markers.values().length - 1]) {
-                        markers += "§r, ";
-                }
-            }
-            markers = markers.substring(0, markers.length() - 3);
-            player.sendMessage("Possible markers are: " + markers);
-
-            return true;
+        // Check if a name was entered
+        if (strings.length == 0) {
+            player.sendMessage(ChatColor.DARK_RED + "Please give the template a name");
+            return false;
         }
-        return false;
+
+        String name = String.join(" ", strings);
+
+        // Remove existing templates from map
+        TemplateManager.getSelectedTemplates().remove(player);
+
+        Selection sel = WorldEditHelper.getSelection(player);
+        if (!(sel instanceof CuboidSelection)) {
+            player.sendMessage(ChatColor.DARK_RED + "Invalid Selection!");
+            return false;
+        }
+
+        Template template = new Template(name, sel);
+
+        // Add player to template manager map so the template can be linked to the player
+        TemplateManager.getSelectedTemplates().put(player, template);
+
+        player.sendMessage("Template with name " + name + " started");
+        player.sendMessage("Add markers before saving your template");
+
+        // Put all Marker values in a string
+        String markers = String.join(", ", Arrays.toString(Marker.class.getEnumConstants()).replaceAll("^.|.$", "").split(", "));
+
+        player.sendMessage("Possible markers are: " + markers);
+
+        return true;
     }
 }

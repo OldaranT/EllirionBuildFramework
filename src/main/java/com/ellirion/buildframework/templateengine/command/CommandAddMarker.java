@@ -29,7 +29,7 @@ public class CommandAddMarker implements CommandExecutor {
             double blockUnderPlayer = player.getLocation().getY() - 1;
             double playerZ = player.getLocation().getZ();
 
-            Template t = TemplateManager.selectedTemplates.get(player);
+            Template t = TemplateManager.getSelectedTemplates().get(player);
             String markers = Template.markersToString();
 
             if (t == null) {
