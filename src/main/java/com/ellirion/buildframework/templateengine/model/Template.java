@@ -19,40 +19,25 @@ import org.bukkit.material.MaterialData;
 public class Template {
     private static String data = "data";
 
-    /**
-     * ID of the template.
-     */
-    @Getter @Setter
-    private int templateID;
+    @Getter @Setter private String templateName;
 
-    /**
-     * Name of the template.
-     */
-    @Getter @Setter
-    private String templateName;
-
-    /**
-     * Map of all positions with corresponding TemplateBlocks.
-     */
-    @Getter @Setter
-    private TemplateBlock[][][] templateBlocks;
+    @Getter @Setter private TemplateBlock[][][] templateBlocks;
 
     /**
      * Empty constructor.
      */
     public Template() {
-        //
+        // This comment is here for checkstyle
     }
 
     /**
-     *
      * @param name Name of the template
      * @param selection Selected area
      */
     public Template(final String name, final Selection selection) {
         templateName = name;
 
-        //get all blocks from the area
+        // Get all blocks from the area
         Location start = selection.getMinimumPoint();
         Location end = selection.getMaximumPoint();
 
@@ -145,7 +130,6 @@ public class Template {
     }
 
     /**
-     *
      * @return boundingbox of the template
      */
     public BoundingBox getBoundingBox() {
@@ -180,16 +164,16 @@ public class Template {
                     TemplateBlock tb = templateBlocks[x][y][z];
                     NBTTagCompound block = new NBTTagCompound();
 
-                    //type of the block
+                    // Type of the block
                     block.setString("material", tb.getMaterial().name());
 
-                    //metadata of the block
+                    // Metadata of the block
                     NBTTagCompound metadata = new NBTTagCompound();
                     metadata.setInt("type", tb.getMetadata().getItemTypeId());
                     metadata.setByte(data, tb.getMetadata().getData());
                     block.set("metadata", metadata);
 
-                    //nbt data of the block
+                    // NBT data of the block
                     if (tb.getData() != null) {
                         block.set(data, tb.getData());
                     }

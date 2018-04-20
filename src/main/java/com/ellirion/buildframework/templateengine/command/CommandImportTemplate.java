@@ -17,42 +17,29 @@ import java.io.FileInputStream;
 public class CommandImportTemplate implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (commandSender instanceof Player) {
-            Player player = (Player) commandSender;
+        if (!(commandSender instanceof Player)) { return false; }
+        Player player = (Player) commandSender;
 
-            //check name of the template
-            StringBuilder sbName = new StringBuilder();
-            for (int i = 0; i < strings.length; i++) {
-                sbName.append(strings[i]);
-                if (i != strings.length - 1) {
-                    sbName.append(' ');
-                }
-            }
-            String templateName = sbName.toString();
+        String templateName = String.join(" ", strings);
 
-            //load template
-            String path = BuildFramework.getInstance().getConfig().getString("templatePath") + templateName + ".nbt";
-            NBTTagCompound ntc;
-            try {
-                ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));
-            } catch (Exception e) {
-                player.sendMessage(ChatColor.DARK_RED + "Something went wrong while loading the file.");
-                return false;
-            }
-
-            Template t = Template.fromNBT(ntc);
-
-            //update templatemanager
-            if (TemplateManager.getSelectedTemplates().get(player) != null) {
-                TemplateManager.getSelectedTemplates().remove(player);
-            }
-            TemplateManager.getSelectedTemplates().put(player, t);
-
-            //tell player what happened
-            player.sendMessage(ChatColor.GREEN + "The template " + ChatColor.BOLD + templateName + ChatColor.RESET + ChatColor.GREEN + " has been loaded");
-            return true;
+        // Load template
+        String path = BuildFramework.getInstance().getConfig().getString("templatePath") + templateName + ".nbt";
+        NBTTagCompound ntc;
+        try {
+            ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));
+        } catch (Exception e) {
+            player.sendMessage(ChatColor.DARK_RED + "Something went wrong while loading the file.");
+            return false;
         }
 
-        return false;
+        Template t = Template.fromNBT(ntc);
+
+        // Update templatemanager
+        TemplateManager.getSelectedTemplates().remove(player);
+        TemplateManager.getSelectedTemplates().put(player, t);
+
+        //tell player what happened
+        player.sendMessage(ChatColor.GREEN + "The template " + ChatColor.BOLD + templateName + ChatColor.RESET + ChatColor.GREEN + " has been loaded");
+        return true;
     }
 }

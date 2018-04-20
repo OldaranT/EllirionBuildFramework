@@ -22,10 +22,12 @@ public class BuildFramework extends JavaPlugin {
         createConfig();
         getLogger().info("BuildFramework is enabled.");
     }
+
     @Override
     public void onDisable() {
         getLogger().info("BuildFramework is disabled.");
     }
+
     /**
      *
      * @return BuildFramework instance
@@ -36,6 +38,7 @@ public class BuildFramework extends JavaPlugin {
         }
         return instance;
     }
+
     private void createConfig() {
         config.options().header("Ellirion-BuildFramework configuration file");
         config.addDefault("TerrainValidation_OverheadLimit", 0);

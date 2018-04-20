@@ -10,21 +10,19 @@ import org.bukkit.entity.Player;
 
 public class CommandPutTemplate implements CommandExecutor {
 
-
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (commandSender instanceof Player) {
-            Player player = (Player) commandSender;
+        if (!(commandSender instanceof Player)) { return false; }
 
-            Template t = TemplateManager.getSelectedTemplates().get(player);
-            if (t == null) {
-                player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
-                return false;
-            }
+        Player player = (Player) commandSender;
 
-            t.putTemplateInWorld(player.getLocation());
-            return true;
+        Template t = TemplateManager.getSelectedTemplates().get(player);
+        if (t == null) {
+            player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
+            return false;
         }
-        return false;
+
+        t.putTemplateInWorld(player.getLocation());
+        return true;
     }
 }

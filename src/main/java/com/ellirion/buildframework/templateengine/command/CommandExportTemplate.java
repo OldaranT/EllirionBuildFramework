@@ -19,25 +19,25 @@ public class CommandExportTemplate implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (commandSender instanceof Player) {
-            Player player = (Player) commandSender;
+        if (!(commandSender instanceof Player)) { return false; }
+        Player player = (Player) commandSender;
 
-            Template t = TemplateManager.getSelectedTemplates().get(player);
+        Template t = TemplateManager.getSelectedTemplates().get(player);
 
-            if (t == null) {
-                player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
-                return false;
-            }
+        if (t == null) {
+            player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
+            return false;
+        }
 
-            String path = BuildFramework.getInstance().getConfig().getString("templatePath") + t.getTemplateName() + ".nbt";
+        String path = BuildFramework.getInstance().getConfig().getString("templatePath") + t.getTemplateName() + ".nbt";
 
-            NBTTagCompound ntc = Template.toNBT(t);
-            try {
-                OutputStream out = new FileOutputStream(new File(path));
-                NBTCompressedStreamTools.a(ntc, out);
-            } catch (Exception e) {
-                player.sendMessage(ChatColor.DARK_RED + "Something went wrong when trying to save the file");
-            }
+        NBTTagCompound ntc = Template.toNBT(t);
+        try {
+            OutputStream out = new FileOutputStream(new File(path));
+            NBTCompressedStreamTools.a(ntc, out);
+        } catch (Exception e) {
+            BuildFramework.getInstance().getLogger().info(e.getMessage());
+            player.sendMessage(ChatColor.DARK_RED + "Something went wrong when trying to save the template");
         }
         return false;
     }

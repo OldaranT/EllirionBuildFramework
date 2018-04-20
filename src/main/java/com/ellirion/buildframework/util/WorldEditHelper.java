@@ -16,10 +16,9 @@ public class WorldEditHelper {
         WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
         if (worldEditPlugin == null) {
             player.sendMessage("Error with region undoing! Error: WorldEdit is null.");
-        } else {
-            Selection sel = worldEditPlugin.getSelection(player);
-            return sel;
+            return null;
         }
-        return null;
+        Selection sel = worldEditPlugin.getSelection(player);
+        return sel;
     }
 }
