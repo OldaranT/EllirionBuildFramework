@@ -98,9 +98,9 @@ public class Point {
      * @return The Euclidian distance
      */
     public double distanceEuclidian(Point p) {
-        return Math.sqrt(Math.pow(p.x - x, 2)
-            + Math.pow(p.y - y, 2)
-            + Math.pow(p.z - z, 2));
+        return Math.sqrt(Math.pow(p.x - x, 2) +
+                         Math.pow(p.y - y, 2) +
+                         Math.pow(p.z - z, 2));
     }
 
     /**
@@ -109,9 +109,9 @@ public class Point {
      * @return The Manhattan distance
      */
     public double distanceManhattan(Point p) {
-        return Math.abs(p.x - x)
-                + Math.abs(p.y - y)
-                + Math.abs(p.z - z);
+        return Math.abs(p.x - x) +
+               Math.abs(p.y - y) +
+               Math.abs(p.z - z);
     }
 
     /**
@@ -186,6 +186,11 @@ public class Point {
     }
 
     @Override
+    public int hashCode() {
+        return hash(Double.hashCode(x)) ^ hash(Double.hashCode(y)) ^ hash(Double.hashCode(z));
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o instanceof Point) {
             Point p = (Point) o;
@@ -195,10 +200,8 @@ public class Point {
     }
 
     @Override
-    public int hashCode() {
-        return hash(Double.hashCode(x))
-                ^ hash(Double.hashCode(y))
-                ^ hash(Double.hashCode(z));
+    public String toString() {
+        return String.format("Point(x=%f, y=%f, z=%f)", x, y, z);
     }
 
     // Simpele integer hash functie: https://stackoverflow.com/a/12996028
@@ -210,10 +213,4 @@ public class Point {
         x = (x >>> half) ^ x;
         return x;
     }
-
-    @Override
-    public String toString() {
-        return String.format("Point(x=%f, y=%f, z=%f)", x, y, z);
-    }
-
 }
