@@ -7,9 +7,10 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 
 public class TemplateManager {
+
     /**
      * List of players with selected templates.
      */
     @Getter
-    private static HashMap<Player, Template> selectedTemplates = new HashMap<Player, Template>();
+    private static HashMap<Player, Template> selectedTemplates = new HashMap<>();
 }

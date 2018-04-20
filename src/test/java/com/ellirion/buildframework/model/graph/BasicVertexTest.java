@@ -284,7 +284,7 @@ public class BasicVertexTest {
             v2 = g.add(i);
             v1.connect(v2, 1);
         }
-        Iterator<IEdge<Integer>> iter = v1.getEdges().iterator();
+        Iterator<? extends IEdge<Integer>> iter = v1.getEdges().iterator();
 
         assertNotNull(iter);
         for (int i = 0; i < 10; i++) {
@@ -299,7 +299,7 @@ public class BasicVertexTest {
         IGraph<Integer> g = new BasicGraph<>();
         IVertex<Integer> v = g.add(1);
 
-        Iterator<IVertex<Integer>> iter = v.getAdjacents().iterator();
+        Iterator<? extends IVertex<Integer>> iter = v.getAdjacents().iterator();
 
         assertNotNull(iter);
         assertFalse(iter.hasNext());
@@ -315,7 +315,7 @@ public class BasicVertexTest {
             v1.connect(v2, 1);
         }
 
-        Iterator<IVertex<Integer>> iter = v1.getAdjacents().iterator();
+        Iterator<? extends IVertex<Integer>> iter = v1.getAdjacents().iterator();
         for (int i = 0; i < 10; i++) {
             assertTrue(iter.hasNext());
 
