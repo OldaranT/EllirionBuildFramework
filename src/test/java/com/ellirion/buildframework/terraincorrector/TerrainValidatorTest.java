@@ -206,4 +206,20 @@ public class TerrainValidatorTest {
         //ASSERT
         assertEquals(true, result);
     }
+
+    @Test
+    public void Validate_WhenCompletelyFilledWithBlocks_ShouldReturnFalse() {
+        //Arrange
+        final TerrainValidator t = new TerrainValidator();
+
+        World mockWorld = createDefaultWorld();
+
+        when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertEquals(false, result);
+    }
 }

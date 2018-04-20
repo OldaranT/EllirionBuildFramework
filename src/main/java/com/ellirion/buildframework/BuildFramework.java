@@ -1,13 +1,11 @@
 package com.ellirion.buildframework;
 
-
-import com.ellirion.buildframework.terraincorrector.command.Test;
-import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import org.bukkit.Material;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.terraincorrector.command.Test;
+import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +16,6 @@ public class BuildFramework extends JavaPlugin {
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
     private File blockValueConfigFile;
-
 
     /***
      *
@@ -39,7 +36,6 @@ public class BuildFramework extends JavaPlugin {
         createConfig();
         createBlockValueConfig();
         getCommand("test").setExecutor(new Test());
-
     }
 
     @Override
@@ -63,29 +59,29 @@ public class BuildFramework extends JavaPlugin {
     }
 
     private void createBlockValueConfig() {
+
         blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
 
-        if (!blockValueConfigFile.exists()) {
-            blockValueConfigFile.getParentFile().mkdirs();
+        if (!blockValueConfigFile.exists() && blockValueConfigFile.getParentFile().mkdirs()) {
             saveResource("BlockValues.yml", false);
         }
 
-        blockValueConfig = new YamlConfiguration();
+        blockValueConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
 
-        try {
-            blockValueConfig.load(blockValueConfigFile);
-        } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+        if (blockValueConfigFile.exists()) {
+            return;
         }
 
         blockValueConfig.options().header("The values for each block type of block material.\n" +
-                "These values are used by the terrain validator.");
-        blockValueConfig.addDefault(Material.STONE.toString(), 1);
-
+                                          "These values are used by the terrain validator.");
+        blockValueConfig.set(Material.STONE.toString(), 1);
+        for (Material m : Material.values()) {
+            blockValueConfig.set(m.toString(), 1);
+        }
         try {
             blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().warning(e.toString());
         }
     }
 }
