@@ -10,24 +10,25 @@ import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 public class BuildFramework extends JavaPlugin {
 
     private static BuildFramework instance;
-    private FileConfiguration config = getConfig();
+    private FileConfiguration config = this.getConfig();
 
     @Override
     public void onEnable() {
         instance = this;
-        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
-        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
-        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
-        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
-        createConfig();
-        getLogger().info("BuildFramework is enabled.");
+        this.getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        this.getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
+        this.getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        this.getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        this.createConfig();
+        this.getLogger().info("BuildFramework is enabled.");
     }
+
     @Override
     public void onDisable() {
-        getLogger().info("BuildFramework is disabled.");
+        this.getLogger().info("BuildFramework is disabled.");
     }
+
     /**
-     *
      * @return BuildFramework instance
      */
     public static BuildFramework getInstance() {
@@ -36,12 +37,13 @@ public class BuildFramework extends JavaPlugin {
         }
         return instance;
     }
+
     private void createConfig() {
-        config.options().header("Ellirion-BuildFramework configuration file");
-        config.addDefault("TerrainValidation_OverheadLimit", 0);
-        config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
-        config.options().copyDefaults(true);
-        saveConfig();
-        reloadConfig();
+        this.config.options().header("Ellirion-BuildFramework configuration file");
+        this.config.addDefault("TerrainValidation_OverheadLimit", 0);
+        this.config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
+        this.config.options().copyDefaults(true);
+        this.saveConfig();
+        this.reloadConfig();
     }
 }

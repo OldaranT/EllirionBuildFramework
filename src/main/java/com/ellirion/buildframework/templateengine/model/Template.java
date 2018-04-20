@@ -17,42 +17,26 @@ import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 
 public class Template {
+
     private static String data = "data";
-
-    /**
-     * ID of the template.
-     */
-    @Getter @Setter
-    private int templateID;
-
-    /**
-     * Name of the template.
-     */
-    @Getter @Setter
-    private String templateName;
-
-    /**
-     * Map of all positions with corresponding TemplateBlocks.
-     */
-    @Getter @Setter
-    private TemplateBlock[][][] templateBlocks;
+    @Getter @Setter private String templateName;
+    @Getter @Setter private TemplateBlock[][][] templateBlocks;
 
     /**
      * Empty constructor.
      */
     public Template() {
-        //
+        // This comment is here for checkstyle
     }
 
     /**
-     *
      * @param name Name of the template
      * @param selection Selected area
      */
     public Template(final String name, final Selection selection) {
-        templateName = name;
+        this.templateName = name;
 
-        //get all blocks from the area
+        // Get all blocks from the area
         Location start = selection.getMinimumPoint();
         Location end = selection.getMaximumPoint();
 
@@ -71,7 +55,7 @@ public class Template {
         int xDepth = endX - startX + 1;
         int yDepth = endY - startY + 1;
         int zDepth = endZ - startZ + 1;
-        templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
+        this.templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
 
         World world = selection.getWorld();
         CraftWorld w = (CraftWorld) world;
@@ -79,15 +63,16 @@ public class Template {
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
-                    templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(world.getBlockAt(x, y, z).getType());
+                    this.templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(
+                            world.getBlockAt(x, y, z).getType());
 
                     Block b = world.getBlockAt(x, y, z);
                     BlockState state = b.getState();
-                    templateBlocks[templateX][templateY][templateZ].setMetadata(state.getData());
+                    this.templateBlocks[templateX][templateY][templateZ].setMetadata(state.getData());
 
                     TileEntity te = w.getTileEntityAt(x, y, z);
                     if (te != null) {
-                        templateBlocks[templateX][templateY][templateZ].setData(te.save(new NBTTagCompound()));
+                        this.templateBlocks[templateX][templateY][templateZ].setData(te.save(new NBTTagCompound()));
                     }
                     templateZ++;
                 }
@@ -98,7 +83,6 @@ public class Template {
             templateX++;
         }
     }
-
 
     /**
      * Place a template in the world at a given location.
@@ -145,13 +129,12 @@ public class Template {
     }
 
     /**
-     *
      * @return boundingbox of the template
      */
     public BoundingBox getBoundingBox() {
-        int xDepth = templateBlocks.length;
-        int yDepth = templateBlocks[0].length;
-        int zDepth = templateBlocks[0][0].length;
+        int xDepth = this.templateBlocks.length;
+        int yDepth = this.templateBlocks[0].length;
+        int zDepth = this.templateBlocks[0][0].length;
 
         return new BoundingBox(0, 0, 0, xDepth - 1, yDepth - 1, zDepth - 1);
     }
@@ -180,16 +163,16 @@ public class Template {
                     TemplateBlock tb = templateBlocks[x][y][z];
                     NBTTagCompound block = new NBTTagCompound();
 
-                    //type of the block
+                    // Type of the block
                     block.setString("material", tb.getMaterial().name());
 
-                    //metadata of the block
+                    // Metadata of the block
                     NBTTagCompound metadata = new NBTTagCompound();
                     metadata.setInt("type", tb.getMetadata().getItemTypeId());
                     metadata.setByte(data, tb.getMetadata().getData());
                     block.set("metadata", metadata);
 
-                    //nbt data of the block
+                    // NBT data of the block
                     if (tb.getData() != null) {
                         block.set(data, tb.getData());
                     }
@@ -213,7 +196,7 @@ public class Template {
 
         t.setTemplateName(ntc.getString("templateName"));
 
-        NBTTagList arrayX = ntc.getList("templateBlocks", 9 + 1);
+        NBTTagList arrayX = ntc.getList("templateBlocks", 10);
         BoundingBox bb = BoundingBox.fromNBT(ntc.getCompound("boundingBox"));
         int xDepth = bb.getWidth();
         int yDepth = bb.getHeight();
@@ -229,17 +212,17 @@ public class Template {
 
                     NBTTagCompound blockData = arrayX.get(i);
 
-                    //get the material of the block
+                    // Get the material of the block
                     String material = blockData.getString("material");
                     TemplateBlock tb = new TemplateBlock(Material.valueOf(material));
 
-                    //get the metadata of the block
+                    // Get the metadata of the block
                     NBTTagCompound metadata = blockData.getCompound("metadata");
                     MaterialData meta = new MaterialData(metadata.getInt("type"), metadata.getByte(data));
                     tb.setMetadata(meta);
                     tBlocks[x][y][z] = tb;
 
-                    //get the nbt data of the block
+                    // Get the nbt data of the block
                     NBTTagCompound nbtdata = blockData.getCompound(data);
                     if (nbtdata != null) {
                         tb.setData(nbtdata);
