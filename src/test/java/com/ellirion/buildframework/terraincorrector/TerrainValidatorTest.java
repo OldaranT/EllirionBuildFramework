@@ -1,7 +1,5 @@
 package com.ellirion.buildframework.terraincorrector;
 
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BoundingBox;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -11,16 +9,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({BuildFramework.class})
@@ -29,9 +29,7 @@ public class TerrainValidatorTest {
     private static final Block MOCK_BLOCK_AIR = createMockBlock(true, false, Material.AIR);
     private static final Block MOCK_BLOCK_LIQUID = createMockBlock(false, true, Material.WATER);
     private static final Block MOCK_BLOCK_STONE = createMockBlock(false, false, Material.STONE);
-    private static final World MOCK_WORLD = createDefaultWorld();
     private static final BoundingBox BOUNDINGBOX = new BoundingBox(1, 1, 1, 10, 10, 10);
-
 
     private static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
         final Block mockBlock = mock(Block.class);
@@ -43,18 +41,17 @@ public class TerrainValidatorTest {
         return mockBlock;
     }
 
-
-    private static World createDefaultWorld() {
+    private World createDefaultWorld() {
         final World mockWorld = mock(World.class);
         when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
         return mockWorld;
     }
 
-    private static void setFloor(boolean floor) {
+    private void setFloor(boolean floor, World mockWorld) {
         if (floor) {
-            when(MOCK_WORLD.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
+            when(mockWorld.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
         } else {
-            when(MOCK_WORLD.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_AIR);
+            when(mockWorld.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_AIR);
         }
     }
 
@@ -66,7 +63,6 @@ public class TerrainValidatorTest {
         final Logger mockLogger = mock(Logger.class);
 
         when(BuildFramework.getInstance()).thenReturn(mockPlugin);
-
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
         when(mockPlugin.getLogger()).thenReturn(mockLogger);
@@ -86,48 +82,50 @@ public class TerrainValidatorTest {
     public void Validate_WhenFloorIsFilledAndAreaToCheckIsAir_ShouldReturnTrue() {
         //ARRANGE
         final TerrainValidator validator = new TerrainValidator();
+        World mockWorld = createDefaultWorld();
 
-        setFloor(true);
+        setFloor(true, mockWorld);
 
         //ACT
 
-        final boolean result = validator.validate(BOUNDINGBOX, MOCK_WORLD);
+        final boolean result = validator.validate(BOUNDINGBOX, mockWorld);
 
         //ASSERT
 
         assertEquals(true, result);
     }
 
-//    @Test
-//    public void Validate_WhenFloorMissingIsBelowThresholdAndAreaToCheckISAir_ShouldReturnTrue() {
-//        //ARRANGE
-//        final TerrainValidator validator = new TerrainValidator();
-//
-//        setFloor(false);
-//
-//
-//        //ACT
-//
-//        boolean result = validator.validate(BOUNDINGBOX, MOCK_WORLD);
-//        //ASSERT
-//        assertEquals(true, result);
-//
-//    }
-
+    //    @Test
+    //    public void Validate_WhenFloorMissingIsBelowThresholdAndAreaToCheckISAir_ShouldReturnTrue() {
+    //        //ARRANGE
+    //        final TerrainValidator validator = new TerrainValidator();
+    //
+    //        setFloor(false);
+    //
+    //
+    //        //ACT
+    //
+    //        boolean result = validator.validate(BOUNDINGBOX, mockWorld);
+    //        //ASSERT
+    //        assertEquals(true, result);
+    //
+    //    }
 
     @Test
     public void Validate_WhenFlooredAndAreaToCheckContainsLiquid_ShouldReturnFalse() {
         //ARRANGE
         final TerrainValidator t = new TerrainValidator();
 
-        setFloor(true);
-        when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
-        when(MOCK_WORLD.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
+        World mockWorld = createDefaultWorld();
+
+        setFloor(true, mockWorld);
+        when(mockWorld.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
+        when(mockWorld.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
 
         //ACT
 
-        final boolean result = t.validate(BOUNDINGBOX, MOCK_WORLD);
+        final boolean result = t.validate(BOUNDINGBOX, mockWorld);
         //ASSERT
         assertEquals(false, result);
     }
@@ -137,13 +135,15 @@ public class TerrainValidatorTest {
         //ARRANGE
         final TerrainValidator t = new TerrainValidator();
 
-        when(MOCK_WORLD.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(1, 7, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(0, 0, 5)).thenReturn(MOCK_BLOCK_STONE);
+        World mockWorld = createDefaultWorld();
+
+        when(mockWorld.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 7, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(0, 0, 5)).thenReturn(MOCK_BLOCK_STONE);
 
         //ACT
-        final boolean result = t.validate(BOUNDINGBOX, MOCK_WORLD);
+        final boolean result = t.validate(BOUNDINGBOX, mockWorld);
 
         //ASSERT
         assertEquals(true, result);
@@ -154,46 +154,56 @@ public class TerrainValidatorTest {
         //ARRANGE
         final TerrainValidator t = new TerrainValidator();
 
-        setFloor(true);
-        assertEquals(1, 1);
+        World mockWorld = createDefaultWorld();
 
+        setFloor(true, mockWorld);
+
+        when(mockWorld.getBlockAt(-1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
+
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertEquals(false, result);
     }
 
     @Test
-    public void CalculateBlocks_WhenOnlyContainsAir_ShouldReturnZero() {
+    public void Validate_WhenFlooredAndHasThreeNormalBlocksOneBlockOutSideTheBoundingBox_ShouldReturnTrue() {
+        //ARRANGE
         final TerrainValidator t = new TerrainValidator();
-        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
 
-        when(MOCK_WORLD.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(-1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
+        World mockWorld = createDefaultWorld();
 
+        setFloor(true, mockWorld);
 
-        assertEquals(Double.POSITIVE_INFINITY, t.validate(bb, MOCK_WORLD));
+        when(mockWorld.getBlockAt(-1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(2, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(2, 2, 2)).thenReturn(MOCK_BLOCK_STONE);
+        //ACT
+
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertEquals(true, result);
     }
 
     @Test
-    public void CalculateBlocks_WhenThreeNormalBlocksOneBlockOutSideTheBoundingBox_ShouldReturnThree() {
+    public void Validate_WhenFlooredAndBlocksAreOutsideValidationArea_ShouldReturnTrue() {
+        //ARRANGE
         final TerrainValidator t = new TerrainValidator();
 
-        final BoundingBox bb = new BoundingBox(0, 0, 0, 1, 1, 1);
+        World mockWorld = createDefaultWorld();
 
-        when(MOCK_WORLD.getBlockAt(-1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(2, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(2, 2, 2)).thenReturn(MOCK_BLOCK_STONE);
+        setFloor(true, mockWorld);
 
-        assertEquals(3, t.validate(bb, MOCK_WORLD));
-    }
+        when(mockWorld.getBlockAt(-6, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(6, -1, -6)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(2, 16, 2)).thenReturn(MOCK_BLOCK_STONE);
 
-    @Test
-    public void CalculateBlocks_WhenBlocksAreOutsideValidationArea_ShouldReturnZero() {
-        final TerrainValidator t = new TerrainValidator();
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
 
-
-        when(MOCK_WORLD.getBlockAt(-5, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(6, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
-        when(MOCK_WORLD.getBlockAt(2, 8, 2)).thenReturn(MOCK_BLOCK_STONE);
-
-        assertEquals(0, t.validate(BOUNDINGBOX, MOCK_WORLD));
+        //ASSERT
+        assertEquals(true, result);
     }
 }
