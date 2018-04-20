@@ -187,4 +187,10 @@ public class BoundingBox {
                 root.getInt("z2"));
     }
 
+    @Override
+    public String toString() {
+        return String.format("BoundingBox(x1=%d, y1=%d, z1=%d, x2=%d, y2=%d, z2=%d)",
+                x1, y1, z1, x2, y2, z2);
+    }
+
 }
