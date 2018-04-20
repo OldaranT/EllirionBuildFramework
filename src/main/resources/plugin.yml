@@ -20,3 +20,7 @@ commands:
     description: Import a template from a json file
     usage: /ImportTemplate, /it
     aliases: [it]
+  PathFind:
+    description: find a path between two WorldEdit selections
+    usage: /pathfind, /findpath, /pf, /fp
+    aliases: [findpath, fp, pf]

@@ -267,7 +267,6 @@ public class BasicGraphTest {
             assertNotNull(vert);
             assertEquals(i, vert.getData().intValue());
         }
-
     }
 
     @Test
@@ -289,5 +288,4 @@ public class BasicGraphTest {
             assertEquals(i + 1, g.getVertexCount());
         }
     }
-
 }

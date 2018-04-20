@@ -3,6 +3,7 @@ package com.ellirion.buildframework;
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
+import com.ellirion.buildframework.pathfinder.command.CommandPathFind;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
@@ -15,12 +16,13 @@ public class BuildFramework extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        this.getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
-        this.getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
-        this.getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
-        this.getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
-        this.createConfig();
-        this.getLogger().info("BuildFramework is enabled.");
+        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
+        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("pf").setExecutor(new CommandPathFind());
+        getLogger().info("[Ellirion] BuildFramework is enabled.");
+        createConfig();
     }
 
     @Override

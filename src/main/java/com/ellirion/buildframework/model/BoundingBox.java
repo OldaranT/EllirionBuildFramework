@@ -76,11 +76,13 @@ public class BoundingBox {
      * @param p The point to check
      * @return Whether the point lies within the bounds of this BoundingBox
      */
-    public boolean intersects(Point p) {
+    public boolean intersects(final Point p) {
         int px = p.getBlockX();
         int py = p.getBlockY();
         int pz = p.getBlockZ();
-        return x1 <= px && px <= x2 && y1 <= py && py <= y2 && z1 <= pz && pz <= z2;
+        return this.x1 <= px && px <= this.x2 &&
+               this.y1 <= py && py <= this.y2 &&
+               this.z1 <= pz && pz <= this.z2;
     }
 
     /**
@@ -89,7 +91,9 @@ public class BoundingBox {
      * @return Whether the two BoundingBoxes intersect
      */
     public boolean intersects(final BoundingBox bb) {
-        return x1 <= bb.x2 && bb.x1 <= x2 && y1 <= bb.y2 && bb.y1 <= y2 && z1 <= bb.z2 && bb.z1 <= z2;
+        return this.x1 <= bb.x2 && bb.x1 <= this.x2 &&
+               this.y1 <= bb.y2 && bb.y1 <= this.y2 &&
+               this.z1 <= bb.z2 && bb.z1 <= this.z2;
     }
 
     /**
@@ -97,7 +101,10 @@ public class BoundingBox {
      * @return A new BoundingBox with local coordinates
      */
     public BoundingBox toLocal() {
-        return new BoundingBox(0, 0, 0, x2 - x1, y2 - y1, z2 - z1);
+        return new BoundingBox(0, 0, 0,
+                               this.x2 - this.x1,
+                               this.y2 - this.y1,
+                               this.z2 - this.z1);
     }
 
     /**
@@ -105,15 +112,16 @@ public class BoundingBox {
      * @param pos The new origin
      * @return The BoundingBox at the world coordinates
      */
-    public BoundingBox toWorld(Point pos) {
-        BoundingBox local = toLocal();
-        int px = (int) Math.round(pos.getX());
-        int py = (int) Math.round(pos.getY());
-        int pz = (int) Math.round(pos.getZ());
+    public BoundingBox toWorld(final Point pos) {
+        final BoundingBox local = this.toLocal();
+        final int px = (int) Math.round(pos.getX());
+        final int py = (int) Math.round(pos.getY());
+        final int pz = (int) Math.round(pos.getZ());
+
         return new BoundingBox(px, py, pz,
-                px + (local.x2 - local.x1),
-                py + (local.y2 - local.y1),
-                pz + (local.z2 - local.z1));
+                               px + (local.x2 - local.x1),
+                               py + (local.y2 - local.y1),
+                               pz + (local.z2 - local.z1));
     }
 
     /**
@@ -121,7 +129,7 @@ public class BoundingBox {
      * @return The smallest-component point of this BoundingBox
      */
     public Point getPoint1() {
-        return new Point(x1, y1, z1);
+        return new Point(this.x1, this.y1, this.z1);
     }
 
     /**
@@ -129,7 +137,7 @@ public class BoundingBox {
      * @return The largest-component point of this BoundingBox
      */
     public Point getPoint2() {
-        return new Point(x2, y2, z2);
+        return new Point(this.x2, this.y2, this.z2);
     }
 
     /**
@@ -137,7 +145,7 @@ public class BoundingBox {
      * @return the width
      */
     public int getWidth() {
-        return x2 - x1 + 1;
+        return this.x2 - this.x1 + 1;
     }
 
     /**
@@ -145,7 +153,7 @@ public class BoundingBox {
      * @return the height
      */
     public int getHeight() {
-        return y2 - y1 + 1;
+        return this.y2 - this.y1 + 1;
     }
 
     /**
@@ -153,7 +161,7 @@ public class BoundingBox {
      * @return the depth
      */
     public int getDepth() {
-        return z2 - z1 + 1;
+        return this.z2 - this.z1 + 1;
     }
 
     /**
@@ -161,8 +169,8 @@ public class BoundingBox {
      * @param bb The BoundingBox to serialize
      * @return The resulting NBTTagCompound
      */
-    public static NBTTagCompound toNBT(BoundingBox bb) {
-        NBTTagCompound root = new NBTTagCompound();
+    public static NBTTagCompound toNBT(final BoundingBox bb) {
+        final NBTTagCompound root = new NBTTagCompound();
         root.setInt("x1", bb.x1);
         root.setInt("y1", bb.y1);
         root.setInt("z1", bb.z1);
@@ -177,20 +185,15 @@ public class BoundingBox {
      * @param root The NBTTagCompound to deserialize from
      * @return The resulting BoundingBox
      */
-    public static BoundingBox fromNBT(NBTTagCompound root) {
-        return new BoundingBox(
-                root.getInt("x1"),
-                root.getInt("y1"),
-                root.getInt("z1"),
-                root.getInt("x2"),
-                root.getInt("y2"),
-                root.getInt("z2"));
+    public static BoundingBox fromNBT(final NBTTagCompound root) {
+        return new BoundingBox(root.getInt("x1"), root.getInt("y1"), root.getInt("z1"),
+                               root.getInt("x2"), root.getInt("y2"), root.getInt("z2"));
     }
 
     @Override
     public String toString() {
         return String.format("BoundingBox(x1=%d, y1=%d, z1=%d, x2=%d, y2=%d, z2=%d)",
-                x1, y1, z1, x2, y2, z2);
+                             this.x1, this.y1, this.z1,
+                             this.x2, this.y2, this.z2);
     }
-
 }
