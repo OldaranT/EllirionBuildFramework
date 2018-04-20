@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.templateengine.command;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import net.md_5.bungee.api.ChatColor;
@@ -30,7 +31,7 @@ public class CommandImportTemplate implements CommandExecutor {
             String templateName = sbName.toString();
 
             //load template
-            String path = "plugins/Ellirion/BuildFramework/templates/" + templateName + ".nbt";
+            String path = BuildFramework.getInstance().getConfig().getString("templatePath") + templateName + ".nbt";
             NBTTagCompound ntc = new NBTTagCompound();
             try {
                 ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));

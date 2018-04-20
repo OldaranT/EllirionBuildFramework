@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.templateengine.command;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import net.md_5.bungee.api.ChatColor;
@@ -28,7 +29,7 @@ public class CommandExportTemplate implements CommandExecutor {
                 return false;
             }
 
-            String path = "plugins/Ellirion/BuildFramework/templates/" + t.getTemplateName() + ".nbt";
+            String path = BuildFramework.getInstance().getConfig().getString("templatePath") + t.getTemplateName() + ".nbt";
 
             NBTTagCompound ntc = Template.toNBT(t);
             try {
