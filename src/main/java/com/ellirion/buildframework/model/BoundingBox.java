@@ -5,9 +5,12 @@ import net.minecraft.server.v1_12_R1.NBTTagCompound;
 
 public class BoundingBox {
 
-    @Getter private int x1, x2;
-    @Getter private int y1, y2;
-    @Getter private int z1, z2;
+    @Getter
+    private int x1, x2;
+    @Getter
+    private int y1, y2;
+    @Getter
+    private int z1, z2;
 
     /**
      * Create a BoundingBox between (inclusive) point (0,0,0) and point (0,0,0).
@@ -186,5 +189,4 @@ public class BoundingBox {
                 root.getInt("y2"),
                 root.getInt("z2"));
     }
-
 }

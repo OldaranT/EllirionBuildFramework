@@ -1,8 +1,9 @@
 package com.ellirion.buildframework.templateengine.command;
 
-
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
+import lombok.Getter;
+import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -10,9 +11,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class CommandRemoveMarker implements CommandExecutor {
+
     /**
      * Enum of markers.
      */
+    @Getter
+    @Setter
     private Template.Markers marker;
 
     @Override
@@ -21,27 +25,10 @@ public class CommandRemoveMarker implements CommandExecutor {
             Player player = (Player) commandSender;
 
             Template t = TemplateManager.selectedTemplates.get(player);
+            String markers = Template.markersToString();
+
             if (t == null) {
                 player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
-                return false;
-            }
-
-            String markers = "";
-            for (Template.Markers m : Template.Markers.values()) {
-                markers += ChatColor.RESET;
-                markers += ChatColor.BOLD + m.name().toLowerCase();
-                if (m != Template.Markers.values()[Template.Markers.values().length - 1]) {
-                    markers += ChatColor.RESET + ", ";
-                }
-            }
-
-            //check if a name was entered
-            if (strings.length == 0) {
-                player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
-                return false;
-            }
-            if (strings.length > 1) {
-                player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
                 return false;
             }
 
@@ -52,28 +39,10 @@ public class CommandRemoveMarker implements CommandExecutor {
                 return false;
             }
 
-            try {
-                switch (marker) {
-                    case DOOR:
-                        t.removeMarker(Template.Markers.DOOR.toString());
-                        player.sendMessage(ChatColor.GREEN + "The following marker has been added: " + Template.Markers.DOOR.toString());
-                        break;
-                    case GROUND:
-                        t.removeMarker(Template.Markers.DOOR.toString());
-                        player.sendMessage(ChatColor.GREEN + "The following marker has been added: " + Template.Markers.GROUND.toString());
-                        break;
-                    case PATH:
-                        t.removeMarker(Template.Markers.DOOR.toString());
-                        player.sendMessage(ChatColor.GREEN + "The following marker has been added: " + Template.Markers.PATH.toString());
-                        break;
-                    default:
-                        break;
-                }
-            } catch (NullPointerException ex) {
-                player.sendMessage(ex.getMessage());
-                return false;
+            if (t.removeMarker(Template.Markers.DOOR.toString())) {
+                player.sendMessage(ChatColor.GREEN + "The following marker has been removed: " + Template.Markers.DOOR.toString());
+                return true;
             }
-            return true;
         }
         return false;
     }

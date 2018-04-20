@@ -5,6 +5,7 @@ import com.ellirion.buildframework.model.Point;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
+import net.md_5.bungee.api.ChatColor;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.TileEntity;
@@ -45,8 +46,8 @@ public class Template {
 
     /**
      *
-     * @param name Name of the template
-     * @param selection Selected area
+     * @param name Name of the template.
+     * @param selection Selected area.
      */
     public Template(final String name, final Selection selection) {
         templateName = name;
@@ -163,7 +164,7 @@ public class Template {
     }
 
     /**
-     * remove marker
+     * Remove marker.
      * @param name name of the marker
      * @return Point of the selected marker.
      */
@@ -173,7 +174,7 @@ public class Template {
 
     /**
      *
-     * @return boundingbox of the template
+     * @return boundingbox of the template.
      */
     public BoundingBox getBoundingBox() {
         int xDepth = templateBlocks.length;
@@ -181,5 +182,21 @@ public class Template {
         int zDepth = templateBlocks[0][0].length;
 
         return new BoundingBox(0, 0, 0, xDepth, yDepth, zDepth);
+    }
+
+
+    /**
+     * Convert the enum to a string and returns it.
+     * @return Enum in strong form.
+     */
+    public static String markersToString() {
+        String markers = "";
+        for (Template.Markers m : Template.Markers.values()) {
+            markers += ChatColor.RESET + "" + ChatColor.BOLD + m.name().toLowerCase();
+            if (m != Template.Markers.values()[Template.Markers.values().length - 1]) {
+                markers += ChatColor.RESET + ", ";
+            }
+        }
+        return  markers;
     }
 }
