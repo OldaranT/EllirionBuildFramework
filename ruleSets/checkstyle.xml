@@ -170,7 +170,7 @@
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceAfter"/>
         <module name="NoWhitespaceBefore"/>
-        <module name="OperatorWrap">`
+        <module name="OperatorWrap">
             <property name="option" value="eol"/>
         </module>
         <module name="ParenPad"/>
