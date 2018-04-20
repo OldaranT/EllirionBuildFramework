@@ -39,7 +39,7 @@ public class BuildFramework extends JavaPlugin {
     private void createConfig() {
         config.options().header("Ellirion-BuildFramework configuration file");
         config.addDefault("TerrainValidation_OverheadLimit", 0);
-        config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates");
+        config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();

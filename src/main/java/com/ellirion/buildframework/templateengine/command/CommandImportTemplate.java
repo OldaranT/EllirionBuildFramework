@@ -37,6 +37,7 @@ public class CommandImportTemplate implements CommandExecutor {
                 ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));
             } catch (Exception e) {
                 player.sendMessage(ChatColor.DARK_RED + "Something went wrong while loading the file.");
+                return false;
             }
 
             Template t = Template.fromNBT(ntc);
