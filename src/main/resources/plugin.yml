@@ -20,6 +20,10 @@ commands:
     description: Add marker DOOR, GROUND or PATH to a template.
     usage: /AddMarker <name>, /am <name>
     aliases: [am]
+  RemoveMarker:
+    description: Remove marker DOOR, GROUND or PATH from a template.
+    usage: /RemoveMarker <name>, /rm <name>
+    aliases: [rm]
   ImportTemplate:
     description: Import a template from a json file
     usage: /ImportTemplate, /it

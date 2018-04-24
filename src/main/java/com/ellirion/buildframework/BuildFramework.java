@@ -7,6 +7,7 @@ import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 
 public class BuildFramework extends JavaPlugin {
 
@@ -20,6 +21,7 @@ public class BuildFramework extends JavaPlugin {
         this.getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
         this.getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
         this.getCommand("AddMarker").setExecutor(new CommandAddMarker());
+        this.getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
         this.getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
         this.createConfig();
         this.getLogger().info("BuildFramework is enabled.");

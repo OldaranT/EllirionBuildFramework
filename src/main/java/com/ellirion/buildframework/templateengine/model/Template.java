@@ -18,7 +18,10 @@ import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Template {
 
@@ -29,36 +32,30 @@ public class Template {
         DOOR, GROUND, PATH
     }
 
+    private static String data = "data";
     /**
      * ID of the template.
      */
-    @Getter
-    @Setter
-    private int templateID;
-    private static String data = "data";
+    @Getter @Setter private int templateID;
 
-    @Getter
-    @Setter
-    private String templateName;
+    @Getter @Setter private String templateName;
 
-    @Getter
-    @Setter
-    private TemplateBlock[][][] templateBlocks;
+    @Getter @Setter private TemplateBlock[][][] templateBlocks;
 
-    private HashMap<String, Point> markers;
+    @Getter private HashMap<String, Point> markers;
 
     /**
      * Empty constructor.
      */
     public Template() {
-        // This comment is here for checkstyle
+        this.markers = new HashMap<>();
     }
 
     /**
-     * @param name      Name of the template
+     * @param name Name of the template
      * @param selection Selected area
      */
-    public Template(String name, Selection selection) {
+    public Template(final String name, final Selection selection) {
         this.templateName = name;
         this.markers = new HashMap<>();
 
@@ -89,7 +86,8 @@ public class Template {
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
-                    this.templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(world.getBlockAt(x, y, z).getType());
+                    this.templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(
+                            world.getBlockAt(x, y, z).getType());
 
                     Block b = world.getBlockAt(x, y, z);
                     BlockState state = b.getState();
@@ -111,7 +109,6 @@ public class Template {
 
     /**
      * Place a template in the world at a given location.
-     *
      * @param loc location to place the template.
      */
     public void putTemplateInWorld(Location loc) {
@@ -154,29 +151,45 @@ public class Template {
         }
     }
 
+    private void addMarker(String name, Point point) {
+        markers.put(name, point);
+    }
+
     /**
      * Add market to the template.
-     *
-     * @param name  Name of the marker.
-     * @param point Point of the maker.
+     * @param name Name of the marker.
+     * @param markerPoint Point of the maker.
+     * @param worldLocation Point of the template in the world.
+     * @return if the markers is in the template reach.
      */
-    public void addMarker(String name, Point point) {
-        this.markers.put(name, point);
+    public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
+
+        if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
+            this.markers.put(name, markerPoint);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkIfMarkerIsWithInTemplate(Point markerPoint, Point worldLocation) {
+        BoundingBox boundingBox = getBoundingBox();
+        boundingBox = boundingBox.toWorld(worldLocation);
+
+        return boundingBox.intersects(markerPoint);
     }
 
     /**
      * Get point of a marker.
-     *
      * @param name name of the marker
      * @return Point of the selected marker.
      */
     public Point findMarker(String name) {
+
         return this.markers.get(name);
     }
 
     /**
      * Remove marker.
-     *
      * @param name name of the marker
      * @return Point of the selected marker.
      */
@@ -197,7 +210,6 @@ public class Template {
 
     /**
      * Creates an NBTTagCompound from a given template.
-     *
      * @param t The template to convert to NBT
      * @return The NBT data for the given template
      */
@@ -211,6 +223,22 @@ public class Template {
         int xDepth = templateBlocks.length;
         int yDepth = templateBlocks[0].length;
         int zDepth = templateBlocks[0][0].length;
+
+        NBTTagList listOfMarkers = new NBTTagList();
+        Iterator it = t.getMarkers().entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            NBTTagCompound marker = new NBTTagCompound();
+            Point point = (Point) pair.getValue();
+            marker.setString("name", pair.getKey().toString());
+            marker.setInt("X", (int) point.getX());
+            marker.setInt("Y", (int) point.getY());
+            marker.setInt("Z", (int) point.getZ());
+            listOfMarkers.add(marker);
+        }
+
+        ntc.set("markers", listOfMarkers);
 
         NBTTagList ntcArrayX = new NBTTagList();
         for (int x = 0; x < xDepth; x++) {
@@ -245,16 +273,27 @@ public class Template {
 
     /**
      * Creates a template based on NBT data.
-     *
      * @param ntc The NBT data to construct the template out of
      * @return The created template
      */
     public static Template fromNBT(NBTTagCompound ntc) {
         Template t = new Template();
+        int nbtCompoundId = 9 + 1; // fix later
 
         t.setTemplateName(ntc.getString("templateName"));
 
-        NBTTagList arrayX = ntc.getList("templateBlocks", 9 + 1);
+        NBTTagList markers = ntc.getList("markers", nbtCompoundId);
+        for (int i = 0; i < markers.size(); i++) {
+            NBTTagCompound marker = markers.get(i);
+            String name = marker.getString("name");
+            int makerX = marker.getInt("X");
+            int makerY = marker.getInt("Y");
+            int makerZ = marker.getInt("Z");
+            Point markerPoint = new Point(makerX, makerY, makerZ);
+            t.addMarker(name, markerPoint);
+        }
+
+        NBTTagList arrayX = ntc.getList("templateBlocks", nbtCompoundId);
         BoundingBox bb = BoundingBox.fromNBT(ntc.getCompound("boundingBox"));
         int xDepth = bb.getWidth();
         int yDepth = bb.getHeight();
@@ -295,17 +334,14 @@ public class Template {
 
     /**
      * Convert the enum to a string and returns it.
-     *
      * @return Enum in strong form.
      */
     public static String markersToString() {
         String markers = "";
-        for (Template.Markers m : Template.Markers.values()) {
-            markers += ChatColor.RESET + "" + ChatColor.BOLD + m.name().toLowerCase();
-            if (m != Template.Markers.values()[Template.Markers.values().length - 1]) {
-                markers += ChatColor.RESET + ", ";
-            }
-        }
+        markers += ChatColor.RESET;
+        markers += ChatColor.BOLD;
+        markers += String.join(", ", Arrays.toString(Markers.values()).replaceAll("^.|.$", "").split(", "));
+        markers += ChatColor.RESET;
         return markers;
     }
 }

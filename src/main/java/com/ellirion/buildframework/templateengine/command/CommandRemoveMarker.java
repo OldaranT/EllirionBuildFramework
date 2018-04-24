@@ -39,8 +39,8 @@ public class CommandRemoveMarker implements CommandExecutor {
                 return false;
             }
 
-            if (t.removeMarker(Template.Markers.DOOR.toString())) {
-                player.sendMessage(ChatColor.GREEN + "The following marker has been removed: " + Template.Markers.DOOR.toString());
+            if (t.removeMarker(marker.toString())) {
+                player.sendMessage(ChatColor.GREEN + "The following marker has been removed: " + marker.toString());
                 return true;
             }
         }

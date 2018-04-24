@@ -18,6 +18,7 @@ public class CommandAddMarker implements CommandExecutor {
      */
     @Getter
     @Setter
+
     private Template.Markers marker;
 
     @Override
@@ -37,16 +38,28 @@ public class CommandAddMarker implements CommandExecutor {
                 return false;
             }
 
+            if (strings.length == 0) {
+                player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
+                return false;
+            }
+
             try {
-                marker = Template.Markers.valueOf(strings[0].toUpperCase());
+                this.marker = Template.Markers.valueOf(strings[0].toUpperCase());
             } catch (IllegalArgumentException ex) {
                 player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
                 return false;
             }
 
-            Point p = new Point(playerX, blockUnderPlayer, playerZ);
-            t.addMarker(Template.Markers.DOOR.toString(), p);
-            player.sendMessage(ChatColor.GREEN + "The following marker has been added: " + Template.Markers.DOOR.toString());
+            Point markerPoint = new Point(playerX, blockUnderPlayer, playerZ);
+            Point templateWorldPoint = TemplateManager.getPointOfTemplate().get(player).getPoint();
+
+            if (!t.addMarker(marker.toString(), markerPoint, templateWorldPoint)) {
+                player.sendMessage(ChatColor.DARK_RED + "This position is not within the template selection");
+                return false;
+            }
+
+            player.sendMessage(
+                    ChatColor.GREEN + "The following marker has been added: " + marker.toString());
             return true;
         }
         return false;
