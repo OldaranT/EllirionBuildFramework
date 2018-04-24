@@ -40,3 +40,7 @@ commands:
     description: Remove the selected hologram
     usage: /RemoveHologram, /rh
     aliases: [rh]
+  CreatePath:
+    description: PoC
+    usage: /CreatePath, /cp
+    aliases: [cp]

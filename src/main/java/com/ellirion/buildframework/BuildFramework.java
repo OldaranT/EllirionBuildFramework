@@ -1,5 +1,6 @@
 package com.ellirion.buildframework;
 
+import com.ellirion.buildframework.pathbuilder.command.CommandCreatePath;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
@@ -35,6 +36,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("CreatePath").setExecutor(new CommandCreatePath());
         createConfig();
         createBlockValueConfig();
         getLogger().info("BuildFramework is enabled.");

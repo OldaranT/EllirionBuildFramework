@@ -2,22 +2,26 @@ package com.ellirion.buildframework.pathbuilder.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import com.ellirion.buildframework.model.Point;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class PathBuilder {
 
     @Getter @Setter private String name;
-    @Getter private HashMap<Material, Integer> weightedBlocks;
+    @Getter private HashMap<Material, Double> weightedBlocks;
+    private double totalWeight;
     @Getter @Setter private Material fenceType;
     @Getter @Setter private int radius;
+    private Random r;
 
     /**
      * Create a path builder with a given name.
@@ -26,15 +30,20 @@ public class PathBuilder {
     public PathBuilder(final String name) {
         this.name = name;
         weightedBlocks = new HashMap<>();
+        r = new Random();
+        totalWeight = 0;
     }
 
     /**
-     * Add a block to the weighted blocks map.
-     * @param mat The block to add
-     * @param weight The weight of the block
+     * Overload of other method, does the same but with data set to 0.
+     * @param mat material
+     * @param weight weight
      */
-    public void addBlock(final Material mat, int weight) {
+    public void addBlock(final Material mat, double weight) {
+        denormalizeWeights();
         weightedBlocks.put(mat, weight);
+        totalWeight += weight;
+        normalizeWeights();
     }
 
     /**
@@ -53,69 +62,123 @@ public class PathBuilder {
     public void build(List<Point> points, World w) {
         for (Point p : points) {
             //Get all 'locations' around the point within radius r
+            List<Point> nearbyPoints = getPoints(p);
+
             //replace these blocks according to the weight map
-            //place fences
-        }
-    }
-
-    private List<Location> getLocations(Point p) {
-        List<Location> locations = new LinkedList<>();
-
-        int x1 = p.getBlockX() - radius;
-        int x2 = p.getBlockX() + radius;
-
-        for(int i = x1; i <= x2; i++) {
-            //keep going forwards until we're out of range
-            int z = p.getBlockZ();
-
-            //keep going backwards until we're out of range
-        }
-
-        return locations;
-    }
-
-    {
-        private static IEnumerable<Vector2> GetPointsInCircle(Vector2 circleCenter, float radius,
-        Vector2 gridCenter, Vector2 gridStep)
-        {
-            if (radius <= 0)
-            {
-                throw new ArgumentOutOfRangeException("radius", "Argument must be positive.");
-            }
-            if (gridStep.x <= 0 || gridStep.y <= 0)
-            {
-                throw new ArgumentOutOfRangeException("gridStep", "Argument must contain positive components only.");
-            }
-
-            // Loop bounds for X dimension:
-            int i1 = (int)Math.Ceiling((circleCenter.x - gridCenter.x - radius) / gridStep.x);
-            int i2 = (int)Math.Floor((circleCenter.x - gridCenter.x + radius) / gridStep.x);
-
-            // Constant square of the radius:
-            float radius2 = radius * radius;
-
-            for (int i = i1; i <= i2; i++)
-            {
-                // X-coordinate for the points of the i-th circle segment:
-                float x = gridCenter.x + i * gridStep.x;
-
-                // Local radius of the circle segment (half-length of chord) calulated in 3 steps.
-                // Step 1. Offset of the (x, *) from the (circleCenter.x, *):
-                float localRadius = circleCenter.x - x;
-                // Step 2. Square of it:
-                localRadius *= localRadius;
-                // Step 3. Local radius of the circle segment:
-                localRadius = (float)Math.Sqrt(radius2 - localRadius);
-
-                // Loop bounds for Y dimension:
-                int j1 = (int)Math.Ceiling((circleCenter.y - gridCenter.y - localRadius) / gridStep.y);
-                int j2 = (int)Math.Floor((circleCenter.y - gridCenter.y + localRadius) / gridStep.y);
-
-                for (int j = j1; j <= j2; j++)
-                {
-                    yield return new Vector2(x, gridCenter.y + j * gridStep.y);
+            for (Point point : nearbyPoints) {
+                Block b = w.getBlockAt(point.toLocation(w));
+                if (b.getType() != Material.AIR) {
+                    double random = r.nextDouble();
+                    for (Map.Entry pair2 : weightedBlocks.entrySet()) {
+                        if (random < ((double) pair2.getValue())) {
+                            b.setType((Material) pair2.getKey());
+                            break;
+                        }
+                    }
+                    //place fences
+                    if (distanceToPath(point, points) >= radius) {
+                        w.getBlockAt(b.getX(), b.getY() + 1, b.getZ()).setType(fenceType);
+                    }
                 }
             }
         }
+    }
+
+    private List<Point> getPoints(Point p) {
+        List<Point> points = new LinkedList<>();
+        int localRadius = radius;
+        Point localPoint = randomMutation(p);
+
+        double random = r.nextDouble();
+        if (random < 0.33) {
+            localRadius -= 1;
+        } else if (random > 0.66) {
+            localRadius += 1;
+        }
+
+        int x1 = localPoint.getBlockX() - (localRadius + 1);
+        int x2 = localPoint.getBlockX() + (localRadius + 1);
+
+        for (int x = x1; x <= x2; x++) {
+            //keep going forwards until we're out of range
+            int z = localPoint.getBlockZ();
+            Point point = new Point(x, localPoint.getBlockY(), z);
+            while (point.distanceEuclidian(localPoint) < localRadius) {
+                points.add(new Point(x, localPoint.getBlockY(), z));
+                z++;
+                point = new Point(point.getBlockX(), point.getBlockY(), z);
+            }
+
+            //keep going backwards until we're out of range
+            z = localPoint.getBlockZ();
+            point = new Point(x, localPoint.getBlockY(), z);
+            while (point.distanceEuclidian(localPoint) < localRadius) {
+                points.add(new Point(x, localPoint.getBlockY(), z));
+                z--;
+                point = new Point(point.getBlockX(), point.getBlockY(), z);
+            }
+        }
+
+        return points;
+    }
+
+    private Point randomMutation(Point p) {
+        Point localPoint = new Point(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+
+        double randomX = r.nextDouble();
+        double randomZ = r.nextDouble();
+
+        if (randomX < 0.33) {
+            localPoint = new Point(localPoint.getBlockX() - 1, localPoint.getBlockY(), localPoint.getBlockZ());
+        } else if (randomX > 0.66) {
+            localPoint = new Point(localPoint.getBlockX() + 1, localPoint.getBlockY(), localPoint.getBlockZ());
+        }
+
+        if (randomZ < 0.33) {
+            localPoint = new Point(localPoint.getBlockX(), localPoint.getBlockY(), localPoint.getBlockZ() - 1);
+        } else if (randomZ > 0.66) {
+            localPoint = new Point(localPoint.getBlockX(), localPoint.getBlockY(), localPoint.getBlockZ() + 1);
+        }
+
+        return localPoint;
+    }
+
+    private void denormalizeWeights() {
+        double previous = 0;
+        for (Map.Entry pair : weightedBlocks.entrySet()) {
+            weightedBlocks.put((Material) pair.getKey(),
+                               (double) pair.getValue() - previous);
+            previous = (double) pair.getValue();
+        }
+
+        // weight * totalWeight
+        for (Map.Entry pair : weightedBlocks.entrySet()) {
+            weightedBlocks.put((Material) pair.getKey(),
+                               (double) pair.getValue() * totalWeight);
+        }
+    }
+
+    private void normalizeWeights() {
+        // weight / total
+        // Counting up all weights should total 1
+        for (Map.Entry pair : weightedBlocks.entrySet()) {
+            weightedBlocks.put((Material) pair.getKey(),
+                               (double) pair.getValue() / totalWeight);
+        }
+
+        double previous = 0;
+        for (Map.Entry pair : weightedBlocks.entrySet()) {
+            weightedBlocks.put((Material) pair.getKey(),
+                               (double) pair.getValue() + previous);
+            previous = (double) pair.getValue();
+        }
+    }
+
+    private double distanceToPath(Point point, List<Point> path) {
+        double closest = Double.MAX_VALUE;
+        for (Point p : path) {
+            closest = Math.min(closest, p.distanceEuclidian(point));
+        }
+        return closest;
     }
 }
