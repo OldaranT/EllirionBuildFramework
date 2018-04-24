@@ -317,6 +317,7 @@ public class TerrainValidatorTest {
         for (int x = 1; x < boundingBox.getX2(); x++) {
             when(mockWorld.getBlockAt(x, 1, 1)).thenReturn(MOCK_BLOCK_STONE);
         }
+
         // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
@@ -408,9 +409,7 @@ public class TerrainValidatorTest {
 
     private World createDefaultWorld() {
         final World mockWorld = mock(World.class);
-
         when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
-
         return mockWorld;
     }
 }
