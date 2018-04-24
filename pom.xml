@@ -51,7 +51,8 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.8</version>
                 <configuration>
-                    <failOnViolation>true</failOnViolation><!-- this is actually true by default, but can be disabled -->
+                    <failOnViolation>true
+                    </failOnViolation><!-- this is actually true by default, but can be disabled -->
                     <printFailingErrors>true</printFailingErrors>
                     <rulesets>
                         <ruleset>/ruleSets/pmd-ruleset_xml.xml</ruleset>
@@ -165,8 +166,13 @@
                 <enabled>true</enabled> <!-- releases enabled: this specific repository also hosts release versions -->
             </releases>
             <snapshots>
-                <enabled>true</enabled> <!-- snapshots enabled: we declare a SNAPSHOT repository because we need to download a SNAPSHOT dependency -->
+                <enabled>true
+                </enabled> <!-- snapshots enabled: we declare a SNAPSHOT repository because we need to download a SNAPSHOT dependency -->
             </snapshots>
+        </repository>
+        <repository>
+            <id>com.comphenix.packetwrapper</id>
+            <url>http://repo.dmulloy2.net/nexus/repository/snapshots/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -228,6 +234,12 @@
             <artifactId>mockito-all</artifactId>
             <version>1.9.5</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.comphenix.packetwrapper</groupId>
+            <artifactId>PacketWrapper</artifactId>
+            <version>1.12.1-R0.1-20180227.153042-5</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

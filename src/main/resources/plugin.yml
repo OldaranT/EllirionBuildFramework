@@ -20,3 +20,11 @@ commands:
     description: Import a template from a json file
     usage: /ImportTemplate, /it
     aliases: [it]
+  CreateHologram:
+    description: Create a template hologram from the selected template
+    usage: /CreateHologram, /ch
+    aliases: [ch]
+  RemoveHologram:
+    description: Remove the selected hologram
+    usage: /RemoveHologram, /rh
+    aliases: [rh]
