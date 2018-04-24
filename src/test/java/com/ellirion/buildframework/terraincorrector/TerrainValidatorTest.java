@@ -47,12 +47,8 @@ public class TerrainValidatorTest {
         return mockWorld;
     }
 
-    private void setFloor(boolean floor, World mockWorld) {
-        if (floor) {
-            when(mockWorld.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
-        } else {
-            when(mockWorld.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_AIR);
-        }
+    private void setFloor(World mockWorld) {
+        when(mockWorld.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
     }
 
     @Before
@@ -84,7 +80,7 @@ public class TerrainValidatorTest {
         final TerrainValidator validator = new TerrainValidator();
         World mockWorld = createDefaultWorld();
 
-        setFloor(true, mockWorld);
+        setFloor(mockWorld);
 
         //ACT
 
@@ -118,7 +114,7 @@ public class TerrainValidatorTest {
 
         World mockWorld = createDefaultWorld();
 
-        setFloor(true, mockWorld);
+        setFloor(mockWorld);
         when(mockWorld.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
         when(mockWorld.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
@@ -127,7 +123,7 @@ public class TerrainValidatorTest {
 
         final boolean result = t.validate(BOUNDINGBOX, mockWorld);
         //ASSERT
-        assertEquals(false, result);
+        assertFalse(result);
     }
 
     @Test
@@ -146,7 +142,7 @@ public class TerrainValidatorTest {
         final boolean result = t.validate(BOUNDINGBOX, mockWorld);
 
         //ASSERT
-        assertEquals(true, result);
+        assertTrue(result);
     }
 
     @Test
@@ -156,7 +152,7 @@ public class TerrainValidatorTest {
 
         World mockWorld = createDefaultWorld();
 
-        setFloor(true, mockWorld);
+        setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(-1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
 
@@ -164,7 +160,7 @@ public class TerrainValidatorTest {
         boolean result = t.validate(BOUNDINGBOX, mockWorld);
 
         //ASSERT
-        assertEquals(false, result);
+        assertFalse(result);
     }
 
     @Test
@@ -174,7 +170,7 @@ public class TerrainValidatorTest {
 
         World mockWorld = createDefaultWorld();
 
-        setFloor(true, mockWorld);
+        setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(-1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(2, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
@@ -184,7 +180,7 @@ public class TerrainValidatorTest {
         boolean result = t.validate(BOUNDINGBOX, mockWorld);
 
         //ASSERT
-        assertEquals(true, result);
+        assertTrue(result);
     }
 
     @Test
@@ -194,7 +190,7 @@ public class TerrainValidatorTest {
 
         World mockWorld = createDefaultWorld();
 
-        setFloor(true, mockWorld);
+        setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(-6, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(6, -1, -6)).thenReturn(MOCK_BLOCK_STONE);
@@ -204,12 +200,12 @@ public class TerrainValidatorTest {
         boolean result = t.validate(BOUNDINGBOX, mockWorld);
 
         //ASSERT
-        assertEquals(true, result);
+        assertTrue(result);
     }
 
     @Test
     public void Validate_WhenCompletelyFilledWithBlocks_ShouldReturnFalse() {
-        //Arrange
+        //ARRANGE
         final TerrainValidator t = new TerrainValidator();
 
         World mockWorld = createDefaultWorld();
@@ -220,6 +216,110 @@ public class TerrainValidatorTest {
         boolean result = t.validate(BOUNDINGBOX, mockWorld);
 
         //ASSERT
-        assertEquals(false, result);
+        assertFalse(result);
+    }
+
+    @Test
+    public void Validate_WhenOneBlockOverLimitAndFloored_ShouldReturnFalse() {
+        //ARRANGE
+        final TerrainValidator t = new TerrainValidator();
+
+        World mockWorld = createDefaultWorld();
+        setFloor(mockWorld);
+
+        when(mockWorld.getBlockAt(anyInt(), eq(1), eq(1))).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 1, 2)).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertFalse(result);
+    }
+
+    @Test
+    public void Validate_WhenOneBlockUnderLimitAndFloored_ShouldReturnTrue() {
+        //ARRANGE
+        final TerrainValidator t = new TerrainValidator();
+
+        World mockWorld = createDefaultWorld();
+        setFloor(mockWorld);
+
+        for (int x = 1; x < BOUNDINGBOX.getX2(); x++) {
+            when(mockWorld.getBlockAt(x, 1, 1)).thenReturn(MOCK_BLOCK_STONE);
+        }
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertTrue(result);
+    }
+
+    @Test
+    public void Validate_WhenExactlyOnBlockLimitAndFloored_ShouldReturnFalse() {
+        //ARRANGE
+        final TerrainValidator t = new TerrainValidator();
+
+        World mockWorld = createDefaultWorld();
+        setFloor(mockWorld);
+
+        when(mockWorld.getBlockAt(anyInt(), eq(1), anyInt())).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertFalse(result);
+    }
+
+    @Test
+    public void Validate_WhenExactlyOnBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnFalse() {
+        //ARRANGE
+        final TerrainValidator t = new TerrainValidator();
+
+        World mockWorld = createDefaultWorld();
+        setFloor(mockWorld);
+
+        when(mockWorld.getBlockAt(-2, 2, 12)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(-3, 8, 6)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 13, 10)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 1, 8)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(14, 13, -4)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(-1, 8, 13)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(-4, 10, -2)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(14, 7, 9)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(13, 1, -4)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(10, 14, -4)).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertFalse(result);
+    }
+
+    @Test
+    public void Validate_WhenOneBelowBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnTrue() {
+        //ARRANGE
+        final TerrainValidator t = new TerrainValidator();
+
+        World mockWorld = createDefaultWorld();
+        setFloor(mockWorld);
+
+        when(mockWorld.getBlockAt(-2, 2, 12)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(-3, 8, 6)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 13, 10)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(1, 1, 8)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(14, 13, -4)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(-1, 8, 13)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(-4, 10, -2)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(14, 7, 9)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(13, 1, -4)).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+        boolean result = t.validate(BOUNDINGBOX, mockWorld);
+
+        //ASSERT
+        assertTrue(result);
     }
 }

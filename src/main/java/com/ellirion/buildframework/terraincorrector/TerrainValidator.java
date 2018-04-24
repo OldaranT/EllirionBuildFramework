@@ -1,17 +1,17 @@
 package com.ellirion.buildframework.terraincorrector;
 
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BoundingBox;
 import net.minecraft.server.v1_12_R1.Position;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
+import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class TerrainValidator {
+
     private static final BuildFramework BUILD_FRAMEWORK = BuildFramework.getInstance();
     private static final Logger LOGGER = BUILD_FRAMEWORK.getLogger();
     private static final FileConfiguration CONFIG = BUILD_FRAMEWORK.getConfig();
@@ -32,21 +32,20 @@ public class TerrainValidator {
         //TODO implement checking for BoundingBoxes in the world once these are saved in the database
 
         final double overhangScore = calculateOverhang(boundingBox, world);
-        if (overhangScore > overhangLimit) {
+        if (overhangScore >= overhangLimit) {
             return false;
         }
 
         final double blocksScore = calculateBlocks(boundingBox, world, offset);
-        if (blocksScore > blocksLimit) {
+        if (blocksScore >= blocksLimit) {
             return false;
         }
 
-        if (blocksScore + overhangScore > totalLimit) {
+        if (blocksScore + overhangScore >= totalLimit) {
             return false;
         }
 
         return true;
-
     }
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {
@@ -69,7 +68,9 @@ public class TerrainValidator {
 
                     //TODO
                     if (LOGGER.isLoggable(Level.INFO)) {
-                        LOGGER.info("[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y + " and z : " + z);
+                        LOGGER.info(
+                                "[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y +
+                                " and z : " + z);
                     }
                 }
             }
@@ -85,7 +86,7 @@ public class TerrainValidator {
     }
 
     /*
-     * TODO: calculate using the type of block.
+     * TODO calculate using the type of block.
      * */
     private double calculateBlocks(final BoundingBox boundingBox, final World world, final int offset) {
 
@@ -96,7 +97,6 @@ public class TerrainValidator {
 
         final int bottomBlockY = boundingBox.getY1();
         final int topBlockY = boundingBox.getY2() + offset;
-
 
         final int bottomBlockZ = boundingBox.getZ1() - offset;
         final int topBlockZ = boundingBox.getZ2() + offset;
@@ -116,9 +116,7 @@ public class TerrainValidator {
                         blockCounter += BLOCK_VALUE_CONFIG.getInt(b.getType().toString(), 1);
                     }
                 }
-
             }
-
         }
 
         if (LOGGER.isLoggable(Level.INFO)) {
@@ -146,7 +144,8 @@ public class TerrainValidator {
         return finalDistance;
     }
 
-    private double loopTroughBlocks(double currentDistance, final World world, final double x, final BoundingBox boundingBox, final Position startingPosition) {
+    private double loopTroughBlocks(double currentDistance, final World world, final double x,
+                                    final BoundingBox boundingBox, final Position startingPosition) {
 
         final double z = startingPosition.getZ();
         final double y = boundingBox.getY1();
@@ -176,7 +175,6 @@ public class TerrainValidator {
         return currentDistance;
     }
 
-
     private double getDistance(final Position p1, final Position p2) {
         final double x1 = Math.min(p1.getX(), p2.getX());
         final double y1 = Math.min(p1.getY(), p2.getY());
@@ -187,6 +185,5 @@ public class TerrainValidator {
         final double z2 = Math.max(p1.getZ(), p2.getZ());
 
         return (x2 - x1) + (y2 - y1) + (z2 - z1);
-
     }
 }
