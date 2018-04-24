@@ -219,10 +219,8 @@ public class Template {
         int zDepth = templateBlocks[0][0].length;
 
         NBTTagList listOfMarkers = new NBTTagList();
-        Iterator it = t.getMarkers().entrySet().iterator();
 
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
+        for (Map.Entry pair : t.getMarkers().entrySet()) {
             NBTTagCompound marker = new NBTTagCompound();
             Point point = (Point) pair.getValue();
             marker.setString("name", pair.getKey().toString());
@@ -272,11 +270,10 @@ public class Template {
      */
     public static Template fromNBT(NBTTagCompound ntc) {
         Template t = new Template();
-        int nbtCompoundId = 9 + 1; // fix later
 
         t.setTemplateName(ntc.getString("templateName"));
 
-        NBTTagList markers = ntc.getList("markers", nbtCompoundId);
+        NBTTagList markers = ntc.getList("markers", 10);
         for (int i = 0; i < markers.size(); i++) {
             NBTTagCompound marker = markers.get(i);
             String name = marker.getString("name");
@@ -287,7 +284,7 @@ public class Template {
             t.addMarker(name, markerPoint);
         }
 
-        NBTTagList arrayX = ntc.getList("templateBlocks", nbtCompoundId);
+        NBTTagList arrayX = ntc.getList("templateBlocks", 10);
         BoundingBox bb = BoundingBox.fromNBT(ntc.getCompound("boundingBox"));
         int xDepth = bb.getWidth();
         int yDepth = bb.getHeight();

@@ -30,7 +30,7 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
             return true;
         }
 
-        TemplateHologram hologram = new TemplateHologram(t, new Location(player.getLocation().getWorld(),
+        TemplateHologram hologram = new TemplateHologram(t, new Location(player.getWorld(),
                                                                          player.getLocation().getBlockX(),
                                                                          player.getLocation().getBlockY(),
                                                                          player.getLocation().getBlockZ()));

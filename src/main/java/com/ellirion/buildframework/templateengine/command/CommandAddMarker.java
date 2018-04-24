@@ -16,10 +16,7 @@ public class CommandAddMarker implements CommandExecutor {
     /**
      * Enum of markers.
      */
-    @Getter
-    @Setter
-
-    private Template.Markers marker;
+    @Getter @Setter private Template.Markers marker;
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {

@@ -83,10 +83,7 @@ public class TemplateHologram {
 
         // Place the markers (Color of the markers is set in the config)
         HashMap<String, Point> markers = template.getMarkers();
-        Iterator it = markers.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-
+        for (Map.Entry pair : template.getMarkers().entrySet()) {
             Point p = (Point) pair.getValue();
             Location loc = new Location(w,
                                         p.getX() + location.getX(),

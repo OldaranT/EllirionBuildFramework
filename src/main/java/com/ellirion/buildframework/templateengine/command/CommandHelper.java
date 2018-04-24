@@ -7,13 +7,13 @@ import com.ellirion.buildframework.model.Point;
 public class CommandHelper {
 
     /**
-     * Gets world coordinates of a boundingbox.
+     * Gets world coordinates of a BoundingBox.
      * @param box the box
      * @param location the location
      * @return an int array
      */
     public static int[] getCoordinates(BoundingBox box, Location location) {
-        BoundingBox bbox = box.toWorld(new Point(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+        BoundingBox bbox = box.toWorld(new Point(location).floor());
 
         return new int[] {
                 bbox.getX1(),
