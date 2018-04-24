@@ -1,9 +1,11 @@
 package com.ellirion.buildframework.templateengine.model;
 
 import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
+import net.md_5.bungee.api.ChatColor;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.NBTTagList;
@@ -16,17 +18,31 @@ import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 public class Template {
+
+    /**
+     * Enum of markers.
+     */
+    public enum Markers {
+        DOOR, GROUND, PATH
+    }
 
     private static String data = "data";
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
 
+    @Getter private HashMap<String, Point> markers;
+
     /**
      * Empty constructor.
      */
     public Template() {
-        // This comment is here for checkstyle
+        this.markers = new HashMap<>();
     }
 
     /**
@@ -35,6 +51,7 @@ public class Template {
      */
     public Template(final String name, final Selection selection) {
         this.templateName = name;
+        this.markers = new HashMap<>();
 
         // Get all blocks from the area
         Location start = selection.getMinimumPoint();
@@ -128,8 +145,54 @@ public class Template {
         }
     }
 
+    private void addMarker(String name, Point point) {
+        markers.put(name, point);
+    }
+
     /**
-     * @return boundingbox of the template
+     * Add market to the template.
+     * @param name Name of the marker.
+     * @param markerPoint Point of the maker.
+     * @param worldLocation Point of the template in the world.
+     * @return if the markers is in the template reach.
+     */
+    public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
+
+        if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
+            this.markers.put(name, markerPoint);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkIfMarkerIsWithInTemplate(Point markerPoint, Point worldLocation) {
+        BoundingBox boundingBox = getBoundingBox();
+        boundingBox = boundingBox.toWorld(worldLocation);
+
+        return boundingBox.intersects(markerPoint);
+    }
+
+    /**
+     * Get point of a marker.
+     * @param name name of the marker
+     * @return Point of the selected marker.
+     */
+    public Point findMarker(String name) {
+
+        return this.markers.get(name);
+    }
+
+    /**
+     * Remove marker.
+     * @param name name of the marker
+     * @return Point of the selected marker.
+     */
+    public boolean removeMarker(String name) {
+        return this.markers.remove(name) != null;
+    }
+
+    /**
+     * @return boundingbox of the template.
      */
     public BoundingBox getBoundingBox() {
         int xDepth = this.templateBlocks.length;
@@ -154,6 +217,22 @@ public class Template {
         int xDepth = templateBlocks.length;
         int yDepth = templateBlocks[0].length;
         int zDepth = templateBlocks[0][0].length;
+
+        NBTTagList listOfMarkers = new NBTTagList();
+        Iterator it = t.getMarkers().entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            NBTTagCompound marker = new NBTTagCompound();
+            Point point = (Point) pair.getValue();
+            marker.setString("name", pair.getKey().toString());
+            marker.setInt("X", (int) point.getX());
+            marker.setInt("Y", (int) point.getY());
+            marker.setInt("Z", (int) point.getZ());
+            listOfMarkers.add(marker);
+        }
+
+        ntc.set("markers", listOfMarkers);
 
         NBTTagList ntcArrayX = new NBTTagList();
         for (int x = 0; x < xDepth; x++) {
@@ -191,12 +270,24 @@ public class Template {
      * @param ntc The NBT data to construct the template out of
      * @return The created template
      */
-    public static Template fromNBT(final NBTTagCompound ntc) {
+    public static Template fromNBT(NBTTagCompound ntc) {
         Template t = new Template();
+        int nbtCompoundId = 9 + 1; // fix later
 
         t.setTemplateName(ntc.getString("templateName"));
 
-        NBTTagList arrayX = ntc.getList("templateBlocks", 10);
+        NBTTagList markers = ntc.getList("markers", nbtCompoundId);
+        for (int i = 0; i < markers.size(); i++) {
+            NBTTagCompound marker = markers.get(i);
+            String name = marker.getString("name");
+            int makerX = marker.getInt("X");
+            int makerY = marker.getInt("Y");
+            int makerZ = marker.getInt("Z");
+            Point markerPoint = new Point(makerX, makerY, makerZ);
+            t.addMarker(name, markerPoint);
+        }
+
+        NBTTagList arrayX = ntc.getList("templateBlocks", nbtCompoundId);
         BoundingBox bb = BoundingBox.fromNBT(ntc.getCompound("boundingBox"));
         int xDepth = bb.getWidth();
         int yDepth = bb.getHeight();
@@ -233,5 +324,18 @@ public class Template {
         t.setTemplateBlocks(tBlocks);
 
         return t;
+    }
+
+    /**
+     * Convert the enum to a string and returns it.
+     * @return Enum in strong form.
+     */
+    public static String markersToString() {
+        String markers = "";
+        markers += ChatColor.RESET;
+        markers += ChatColor.BOLD;
+        markers += String.join(", ", Arrays.toString(Markers.values()).replaceAll("^.|.$", "").split(", "));
+        markers += ChatColor.RESET;
+        return markers;
     }
 }

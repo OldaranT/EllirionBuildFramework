@@ -16,6 +16,10 @@ import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.templateengine.model.TemplateHologramBlock;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 public class CommandCreateTemplateHologram implements CommandExecutor {
 
     @Override
@@ -43,26 +47,33 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
         BoundingBox box = hologram.getBox();
         Location location = hologram.getLocation();
         int[] coordinates = CommandHelper.getCoordinates(box, location);
+        World w = hologram.getLocation().getWorld();
 
         for (int x = coordinates[0]; x <= coordinates[1]; x++) {
             for (int y = coordinates[2]; y <= coordinates[3]; y++) {
                 for (int z = coordinates[4]; z <= coordinates[5]; z++) {
-                    World w = hologram.getLocation().getWorld();
-                    Location loc = new Location(hologram.getLocation().getWorld(), x, y, z);
+                    Location loc = new Location(w, x, y, z);
 
                     // If the block is not air, change it to a barrier block
                     if (w.getBlockAt(x, y, z).getType() != Material.AIR) {
                         player.sendBlockChange(loc, Material.BARRIER, (byte) 0);
                     }
-
-                    // If the template has a marker here, change it to ???
-                    String marker = t.getMarkerOnPoint(new Point(x, y, z));
-                    if (marker.equals("")) {
-                        player.sendBlockChange(loc, Material.WOOL,
-                                               (byte) BuildFramework.getInstance().getConfig().get("markerDoorColour"));
-                    }
                 }
             }
+        }
+
+        HashMap<String, Point> markers = t.getMarkers();
+        Iterator it = markers.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+
+            Point p = (Point) pair.getValue();
+            Location loc = new Location(w,
+                                        p.getX() + location.getX(),
+                                        p.getY() + location.getY(),
+                                        p.getZ() + location.getZ());
+            player.sendBlockChange(loc, Material.WOOL,
+                                   (byte) BuildFramework.getInstance().getConfig().getInt((String) pair.getKey()));
         }
 
         for (TemplateHologramBlock block : hologram.getHologramBlocks()) {

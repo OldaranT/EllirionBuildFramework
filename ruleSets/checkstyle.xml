@@ -95,6 +95,7 @@
         </module>
         <module name="JavadocVariable">
             <property name="scope" value="protected"/>
+            <property name="tokens" value="VARIABLE_DEF"/>
         </module>
         <module name="JavadocStyle">
             <!--Disabling only because the current version of checkstyle fails

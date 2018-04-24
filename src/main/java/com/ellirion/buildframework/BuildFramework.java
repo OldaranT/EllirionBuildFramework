@@ -1,6 +1,7 @@
 package com.ellirion.buildframework;
 
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
+import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
@@ -8,6 +9,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
+import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 
 public class BuildFramework extends JavaPlugin {
 
@@ -21,6 +23,8 @@ public class BuildFramework extends JavaPlugin {
         getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
         getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
         getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("AddMarker").setExecutor(new CommandAddMarker());
+        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
         createConfig();

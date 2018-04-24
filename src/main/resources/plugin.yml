@@ -6,7 +6,7 @@ authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink]
 commands:
   CreateTemplate:
     description: create a template of the selected area
-    usage: /CreateTemplate, /ct
+    usage: /CreateTemplate <name>, /ct <name>
     aliases: [ct]
   PutTemplate:
     description: Places the current selected tempalte.
@@ -16,6 +16,14 @@ commands:
     description: Export current selected template to a json file.
     usage: /ExportTemplate, /et
     aliases: [et]
+  AddMarker:
+    description: Add marker DOOR, GROUND or PATH to a template.
+    usage: /AddMarker <name>, /am <name>
+    aliases: [am]
+  RemoveMarker:
+    description: Remove marker DOOR, GROUND or PATH from a template.
+    usage: /RemoveMarker <name>, /rm <name>
+    aliases: [rm]
   ImportTemplate:
     description: Import a template from a json file
     usage: /ImportTemplate, /it
