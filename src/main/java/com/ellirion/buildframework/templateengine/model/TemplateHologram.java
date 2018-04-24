@@ -15,8 +15,6 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.command.CommandHelper;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +80,6 @@ public class TemplateHologram {
         }
 
         // Place the markers (Color of the markers is set in the config)
-        HashMap<String, Point> markers = template.getMarkers();
         for (Map.Entry pair : template.getMarkers().entrySet()) {
             Point p = (Point) pair.getValue();
             Location loc = new Location(w,
