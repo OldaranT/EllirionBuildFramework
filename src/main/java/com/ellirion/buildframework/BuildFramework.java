@@ -1,13 +1,12 @@
 package com.ellirion.buildframework;
 
-
-import com.ellirion.buildframework.terraincorrector.command.Test;
-import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.terraincorrector.command.Test;
+import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +16,6 @@ public class BuildFramework extends JavaPlugin {
     private static BuildFramework instance;
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
-    private File blockValueConfigFile;
-
 
     /***
      *
@@ -27,6 +24,11 @@ public class BuildFramework extends JavaPlugin {
 
     public static BuildFramework getInstance() {
         return instance;
+    }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("[Ellirion] BuildFramework is disabled.");
     }
 
     @Override
@@ -39,12 +41,6 @@ public class BuildFramework extends JavaPlugin {
         createConfig();
         createBlockValueConfig();
         getCommand("test").setExecutor(new Test());
-
-    }
-
-    @Override
-    public void onDisable() {
-        getLogger().info("[Ellirion] BuildFramework is disabled.");
     }
 
     public FileConfiguration getBlockValueConfig() {
@@ -54,7 +50,7 @@ public class BuildFramework extends JavaPlugin {
     private void createConfig() {
         config.options().header("Ellirion-BuildFramework configuration file");
         config.addDefault("TerrainValidation_OverheadLimit", 0);
-        config.addDefault("TerrainValidation_BocksLimit", 0);
+        config.addDefault("TerrainValidation_BlocksLimit", 0);
         config.addDefault("TerrainValidation_TotalLimit", 0);
         config.addDefault("TerrainValidation_Offset", 5);
         config.options().copyDefaults(true);
@@ -63,7 +59,7 @@ public class BuildFramework extends JavaPlugin {
     }
 
     private void createBlockValueConfig() {
-        blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
+        final File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
 
         if (!blockValueConfigFile.exists()) {
             blockValueConfigFile.getParentFile().mkdirs();
@@ -79,12 +75,12 @@ public class BuildFramework extends JavaPlugin {
         }
 
         blockValueConfig.options().header("The values for each block type of block material.\n" +
-                "These values are used by the terrain validator.");
+                                          "These values are used by the terrain validator.");
         blockValueConfig.addDefault(Material.STONE.toString(), 1);
 
         try {
             blockValueConfig.save(blockValueConfigFile);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }

@@ -1,23 +1,23 @@
 package com.ellirion.buildframework.terraincorrector;
 
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BoundingBox;
-import net.minecraft.server.v1_12_R1.Position;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
+import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class TerrainValidator {
+
     private static final BuildFramework BUILD_FRAMEWORK = BuildFramework.getInstance();
     private static final Logger LOGGER = BUILD_FRAMEWORK.getLogger();
     private static final FileConfiguration CONFIG = BUILD_FRAMEWORK.getConfig();
     private static final FileConfiguration BLOCK_VALUE_CONFIG = BUILD_FRAMEWORK.getBlockValueConfig();
 
-    /***
+    /**
      * Validate if the impact on the terrain is within acceptable levels.
      * @param boundingBox this should be a BoundingBox using world coordinates where the bottom of the BoundingBox is
      * @param world the world that should
@@ -25,7 +25,7 @@ public class TerrainValidator {
      */
     public boolean validate(final BoundingBox boundingBox, final World world) {
         final double overhangLimit = CONFIG.getInt("TerrainValidation_OverheadLimit", 50);
-        final double blocksLimit = CONFIG.getInt("TerrainValidation_BocksLimit", 100);
+        final double blocksLimit = CONFIG.getInt("TerrainValidation_BlocksLimit", 100);
         final double totalLimit = CONFIG.getInt("TerrainValidation_TotalLimit", 200);
         final int offset = CONFIG.getInt("TerrainValidation_Offset", 5);
 
@@ -46,7 +46,6 @@ public class TerrainValidator {
         }
 
         return true;
-
     }
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {
@@ -62,31 +61,28 @@ public class TerrainValidator {
 
                 if (block.isLiquid() || block.isEmpty()) {
 
-                    final double distance = findClosestBlock(new Position(x, y, z), boundingBox, world);
+                    final double distance = findClosestBlock(new Point(x, y, z), boundingBox, world);
+                    System.out.println("Distance : " + distance);
                     final Double score = calculateOverhangScore(totalArea, distance);
-
                     total += score;
 
-                    //TODO
-                    if (LOGGER.isLoggable(Level.INFO)) {
-                        LOGGER.info("[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y + " and z : " + z);
-                    }
+                    System.out.println(
+                            "[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y +
+                            " and z : " + z);
                 }
             }
         }
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("[TerrainValidator] Total score : " + total);
-        }
+
+        System.out.println("[TerrainValidator] Total score : " + total);
         return total;
     }
 
     private double calculateOverhangScore(final double area, final double distance) {
-        return (distance / area);
+        return (distance / area) * 75;
     }
 
-    /*
-     * TODO: calculate using the type of block.
-     * */
+    // TODO calculate using the type of block.
+
     private double calculateBlocks(final BoundingBox boundingBox, final World world, final int offset) {
 
         double blockCounter = 0;
@@ -96,7 +92,6 @@ public class TerrainValidator {
 
         final int bottomBlockY = boundingBox.getY1();
         final int topBlockY = boundingBox.getY2() + offset;
-
 
         final int bottomBlockZ = boundingBox.getZ1() - offset;
         final int topBlockZ = boundingBox.getZ2() + offset;
@@ -116,10 +111,10 @@ public class TerrainValidator {
                         blockCounter += BLOCK_VALUE_CONFIG.getInt(b.getType().toString(), 1);
                     }
                 }
-
             }
-
         }
+
+        System.out.println("[TerrainValidator] Total block counter : " + blockCounter);
 
         if (LOGGER.isLoggable(Level.INFO)) {
             LOGGER.info("[TerrainValidator] Total block counter : " + blockCounter);
@@ -128,7 +123,7 @@ public class TerrainValidator {
         return blockCounter;
     }
 
-    private double findClosestBlock(final Position startingPosition, final BoundingBox boundingBox, final World world) {
+    private double findClosestBlock(final Point startingPosition, final BoundingBox boundingBox, final World world) {
 
         final double x = startingPosition.getX();
 
@@ -146,47 +141,39 @@ public class TerrainValidator {
         return finalDistance;
     }
 
-    private double loopTroughBlocks(double currentDistance, final World world, final double x, final BoundingBox boundingBox, final Position startingPosition) {
+    private double loopTroughBlocks(double currentDistance, final World world, final double x,
+                                    final BoundingBox boundingBox, final Point startingPosition) {
 
         final double z = startingPosition.getZ();
-        final double y = boundingBox.getY1();
+        final double y = boundingBox.getY1() - 1;
 
         for (double loopZ = z; loopZ <= boundingBox.getZ2(); loopZ++) {
-            final Block block = world.getBlockAt((int) x, (int) y, (int) loopZ);
-            final double distance = getDistance(startingPosition, new Position(x, y, loopZ));
+
+            final double distance = startingPosition.distanceManhattan(new Point(x, y, loopZ));
+
             if (currentDistance < distance) {
                 break;
             }
+
+            final Block block = world.getBlockAt((int) x, (int) y, (int) loopZ);
             if (!block.isEmpty() && !block.isLiquid()) {
                 currentDistance = distance;
             }
         }
 
         for (double loopZ = z; loopZ >= boundingBox.getZ1(); loopZ--) {
-            final Block block = world.getBlockAt((int) x, (int) y, (int) loopZ);
-            final double distance = getDistance(startingPosition, new Position(x, y, loopZ));
+
+            final double distance = startingPosition.distanceManhattan(new Point(x, y, loopZ));
             if (currentDistance < distance) {
                 break;
             }
+
+            final Block block = world.getBlockAt((int) x, (int) y, (int) loopZ);
             if (!block.isEmpty() && !block.isLiquid()) {
                 currentDistance = distance;
             }
         }
 
         return currentDistance;
-    }
-
-
-    private double getDistance(final Position p1, final Position p2) {
-        final double x1 = Math.min(p1.getX(), p2.getX());
-        final double y1 = Math.min(p1.getY(), p2.getY());
-        final double z1 = Math.min(p1.getZ(), p2.getZ());
-
-        final double x2 = Math.max(p1.getX(), p2.getX());
-        final double y2 = Math.max(p1.getY(), p2.getY());
-        final double z2 = Math.max(p1.getZ(), p2.getZ());
-
-        return (x2 - x1) + (y2 - y1) + (z2 - z1);
-
     }
 }
