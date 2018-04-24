@@ -63,107 +63,101 @@ public class TerrainValidatorTest {
 
     @Test
     public void Validate_WhenFloorIsFilledAndAreaToCheckIsAir_ShouldReturnTrue() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
         setFloor(world);
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
 
-        //ASSERT
-
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenFloorNotFilledAndAreaToCheckIsAir_ShouldReturnFalse() {
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
 
-        //ASSERT
-
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenFloorNotFilledAndAreaToCheckIsContainsBlocks_ShouldReturnFalse() {
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
+
         when(world.getBlockAt(anyInt(), eq(5), eq(5))).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
 
-        //ASSERT
-
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenFloorNotFilledAirIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
-        //ARRANGE
+        // Arragne
         final TerrainValidator validator = new TerrainValidator();
-
         final World world = createDefaultWorld();
         setFloor(world);
         replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_AIR);
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
-        //ASSERT
 
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenFloorNotFilledWaterIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
-        //ARRANGE
+        // Arragne
         final TerrainValidator validator = new TerrainValidator();
-
         final World world = createDefaultWorld();
         setFloor(world);
         replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_LIQUID);
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
-        //ASSERT
 
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnTrue() {
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
-
         final World world = createDefaultWorld();
         setFloor(world);
         replaceFloorWithSpecifiedBlock(world, boundingBox, 10, MOCK_BLOCK_AIR);
+
         when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
-        //ASSERT
 
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenFloorAndAreaBelowThresholdAndTotalAboveThreshold_ShouldReturnFalse() {
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
-
         final World world = createDefaultWorld();
         setFloor(world);
         replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_AIR);
+
         when(world.getBlockAt(5, 5, 3)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(5, 5, 4)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
@@ -171,198 +165,184 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(5, 5, 7)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(5, 5, 8)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
-        //ASSERT
 
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenFloorNotFilledIsAboveThresholdAndAreaToCheckIsAir_ShouldReturnFalse() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
         setFloor(world);
         replaceFloorWithSpecifiedBlock(world, boundingBox, 12, MOCK_BLOCK_AIR);
 
-        //ACT
-
+        // Act
         final boolean result = validator.validate(boundingBox, world);
 
-        //ASSERT
-
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenFlooredAndAreaToCheckContainsLiquid_ShouldReturnFalse() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         final World world = createDefaultWorld();
+
         when(world.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
         when(world.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
         when(world.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
-
+        // Act
         final boolean result = t.validate(boundingBox, world);
 
-        //ASSERT
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenFlooredAndHasThreeNormalBlocks_ShouldReturnTrue() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
         final World world = createDefaultWorld();
         setFloor(world);
+
         when(world.getBlockAt(1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(1, 7, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(0, 0, 5)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
+        // Act
         final boolean result = t.validate(boundingBox, world);
 
-        //ASSERT
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenFlooredAndHasLiquidOneBlockOutsideBoundingBox_ShouldReturnFalse() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
-
         setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(-1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
 
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenFlooredAndHasThreeNormalBlocksOneBlockOutSideTheBoundingBox_ShouldReturnTrue() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
-
         setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(-1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(2, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(2, 2, 2)).thenReturn(MOCK_BLOCK_STONE);
-        //ACT
 
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenFlooredAndBlocksAreOutsideValidationArea_ShouldReturnTrue() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
-
         setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(-6, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(6, -1, -6)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(2, 16, 2)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenCompletelyFilledWithBlocks_ShouldReturnFalse() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
-
         when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenOneBlockOverLimitAndFloored_ShouldReturnFalse() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
         setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(anyInt(), eq(1), eq(1))).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(1, 1, 2)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenOneBlockUnderLimitAndFloored_ShouldReturnTrue() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
         setFloor(mockWorld);
 
         for (int x = 1; x < boundingBox.getX2(); x++) {
             when(mockWorld.getBlockAt(x, 1, 1)).thenReturn(MOCK_BLOCK_STONE);
         }
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void Validate_WhenExactlyOnBlockLimitAndFloored_ShouldReturnFalse() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
         setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(anyInt(), eq(1), anyInt())).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenExactlyOnBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnFalse() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
 
         World mockWorld = createDefaultWorld();
@@ -379,16 +359,16 @@ public class TerrainValidatorTest {
         when(mockWorld.getBlockAt(13, 1, -4)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(10, 14, -4)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertFalse(result);
     }
 
     @Test
     public void Validate_WhenOneBelowBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnTrue() {
-        //ARRANGE
+        // Arrange
         final TerrainValidator t = new TerrainValidator();
 
         World mockWorld = createDefaultWorld();
@@ -404,10 +384,10 @@ public class TerrainValidatorTest {
         when(mockWorld.getBlockAt(14, 7, 9)).thenReturn(MOCK_BLOCK_STONE);
         when(mockWorld.getBlockAt(13, 1, -4)).thenReturn(MOCK_BLOCK_STONE);
 
-        //ACT
+        // Act
         boolean result = t.validate(boundingBox, mockWorld);
 
-        //ASSERT
+        // Assert
         assertTrue(result);
     }
 
