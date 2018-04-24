@@ -4,6 +4,10 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
@@ -15,40 +19,51 @@ public class BuildFramework extends JavaPlugin {
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
 
-    /***
-     *
-     * @return instance
+    /**
+     * @return BuildFramework instance
      */
-
     public static BuildFramework getInstance() {
+        if (instance == null) {
+            instance = new BuildFramework();
+        }
         return instance;
-    }
-
-    @Override
-    public void onDisable() {
-        getLogger().info("[Ellirion] BuildFramework is disabled.");
-    }
-
-    @Override
-    public void onEnable() {
-
-        instance = this;
-        getLogger().info("[Ellirion] BuildFramework is enabled.");
-        getCommand("Validate").setExecutor(new ValidateCommand());
-        createConfig();
-        createBlockValueConfig();
     }
 
     public FileConfiguration getBlockValueConfig() {
         return blockValueConfig;
     }
 
+    @Override
+    public void onDisable() {
+        this.getLogger().info("BuildFramework is disabled.");
+    }
+
+    /***
+     *
+     * @return instance
+     */
+
+    @Override
+    public void onEnable() {
+        instance = this;
+        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
+        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("Validate").setExecutor(new ValidateCommand());
+        getLogger().info("BuildFramework is enabled.");
+        instance = this;
+        createConfig();
+        createBlockValueConfig();
+    }
+
     private void createConfig() {
-        config.options().header("Ellirion-BuildFramework configuration file");
+        this.config.options().header("Ellirion-BuildFramework configuration file");
         config.addDefault("TerrainValidation_OverheadLimit", 0);
         config.addDefault("TerrainValidation_BlocksLimit", 0);
         config.addDefault("TerrainValidation_TotalLimit", 0);
         config.addDefault("TerrainValidation_Offset", 5);
+        config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
