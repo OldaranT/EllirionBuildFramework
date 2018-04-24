@@ -12,9 +12,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -50,12 +47,10 @@ public class TerrainValidatorTest {
         mockStatic(BuildFramework.class);
         final BuildFramework mockPlugin = mock(BuildFramework.class);
         final FileConfiguration mockConfig = mock(FileConfiguration.class);
-        final Logger mockLogger = mock(Logger.class);
 
         when(BuildFramework.getInstance()).thenReturn(mockPlugin);
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
-        when(mockPlugin.getLogger()).thenReturn(mockLogger);
         when(mockPlugin.getBlockValueConfig()).thenReturn(mockConfig);
 
         when(mockConfig.getInt("TerrainValidation_OverheadLimit", 50)).thenReturn(10);
@@ -64,8 +59,6 @@ public class TerrainValidatorTest {
         when(mockConfig.getInt("TerrainValidation_Offset", 5)).thenReturn(5);
 
         when(mockConfig.getInt(MOCK_BLOCK_STONE.getType().toString(), 1)).thenReturn(1);
-
-        when(mockLogger.isLoggable(Level.INFO)).thenReturn(true);
     }
 
     @Test
@@ -114,7 +107,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorNotFilledIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
+    public void Validate_WhenFloorNotFilledAirIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
         //ARRANGE
         final TerrainValidator validator = new TerrainValidator();
 
@@ -130,22 +123,61 @@ public class TerrainValidatorTest {
         assertTrue(result);
     }
 
-    //    @Test
-    //    public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnFalse() {
-    //        final TerrainValidator validator = new TerrainValidator();
-    //
-    //        final World world = createDefaultWorld();
-    //        setFloor(world);
-    //        replaceFloorWithSpecifiedBlock(world, boundingBox, 10, MOCK_BLOCK_AIR);
-    //        when(world.getBlockAt(eq(5), eq(5), eq(5))).thenReturn(MOCK_BLOCK_STONE);
-    //
-    //        // this one is not done yet
-    //        //ACT
-    //
-    //        final boolean result = validator.validate(boundingBox, world);
-    //        //ASSERT
-    //        assertFalse(result);
-    //    }
+    @Test
+    public void Validate_WhenFloorNotFilledWaterIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
+        //ARRANGE
+        final TerrainValidator validator = new TerrainValidator();
+
+        final World world = createDefaultWorld();
+        setFloor(world);
+        replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_LIQUID);
+
+        //ACT
+
+        final boolean result = validator.validate(boundingBox, world);
+        //ASSERT
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnTrue() {
+        final TerrainValidator validator = new TerrainValidator();
+
+        final World world = createDefaultWorld();
+        setFloor(world);
+        replaceFloorWithSpecifiedBlock(world, boundingBox, 10, MOCK_BLOCK_AIR);
+        when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+
+        final boolean result = validator.validate(boundingBox, world);
+        //ASSERT
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void Validate_WhenFloorAndAreaBelowThresholdAndTotalAboveThreshold_ShouldReturnFalse() {
+        final TerrainValidator validator = new TerrainValidator();
+
+        final World world = createDefaultWorld();
+        setFloor(world);
+        replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_AIR);
+        when(world.getBlockAt(5, 5, 3)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 4)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 6)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 7)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 8)).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+
+        final boolean result = validator.validate(boundingBox, world);
+        //ASSERT
+
+        assertFalse(result);
+    }
 
     @Test
     public void Validate_WhenFloorNotFilledIsAboveThresholdAndAreaToCheckIsAir_ShouldReturnFalse() {
@@ -382,7 +414,6 @@ public class TerrainValidatorTest {
     private void replaceFloorWithSpecifiedBlock(final World world, final BoundingBox boundingBox, final int amount,
                                                 final Block block) {
         int x, z, v;
-        int[] a;
         for (int i = 0; i <= amount; i++) {
             v = i;
 

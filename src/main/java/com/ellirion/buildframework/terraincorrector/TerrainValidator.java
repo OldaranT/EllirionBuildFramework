@@ -7,13 +7,9 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class TerrainValidator {
 
     private static final BuildFramework BUILD_FRAMEWORK = BuildFramework.getInstance();
-    private static final Logger LOGGER = BUILD_FRAMEWORK.getLogger();
     private static final FileConfiguration CONFIG = BUILD_FRAMEWORK.getConfig();
     private static final FileConfiguration BLOCK_VALUE_CONFIG = BUILD_FRAMEWORK.getBlockValueConfig();
 
@@ -62,21 +58,11 @@ public class TerrainValidator {
                 if (block.isLiquid() || block.isEmpty()) {
 
                     final double distance = findClosestBlock(new Point(x, y, z), boundingBox, world);
-                    System.out.println("Distance : " + distance);
                     final Double score = calculateOverhangScore(totalArea, distance);
                     total += score;
-
-                    //TODO
-                    if (LOGGER.isLoggable(Level.INFO)) {
-                        LOGGER.info(
-                                "[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y +
-                                " and z : " + z);
-                    }
                 }
             }
         }
-
-        System.out.println("[TerrainValidator] Total score : " + total);
         return total;
     }
 
@@ -113,12 +99,6 @@ public class TerrainValidator {
                     }
                 }
             }
-        }
-
-        System.out.println("[TerrainValidator] Total block counter : " + blockCounter);
-
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("[TerrainValidator] Total block counter : " + blockCounter);
         }
 
         return blockCounter;
