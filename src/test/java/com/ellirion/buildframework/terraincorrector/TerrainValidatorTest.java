@@ -122,7 +122,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorNotFilledIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
+    public void Validate_WhenFloorNotFilledAirIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
         //ARRANGE
         final TerrainValidator validator = new TerrainValidator();
 
@@ -139,21 +139,59 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnFalse() {
+    public void Validate_WhenFloorNotFilledWaterIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
+        //ARRANGE
         final TerrainValidator validator = new TerrainValidator();
 
         final World world = createDefaultWorld();
         setFloor(world);
-        replaceFloorWithSpecifiedBlock(world, boundingBox, 10, MOCK_BLOCK_AIR);
-        when(world.getBlockAt(eq(5), eq(5), eq(5))).thenReturn(MOCK_BLOCK_STONE);
+        replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_LIQUID);
 
-        // this one is not done yet 
         //ACT
 
         final boolean result = validator.validate(boundingBox, world);
         //ASSERT
 
         assertTrue(result);
+    }
+
+    @Test
+    public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnTrue() {
+        final TerrainValidator validator = new TerrainValidator();
+
+        final World world = createDefaultWorld();
+        setFloor(world);
+        replaceFloorWithSpecifiedBlock(world, boundingBox, 10, MOCK_BLOCK_AIR);
+        when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+
+        final boolean result = validator.validate(boundingBox, world);
+        //ASSERT
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void Validate_WhenFloorAndAreaBelowThresholdAndTotalAboveThreshold_ShouldReturnFalse() {
+        final TerrainValidator validator = new TerrainValidator();
+
+        final World world = createDefaultWorld();
+        setFloor(world);
+        replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_AIR);
+        when(world.getBlockAt(5, 5, 3)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 4)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 6)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 7)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(5, 5, 8)).thenReturn(MOCK_BLOCK_STONE);
+
+        //ACT
+
+        final boolean result = validator.validate(boundingBox, world);
+        //ASSERT
+
+        assertFalse(result);
     }
 
     @Test
@@ -271,7 +309,6 @@ public class TerrainValidatorTest {
     private void replaceFloorWithSpecifiedBlock(final World world, final BoundingBox boundingBox, final int amount,
                                                 final Block block) {
         int x, z, v;
-        int[] a;
         for (int i = 0; i <= amount; i++) {
             v = i;
 

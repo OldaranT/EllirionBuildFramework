@@ -32,16 +32,16 @@ public class TerrainValidator {
         //TODO implement checking for BoundingBoxes in the world once these are saved in the database
 
         final double overhangScore = calculateOverhang(boundingBox, world);
-        if (overhangScore > overhangLimit) {
+        if (overhangScore >= overhangLimit) {
             return false;
         }
 
         final double blocksScore = calculateBlocks(boundingBox, world, offset);
-        if (blocksScore > blocksLimit) {
+        if (blocksScore >= blocksLimit) {
             return false;
         }
 
-        if (blocksScore + overhangScore > totalLimit) {
+        if (blocksScore + overhangScore >= totalLimit) {
             return false;
         }
 
@@ -62,18 +62,11 @@ public class TerrainValidator {
                 if (block.isLiquid() || block.isEmpty()) {
 
                     final double distance = findClosestBlock(new Point(x, y, z), boundingBox, world);
-                    System.out.println("Distance : " + distance);
                     final Double score = calculateOverhangScore(totalArea, distance);
                     total += score;
-
-                    System.out.println(
-                            "[TerrainValidator] Calculated score : " + score + " for x : " + x + " and y : " + y +
-                            " and z : " + z);
                 }
             }
         }
-
-        System.out.println("[TerrainValidator] Total score : " + total);
         return total;
     }
 
@@ -113,8 +106,6 @@ public class TerrainValidator {
                 }
             }
         }
-
-        System.out.println("[TerrainValidator] Total block counter : " + blockCounter);
 
         if (LOGGER.isLoggable(Level.INFO)) {
             LOGGER.info("[TerrainValidator] Total block counter : " + blockCounter);
