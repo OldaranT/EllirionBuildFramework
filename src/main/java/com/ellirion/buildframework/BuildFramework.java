@@ -4,7 +4,6 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.ellirion.buildframework.terraincorrector.command.Test;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
@@ -15,7 +14,6 @@ public class BuildFramework extends JavaPlugin {
     private static BuildFramework instance;
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
-    private File blockValueConfigFile;
 
     /***
      *
@@ -27,20 +25,18 @@ public class BuildFramework extends JavaPlugin {
     }
 
     @Override
+    public void onDisable() {
+        getLogger().info("[Ellirion] BuildFramework is disabled.");
+    }
+
+    @Override
     public void onEnable() {
 
         instance = this;
         getLogger().info("[Ellirion] BuildFramework is enabled.");
-        getCommand("Test").setExecutor(new Test());
         getCommand("Validate").setExecutor(new ValidateCommand());
         createConfig();
         createBlockValueConfig();
-        getCommand("test").setExecutor(new Test());
-    }
-
-    @Override
-    public void onDisable() {
-        getLogger().info("[Ellirion] BuildFramework is disabled.");
     }
 
     public FileConfiguration getBlockValueConfig() {
@@ -60,7 +56,7 @@ public class BuildFramework extends JavaPlugin {
 
     private void createBlockValueConfig() {
 
-        blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
+        File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
 
         if (!blockValueConfigFile.exists() && blockValueConfigFile.getParentFile().mkdirs()) {
             saveResource("BlockValues.yml", false);

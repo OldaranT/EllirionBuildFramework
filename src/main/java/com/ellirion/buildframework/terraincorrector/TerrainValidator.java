@@ -14,10 +14,11 @@ public class TerrainValidator {
     private static final FileConfiguration BLOCK_VALUE_CONFIG = BUILD_FRAMEWORK.getBlockValueConfig();
 
     /**
-     * Validate if the impact on the terrain is within acceptable levels.
-     * @param boundingBox this should be a BoundingBox using world coordinates where the bottom of the BoundingBox is
+     * Validate whether the impact on the terrain is within acceptable levels.
+     * @param boundingBox this should be a BoundingBox using world coordinates.
+     *                    The bottom of the of the BoundingBox should be flush with the ground
      * @param world the world that should
-     * @return returns whether the terrain allows terrain generation
+     * @return returns whether the terrain chances to the terrain will be within acceptable levels
      */
     public boolean validate(final BoundingBox boundingBox, final World world) {
         final double overhangLimit = CONFIG.getInt("TerrainValidation_OverheadLimit", 50);
