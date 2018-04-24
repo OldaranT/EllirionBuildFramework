@@ -130,22 +130,22 @@ public class TerrainValidatorTest {
         assertTrue(result);
     }
 
-//    @Test
-//    public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnFalse() {
-//        final TerrainValidator validator = new TerrainValidator();
-//
-//        final World world = createDefaultWorld();
-//        setFloor(world);
-//        replaceFloorWithSpecifiedBlock(world, boundingBox, 10, MOCK_BLOCK_AIR);
-//        when(world.getBlockAt(eq(5), eq(5), eq(5))).thenReturn(MOCK_BLOCK_STONE);
-//
-//        // this one is not done yet
-//        //ACT
-//
-//        final boolean result = validator.validate(boundingBox, world);
-//        //ASSERT
-//        assertFalse(result);
-//    }
+    //    @Test
+    //    public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnFalse() {
+    //        final TerrainValidator validator = new TerrainValidator();
+    //
+    //        final World world = createDefaultWorld();
+    //        setFloor(world);
+    //        replaceFloorWithSpecifiedBlock(world, boundingBox, 10, MOCK_BLOCK_AIR);
+    //        when(world.getBlockAt(eq(5), eq(5), eq(5))).thenReturn(MOCK_BLOCK_STONE);
+    //
+    //        // this one is not done yet
+    //        //ACT
+    //
+    //        final boolean result = validator.validate(boundingBox, world);
+    //        //ASSERT
+    //        assertFalse(result);
+    //    }
 
     @Test
     public void Validate_WhenFloorNotFilledIsAboveThresholdAndAreaToCheckIsAir_ShouldReturnFalse() {
