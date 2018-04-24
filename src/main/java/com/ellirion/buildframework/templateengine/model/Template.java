@@ -105,7 +105,6 @@ public class Template {
      * @param loc location to place the template.
      */
     public void putTemplateInWorld(Location loc) {
-
         int xDepth = this.getTemplateBlocks().length;
         int yDepth = this.getTemplateBlocks()[0].length;
         int zDepth = this.getTemplateBlocks()[0][0].length;
@@ -156,7 +155,6 @@ public class Template {
      * @return if the markers is in the template reach.
      */
     public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
-
         if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
             this.markers.put(name, markerPoint);
             return true;
@@ -177,7 +175,6 @@ public class Template {
      * @return Point of the selected marker.
      */
     public Point findMarker(String name) {
-
         return this.markers.get(name);
     }
 
