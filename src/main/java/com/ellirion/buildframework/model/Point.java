@@ -99,8 +99,8 @@ public class Point {
      */
     public double distanceEuclidian(Point p) {
         return Math.sqrt(Math.pow(p.x - x, 2)
-            + Math.pow(p.y - y, 2)
-            + Math.pow(p.z - z, 2));
+                         + Math.pow(p.y - y, 2)
+                         + Math.pow(p.z - z, 2));
     }
 
     /**
@@ -110,8 +110,8 @@ public class Point {
      */
     public double distanceManhattan(Point p) {
         return Math.abs(p.x - x)
-                + Math.abs(p.y - y)
-                + Math.abs(p.z - z);
+               + Math.abs(p.y - y)
+               + Math.abs(p.z - z);
     }
 
     /**
@@ -155,8 +155,8 @@ public class Point {
     @Override
     public int hashCode() {
         return hash(Double.hashCode(x))
-                ^ hash(Double.hashCode(y))
-                ^ hash(Double.hashCode(z));
+               ^ hash(Double.hashCode(y))
+               ^ hash(Double.hashCode(z));
     }
 
     // Simpele integer hash functie: https://stackoverflow.com/a/12996028
@@ -169,4 +169,20 @@ public class Point {
         return x;
     }
 
+    /**
+     * Set a point to a local template point.
+     * @param worldPoint point in the world.
+     * @return A point localized to a template.
+     */
+    public Point toLocalTemplate(Point worldPoint) {
+        double newX = 0;
+        double newY = 0;
+        double newZ = 0;
+
+        newX = x - worldPoint.getX();
+        newY = y - worldPoint.getY();
+        newZ = z - worldPoint.getZ();
+
+        return new Point(newX, newY, newZ);
+    }
 }

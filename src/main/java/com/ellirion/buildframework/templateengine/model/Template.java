@@ -165,7 +165,7 @@ public class Template {
     public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
 
         if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
-            this.markers.put(name, markerPoint);
+            this.markers.put(name, markerPoint.toLocalTemplate(worldLocation));
             return true;
         }
         return false;
