@@ -2,18 +2,31 @@ package com.ellirion.buildframework.terraincorrector;
 
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import com.ellirion.buildframework.model.BoundingBox;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class TerrainCorrector {
+
+    // all the faces facing towards the X and Z axis
+    private static final BlockFace[] faces = {
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST
+    };
 
     /**
      * @param boundingBox the BoundingBox that will be used for terrain smoothing
      * @return whether the smoothing succeeded
      */
     public boolean correctTerain(BoundingBox boundingBox) {
+
         return true;
     }
 
@@ -21,7 +34,9 @@ public class TerrainCorrector {
         final int y = boundingBox.getY1() - 1;
         List<Block> holes = new ArrayList<>();
 
+        a:
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
+            b:
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
                 Block block = world.getBlockAt(x, y, z);
                 if (block.isEmpty() || block.isLiquid()) {
@@ -32,56 +47,11 @@ public class TerrainCorrector {
         return holes;
     }
 
-    private boolean checkForRiver(BoundingBox boundingBox, World world) {
-        int y = boundingBox.getY1() - 1;
-        int x1 = boundingBox.getX1();
-        int x2 = boundingBox.getX2();
-        int z1 = boundingBox.getZ1();
-        int z2 = boundingBox.getZ2();
-
-        // check from corner x1 z1 to corner x1 z2.
-        for (int z = z1; z <= z2; z++) {
-            Block block = world.getBlockAt(x1, y, z);
-            if (block.isLiquid()) {
-                Block outsideBlock = world.getBlockAt(x1 - 1, y, z);
-                if (outsideBlock.isLiquid()) {
-                    return true;
-                }
-            }
-        }
-        // check from corner x1 z2 to corner x2 z2.
-        for (int x = x1; x <= x2; x++) {
-            Block block = world.getBlockAt(x, y, z2);
-            if (block.isLiquid()) {
-                Block outsideBlock = world.getBlockAt(x, y, z2 + 1);
-                if (outsideBlock.isLiquid()) {
-                    return true;
-                }
-            }
-        }
-
-        // check from corner x2 z2 to corner x2 z1.
-        for (int z = z2; z >= z1; z--) {
-            Block block = world.getBlockAt(x2, y, z);
-            if (block.isLiquid()) {
-                Block outsideBlock = world.getBlockAt(x2 + 1, y, z);
-                if (outsideBlock.isLiquid()) {
-                    return true;
-                }
-            }
-        }
-
-        // check from corner x2 z1 to corner x1 z1.
-        for (int x = x2; x >= x1; x--) {
-            Block block = world.getBlockAt(x, y, z1);
-            if (block.isLiquid()) {
-                Block outsideBlock = world.getBlockAt(x, y, z1 - 1);
-                if (outsideBlock.isLiquid()) {
-                    return true;
-                }
-            }
-        }
-
+    private boolean checkForRiver(final List<Block> holes, BoundingBox boundingBox) {
+        final int minX = boundingBox.getX1();
+        final int maxX = boundingBox.getX2();
+        final int minZ = boundingBox.getZ1();
+        final int maxZ = boundingBox.getZ2();
         return false;
     }
 
@@ -98,5 +68,47 @@ public class TerrainCorrector {
             depth++;
         }
         return depth;
+    }
+
+    private void getConnectedblocks(Block block, Set<Block> results, List<Block> todo, BoundingBox boundingBox) {
+        //Here I collect all blocks that are directly connected to variable 'block'.
+        //(Shouldn't be more than 6, because a block has 6 sides)
+        Set<Block> result = results;
+        final int minX = boundingBox.getX1() - 1;
+        final int maxX = boundingBox.getX2() + 1;
+        final int minZ = boundingBox.getZ1() - 1;
+        final int maxZ = boundingBox.getZ2() + 1;
+
+        //Loop through all the relevant block faces
+        for (BlockFace face : faces) {
+            Block b = block.getRelative(face);
+            //Check if the relative block is inside the to check area.
+            if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ) {
+                //Check if they're both of the same type
+
+                if (b.getType() == block.getType()) {
+                    //Add the block if it wasn't added already
+                    if (result.add(b)) {
+
+                        //Add this block to the list of blocks that are yet to be done.
+                        todo.add(b);
+                    }
+                }
+            }
+        }
+    }
+
+    private Set<Block> getConnectedblocks(Block block, BoundingBox boundingBox) {
+        Set<Block> set = new HashSet<>();
+        LinkedList<Block> todoBlocks = new LinkedList<>();
+
+        //Add the current block to the todoBlocks of blocks that are yet to be done
+        todoBlocks.add(block);
+
+        //Execute this method for each block in the todoBlocks
+        while ((block = todoBlocks.poll()) != null) {
+            getConnectedblocks(block, set, todoBlocks, boundingBox);
+        }
+        return set;
     }
 }
