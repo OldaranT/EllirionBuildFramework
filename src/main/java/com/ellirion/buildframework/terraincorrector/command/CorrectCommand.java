@@ -7,6 +7,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.terraincorrector.TerrainCorrector;
 import com.ellirion.buildframework.util.WorldEditHelper;
 
 public class CorrectCommand implements CommandExecutor {
@@ -26,7 +29,15 @@ public class CorrectCommand implements CommandExecutor {
             return false;
         }
 
-        //        CuboidSelection selection = (CuboidSelection) sel;
+        CuboidSelection selection = (CuboidSelection) sel;
+
+        Point start = new Point(selection.getMinimumPoint());
+        Point end = new Point(selection.getMaximumPoint());
+
+        BoundingBox bb = new BoundingBox(start, end);
+
+        TerrainCorrector corrector = new TerrainCorrector();
+        corrector.correctTerrain(bb, player.getWorld());
 
         return false;
     }
