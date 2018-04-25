@@ -13,4 +13,14 @@ public class TemplateManager {
     @Getter private static HashMap<Player, Template> selectedTemplates = new HashMap<>();
     @Getter private static HashMap<Player, TemplateHologram> selectedHolograms = new HashMap<>();
     @Getter private static HashMap<Player, TemplateSession> pointOfTemplate = new HashMap<>();
+
+    /**
+     * Remove all holograms and templates of a player.
+     * @param player the player of which to remove all holograms and templates
+     */
+    public static void removeAll(Player player) {
+        selectedHolograms.remove(player);
+        pointOfTemplate.remove(player);
+        selectedTemplates.remove(player);
+    }
 }

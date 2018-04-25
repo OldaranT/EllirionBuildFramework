@@ -13,6 +13,7 @@ import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
+import com.ellirion.buildframework.util.EventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createBlockValueConfig();
         getLogger().info("BuildFramework is enabled.");
