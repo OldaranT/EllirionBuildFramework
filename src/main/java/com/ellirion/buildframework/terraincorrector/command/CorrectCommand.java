@@ -26,8 +26,7 @@ public class CorrectCommand implements CommandExecutor {
             return false;
         }
 
-        CuboidSelection selection = (CuboidSelection) sel;
-        
+        //        CuboidSelection selection = (CuboidSelection) sel;
 
         return false;
     }
