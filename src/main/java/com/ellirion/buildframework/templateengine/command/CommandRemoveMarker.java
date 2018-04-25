@@ -2,6 +2,7 @@ package com.ellirion.buildframework.templateengine.command;
 
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
 import lombok.Getter;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
@@ -22,10 +23,10 @@ public class CommandRemoveMarker implements CommandExecutor {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
 
-            Template t = TemplateManager.getSelectedTemplates().get(player);
+            TemplateSession ts = TemplateManager.getPointOfTemplate().get(player);
             String markers = Template.markersToString();
 
-            if (t == null) {
+            if (ts == null) {
                 player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
                 return false;
             }
@@ -37,7 +38,7 @@ public class CommandRemoveMarker implements CommandExecutor {
                 return false;
             }
 
-            if (t.removeMarker(marker.toString())) {
+            if (ts.getTemplate().removeMarker(marker.toString())) {
                 player.sendMessage(ChatColor.GREEN + "The following marker has been removed: " + marker.toString());
                 return true;
             }

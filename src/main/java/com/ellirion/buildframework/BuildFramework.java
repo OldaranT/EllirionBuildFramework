@@ -65,7 +65,7 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainValidation_BlocksLimit", 0);
         config.addDefault("TerrainValidation_TotalLimit", 0);
         config.addDefault("TerrainValidation_Offset", 5);
-        config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
+        config.addDefault("templatePath", "plugins/Ellirion-BuildFramework/templates/");
         config.addDefault("DOOR", 0);
         config.addDefault("PATH", 1);
         config.addDefault("GROUND", 2);

@@ -13,4 +13,18 @@ public class TemplateManager {
     @Getter private static HashMap<Player, Template> selectedTemplates = new HashMap<>();
     @Getter private static HashMap<Player, TemplateHologram> selectedHolograms = new HashMap<>();
     @Getter private static HashMap<Player, TemplateSession> pointOfTemplate = new HashMap<>();
+
+    /**
+     * Get the template.
+     * @param player player of current session.
+     * @return template.
+     */
+    public static Template getTemplate(Player player) {
+
+        TemplateSession ts = getPointOfTemplate().get(player);
+        if (ts == null) {
+            return getSelectedTemplates().get(player);
+        }
+        return ts.getTemplate();
+    }
 }

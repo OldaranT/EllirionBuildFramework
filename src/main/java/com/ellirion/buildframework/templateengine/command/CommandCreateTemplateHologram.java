@@ -7,8 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.templateengine.TemplateManager;
-import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
 
 public class CommandCreateTemplateHologram implements CommandExecutor {
 
@@ -24,13 +24,13 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
             prevHologram.remove(player);
         }
 
-        Template t = TemplateManager.getSelectedTemplates().get(player);
-        if (t == null) {
+        TemplateSession ts = TemplateManager.getPointOfTemplate().get(player);
+        if (ts == null) {
             player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
             return true;
         }
 
-        TemplateHologram hologram = new TemplateHologram(t, new Location(player.getWorld(),
+        TemplateHologram hologram = new TemplateHologram(ts.getTemplate(), new Location(player.getWorld(),
                                                                          player.getLocation().getBlockX(),
                                                                          player.getLocation().getBlockY(),
                                                                          player.getLocation().getBlockZ()));

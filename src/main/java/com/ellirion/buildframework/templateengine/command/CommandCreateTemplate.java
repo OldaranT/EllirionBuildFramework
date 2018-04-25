@@ -31,7 +31,6 @@ public class CommandCreateTemplate implements CommandExecutor {
         String name = String.join(" ", strings);
 
         // Remove existing templates from map
-        TemplateManager.getSelectedTemplates().remove(player);
         TemplateManager.getPointOfTemplate().remove(player);
 
         Selection sel = WorldEditHelper.getSelection(player);
@@ -46,7 +45,6 @@ public class CommandCreateTemplate implements CommandExecutor {
         TemplateSession templateSession = new TemplateSession(template, p1);
 
         // Add player to template manager map so the template can be linked to the player
-        TemplateManager.getSelectedTemplates().put(player, template);
         TemplateManager.getPointOfTemplate().put(player, templateSession);
 
         player.sendMessage("Template with name " + name + " started");
