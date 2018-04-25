@@ -16,7 +16,7 @@ public class TerrainValidator {
     /**
      * Validate whether the impact on the terrain is within acceptable levels.
      * @param boundingBox this should be a BoundingBox using world coordinates.
-     *                    The bottom of the of the BoundingBox should be flush with the ground
+     *         The bottom of the of the BoundingBox should be flush with the ground
      * @param world the world that should
      * @return returns whether the terrain chances to the terrain will be within acceptable levels
      */
@@ -26,9 +26,12 @@ public class TerrainValidator {
         final double totalLimit = CONFIG.getInt("TerrainValidation_TotalLimit", 200);
         final int offset = CONFIG.getInt("TerrainValidation_Offset", 5);
 
-        //TODO implement checking for BoundingBoxes in the world once these are saved in the database
+        if (checkForBoundingBoxes(boundingBox)) {
+            return false;
+        }
 
         final double overhangScore = calculateOverhang(boundingBox, world);
+
         if (overhangScore >= overhangLimit) {
             return false;
         }
@@ -38,11 +41,25 @@ public class TerrainValidator {
             return false;
         }
 
-        if (blocksScore + overhangScore >= totalLimit) {
-            return false;
-        }
+        return !(blocksScore + overhangScore >= totalLimit);
+    }
 
-        return true;
+    private boolean checkForBoundingBoxes(BoundingBox boundingBox) {
+        final int checkRadius = CONFIG.getInt("TerrainValidator_BoundingBoxMinDist", 5);
+
+        Point point1 = new Point(boundingBox.getX1() - checkRadius, boundingBox.getY1() - checkRadius,
+                                 boundingBox.getZ1() - checkRadius);
+        Point point2 = new Point(boundingBox.getX2() + checkRadius, boundingBox.getY2() + checkRadius,
+                                 boundingBox.getZ2() + checkRadius);
+
+        BoundingBox boundingBoxWithOffset = new BoundingBox(point1, point2);
+
+        for (BoundingBox listItem : TerrainManager.getBoundingBoxes()) {
+            if (listItem.intersects(boundingBoxWithOffset)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private double calculateOverhang(final BoundingBox boundingBox, final World world) {

@@ -4,6 +4,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.terraincorrector.model.Hole;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,24 +24,32 @@ public class TerrainCorrector {
 
     /**
      * @param boundingBox the BoundingBox that will be used for terrain smoothing
+     * @param world The world in which
      * @return whether the smoothing succeeded
      */
-    public boolean correctTerain(BoundingBox boundingBox) {
+    public boolean correctTerrain(BoundingBox boundingBox, World world) {
+        List<Hole> holes = findHoles(boundingBox, world);
 
+        // checken op blockers (river eg.)
+
+        // juiste manier van vullen aanroepen
         return true;
     }
 
-    private List<Block> findHoles(BoundingBox boundingBox, World world) {
-        final int y = boundingBox.getY1() - 1;
-        List<Block> holes = new ArrayList<>();
+    private List<Hole> findHoles(BoundingBox boundingBox, World world) {
+        List<Hole> holes = new ArrayList<>();
+        int y = boundingBox.getY1() - 1;
 
         a:
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             b:
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
                 Block block = world.getBlockAt(x, y, z);
-                if (block.isEmpty() || block.isLiquid()) {
-                    holes.add(block);
+                if ((block.isEmpty() || block.isLiquid()) && holes.stream().noneMatch(hole -> hole.contains(block))) {
+                    // create new hole
+                    Hole hole = new Hole(block);
+
+                    // find ajecent blocks (different function)
                 }
             }
         }
