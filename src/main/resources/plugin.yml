@@ -4,6 +4,10 @@ version: 0.0.1
 description: Ellirion-BuildFramework
 authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink, Richard de Vries]
 commands:
+  CorrectTerain:
+    description: Smooths the terain.
+    usage: /CorrectTerain, /cor
+    aliases: [cor]
   Validate:
     description: Validates the terrain for terrain smoothing.
     usage: /Validate, /va
