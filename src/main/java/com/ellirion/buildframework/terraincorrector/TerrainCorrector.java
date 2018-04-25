@@ -19,7 +19,9 @@ public class TerrainCorrector {
             BlockFace.NORTH,
             BlockFace.EAST,
             BlockFace.SOUTH,
-            BlockFace.WEST
+            BlockFace.WEST,
+            BlockFace.DOWN,
+            BlockFace.UP
     };
 
     /**
@@ -31,6 +33,11 @@ public class TerrainCorrector {
         List<Hole> holes = findHoles(boundingBox, world);
 
         // checken op blockers (river eg.)
+        for (Hole h : holes) {
+            if (h.containsLiquid() && checkForRiver(h.getBlockList(), boundingBox)) {
+                return false;
+            }
+        }
 
         // juiste manier van vullen aanroepen
         return true;
@@ -40,9 +47,8 @@ public class TerrainCorrector {
         List<Hole> holes = new ArrayList<>();
         int y = boundingBox.getY1() - 1;
 
-        a:
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
-            b:
+
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
                 Block block = world.getBlockAt(x, y, z);
                 if ((block.isEmpty() || block.isLiquid()) && holes.stream().noneMatch(hole -> hole.contains(block))) {
@@ -50,17 +56,32 @@ public class TerrainCorrector {
                     Hole hole = new Hole(block);
 
                     // find ajecent blocks (different function)
+                    hole.getBlockList().addAll(getConnectedBlocks(block, boundingBox));
+
+                    // Add the hole to the list of holes
+                    holes.add(hole);
                 }
             }
         }
         return holes;
     }
 
-    private boolean checkForRiver(final List<Block> holes, BoundingBox boundingBox) {
+    private boolean checkForRiver(final Set<Block> blocks, BoundingBox boundingBox) {
         final int minX = boundingBox.getX1();
         final int maxX = boundingBox.getX2();
         final int minZ = boundingBox.getZ1();
         final int maxZ = boundingBox.getZ2();
+
+        for (Block b : blocks) {
+            //
+            if (b.isLiquid() && ((b.getX() == minX && b.getRelative(BlockFace.WEST).isLiquid()) ||
+                                 (b.getX() == maxX && b.getRelative(BlockFace.EAST).isLiquid()) ||
+                                 (b.getZ() == minZ && b.getRelative(BlockFace.NORTH).isLiquid()) ||
+                                 (b.getZ() == maxZ && b.getRelative(BlockFace.SOUTH).isLiquid()))) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -79,7 +100,7 @@ public class TerrainCorrector {
         return depth;
     }
 
-    private void getConnectedblocks(Block block, Set<Block> results, List<Block> todo, BoundingBox boundingBox) {
+    private void exploreNonSolidBlocks(Block block, Set<Block> results, List<Block> todo, BoundingBox boundingBox) {
         //Here I collect all blocks that are directly connected to variable 'block'.
         //(Shouldn't be more than 6, because a block has 6 sides)
         Set<Block> result = results;
@@ -87,27 +108,23 @@ public class TerrainCorrector {
         final int maxX = boundingBox.getX2() + 1;
         final int minZ = boundingBox.getZ1() - 1;
         final int maxZ = boundingBox.getZ2() + 1;
+        final int maxY = boundingBox.getY1() - 1;
 
         //Loop through all the relevant block faces
         for (BlockFace face : faces) {
             Block b = block.getRelative(face);
-            //Check if the relative block is inside the to check area.
-            if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ) {
-                //Check if they're both of the same type
+            //Check if the relative block is inside the to check area and
+            //Check if the block is air or liquid and add the block if it wasn't added already
+            if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ && b.getY() <= maxY &&
+                (b.isLiquid() || b.isEmpty()) && result.add(b)) {
 
-                if (b.getType() == block.getType()) {
-                    //Add the block if it wasn't added already
-                    if (result.add(b)) {
-
-                        //Add this block to the list of blocks that are yet to be done.
-                        todo.add(b);
-                    }
-                }
+                //Add this block to the list of blocks that are yet to be done.
+                todo.add(b);
             }
         }
     }
 
-    private Set<Block> getConnectedblocks(Block block, BoundingBox boundingBox) {
+    private Set<Block> getConnectedBlocks(Block block, BoundingBox boundingBox) {
         Set<Block> set = new HashSet<>();
         LinkedList<Block> todoBlocks = new LinkedList<>();
 
@@ -116,7 +133,7 @@ public class TerrainCorrector {
 
         //Execute this method for each block in the todoBlocks
         while ((block = todoBlocks.poll()) != null) {
-            getConnectedblocks(block, set, todoBlocks, boundingBox);
+            exploreNonSolidBlocks(block, set, todoBlocks, boundingBox);
         }
         return set;
     }
