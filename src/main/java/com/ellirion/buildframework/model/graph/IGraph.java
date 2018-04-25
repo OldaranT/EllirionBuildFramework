@@ -1,7 +1,5 @@
 package com.ellirion.buildframework.model.graph;
 
-import java.util.Collection;
-
 public interface IGraph<TData> {
 
     /**
@@ -73,7 +71,7 @@ public interface IGraph<TData> {
      * Gets an iterator over the vertices in this graph.
      * @return The iterator over the vertices
      */
-    Collection<? extends IVertex<TData>> getVertices();
+    Iterable<? extends IVertex<TData>> getVertices();
 
     /**
      * Gets the amount of vertices in this Graph.

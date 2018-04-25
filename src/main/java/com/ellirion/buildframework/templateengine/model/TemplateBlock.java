@@ -5,14 +5,13 @@ import lombok.Setter;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
+
 import javax.annotation.Nullable;
 
 public class TemplateBlock {
+
     @Getter @Setter private Material material;
-
-    @Nullable
-    @Getter @Setter private MaterialData metadata;
-
+    @Nullable @Getter @Setter private MaterialData metadata;
     @Getter @Setter private NBTTagCompound data;
 
     /**

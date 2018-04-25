@@ -1,8 +1,6 @@
 package com.ellirion.buildframework.model.graph;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -125,15 +123,15 @@ public class BasicVertex<TData> implements IVertex<TData> {
     }
 
     @Override
-    public Collection<IEdge<TData>> getEdges() {
-        return Collections.unmodifiableCollection(edges);
+    public Iterable<IEdge<TData>> getEdges() {
+        return edges;
     }
 
     @Override
-    public Collection<IVertex<TData>> getAdjacents() {
-        return Collections.unmodifiableCollection(edges.stream()
+    public Iterable<IVertex<TData>> getAdjacents() {
+        return edges.stream()
                 .map(edge -> edge.other(this))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
     }
 
     @Override

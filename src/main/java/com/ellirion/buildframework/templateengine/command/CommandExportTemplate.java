@@ -19,7 +19,9 @@ public class CommandExportTemplate implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (!(commandSender instanceof Player)) { return false; }
+        if (!(commandSender instanceof Player)) {
+            return false;
+        }
         Player player = (Player) commandSender;
 
         Template t = TemplateManager.getSelectedTemplates().get(player);

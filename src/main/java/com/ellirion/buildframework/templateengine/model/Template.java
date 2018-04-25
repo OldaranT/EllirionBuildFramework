@@ -20,7 +20,6 @@ import org.bukkit.material.MaterialData;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class Template {
@@ -33,13 +32,7 @@ public class Template {
     }
 
     private static String data = "data";
-    /**
-     * ID of the template.
-     */
-    @Getter @Setter private int templateID;
-
     @Getter @Setter private String templateName;
-
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
 
     @Getter private HashMap<String, Point> markers;
@@ -112,7 +105,6 @@ public class Template {
      * @param loc location to place the template.
      */
     public void putTemplateInWorld(Location loc) {
-
         int xDepth = this.getTemplateBlocks().length;
         int yDepth = this.getTemplateBlocks()[0].length;
         int zDepth = this.getTemplateBlocks()[0][0].length;
@@ -163,7 +155,6 @@ public class Template {
      * @return if the markers is in the template reach.
      */
     public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
-
         if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
             this.markers.put(name, markerPoint.toLocalTemplate(worldLocation));
             return true;
@@ -184,7 +175,6 @@ public class Template {
      * @return Point of the selected marker.
      */
     public Point findMarker(String name) {
-
         return this.markers.get(name);
     }
 
@@ -225,10 +215,8 @@ public class Template {
         int zDepth = templateBlocks[0][0].length;
 
         NBTTagList listOfMarkers = new NBTTagList();
-        Iterator it = t.getMarkers().entrySet().iterator();
 
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
+        for (Map.Entry pair : t.getMarkers().entrySet()) {
             NBTTagCompound marker = new NBTTagCompound();
             Point point = (Point) pair.getValue();
             marker.setString("name", pair.getKey().toString());
@@ -278,11 +266,10 @@ public class Template {
      */
     public static Template fromNBT(NBTTagCompound ntc) {
         Template t = new Template();
-        int nbtCompoundId = 9 + 1; // fix later
 
         t.setTemplateName(ntc.getString("templateName"));
 
-        NBTTagList markers = ntc.getList("markers", nbtCompoundId);
+        NBTTagList markers = ntc.getList("markers", 10);
         for (int i = 0; i < markers.size(); i++) {
             NBTTagCompound marker = markers.get(i);
             String name = marker.getString("name");
@@ -293,7 +280,7 @@ public class Template {
             t.addMarker(name, markerPoint);
         }
 
-        NBTTagList arrayX = ntc.getList("templateBlocks", nbtCompoundId);
+        NBTTagList arrayX = ntc.getList("templateBlocks", 10);
         BoundingBox bb = BoundingBox.fromNBT(ntc.getCompound("boundingBox"));
         int xDepth = bb.getWidth();
         int yDepth = bb.getHeight();
@@ -309,17 +296,17 @@ public class Template {
 
                     NBTTagCompound blockData = arrayX.get(i);
 
-                    //get the material of the block
+                    // Get the material of the block
                     String material = blockData.getString("material");
                     TemplateBlock tb = new TemplateBlock(Material.valueOf(material));
 
-                    //get the metadata of the block
+                    // Get the metadata of the block
                     NBTTagCompound metadata = blockData.getCompound("metadata");
                     MaterialData meta = new MaterialData(metadata.getInt("type"), metadata.getByte(data));
                     tb.setMetadata(meta);
                     tBlocks[x][y][z] = tb;
 
-                    //get the nbt data of the block
+                    // Get the nbt data of the block
                     NBTTagCompound nbtdata = blockData.getCompound(data);
                     if (nbtdata != null) {
                         tb.setData(nbtdata);

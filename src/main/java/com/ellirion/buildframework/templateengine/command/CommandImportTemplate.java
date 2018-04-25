@@ -15,9 +15,12 @@ import java.io.File;
 import java.io.FileInputStream;
 
 public class CommandImportTemplate implements CommandExecutor {
+
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (!(commandSender instanceof Player)) { return false; }
+        if (!(commandSender instanceof Player)) {
+            return false;
+        }
         Player player = (Player) commandSender;
 
         String templateName = String.join(" ", strings);
@@ -35,7 +38,6 @@ public class CommandImportTemplate implements CommandExecutor {
         Template t = Template.fromNBT(ntc);
 
         // Update templatemanager
-        TemplateManager.getSelectedTemplates().remove(player);
         TemplateManager.getSelectedTemplates().put(player, t);
 
         //tell player what happened
