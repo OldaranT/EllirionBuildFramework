@@ -25,7 +25,7 @@ public class TerrainCorrector {
     };
 
     /**
-     * @param boundingBox the BoundingBox that will be used for terrain smoothing
+     * @param boundingBox the BoundingBox that will be used for terrain smoothing.
      * @param world The world in which
      * @return whether the smoothing succeeded
      */
@@ -48,7 +48,6 @@ public class TerrainCorrector {
         int y = boundingBox.getY1() - 1;
 
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
-
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
                 Block block = world.getBlockAt(x, y, z);
                 if ((block.isEmpty() || block.isLiquid()) && holes.stream().noneMatch(hole -> hole.contains(block))) {
@@ -113,11 +112,11 @@ public class TerrainCorrector {
         //Loop through all the relevant block faces
         for (BlockFace face : faces) {
             Block b = block.getRelative(face);
+
             //Check if the relative block is inside the to check area and
             //Check if the block is air or liquid and add the block if it wasn't added already
             if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ && b.getY() <= maxY &&
                 (b.isLiquid() || b.isEmpty()) && result.add(b)) {
-
                 //Add this block to the list of blocks that are yet to be done.
                 todo.add(b);
             }
