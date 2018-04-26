@@ -30,13 +30,14 @@ public class TerrainCorrector {
      * @param world The world in which
      * @return whether the smoothing succeeded
      */
-    public boolean correctTerrain(BoundingBox boundingBox, World world) {
+    public String correctTerrain(BoundingBox boundingBox, World world) {
         List<Hole> holes = findHoles(boundingBox, world);
 
         // checken op blockers (river eg.)
         for (Hole h : holes) {
             if (h.containsLiquid() && checkForRiver(h.getBlockList(), boundingBox)) {
-                return false;
+
+                return "Could not correct the terrain because the selection is above a lake, pond or river";
             }
         }
 
@@ -48,7 +49,7 @@ public class TerrainCorrector {
 
         Set<Block> toRemove = getBlocksInBoundingBox(boundingBox, world);
         setListToAir(toRemove);
-        return true;
+        return "Corrected Terrain";
     }
 
     private boolean fillBasicHole(Hole hole, World world) {
@@ -188,7 +189,7 @@ public class TerrainCorrector {
 
     private void setListToAir(Set<Block> blocks) {
         for (Block b : blocks) {
-            b.setType(Material.AIR);
+            b.setType(Material.AIR, true);
         }
     }
 }
