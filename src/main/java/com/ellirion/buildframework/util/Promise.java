@@ -293,7 +293,7 @@ public class Promise<TResult> {
         }
     }
 
-    private enum State {
+    protected enum State {
         PENDING,
         RESOLVED,
         REJECTED
