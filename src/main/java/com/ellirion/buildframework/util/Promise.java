@@ -2,7 +2,6 @@ package com.ellirion.buildframework.util;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
-
 import com.ellirion.buildframework.BuildFramework;
 
 import java.util.ArrayList;
@@ -45,6 +44,7 @@ public class Promise<TResult> {
     private Promise(final IPromiseBody<TResult> runner, final boolean async, final boolean run) {
         this.state = PENDING;
         this.result = null;
+        this.exception = null;
 
         this.onResolve = new ArrayList<>();
         this.onReject = new ArrayList<>();
@@ -73,7 +73,7 @@ public class Promise<TResult> {
     /**
      * Upon the resolving of this Promise, the {@code consumer} will be synchronously invoked with the
      * result that caused this Promise to resolve.
-     * @param consumer The consumer function to run upon failing
+     * @param consumer The consumer function to run upon resolving
      * @return This Promise
      */
     public Promise<TResult> consumeSync(Consumer<TResult> consumer) {
@@ -87,7 +87,7 @@ public class Promise<TResult> {
     /**
      * Upon the resolving of this Promise, the {@code consumer} will be synchronously invoked with the
      * result that caused this Promise to resolve.
-     * @param consumer The consumer function to run upon failing
+     * @param consumer The consumer function to run upon resolving
      * @return This Promise
      */
     public Promise<TResult> consumeAsync(Consumer<TResult> consumer) {
@@ -152,9 +152,8 @@ public class Promise<TResult> {
             return next;
         }
 
-        // If the outer (this) promise resolves normally, the next promise needs to run normally.
-        // However, if the outer promise fails, then the inner promise also needs to fail since
-        // it depends on the outer promise to succeed.
+        // If this Promise resolves normally, the next Promise also needs to run normally.
+        // However, if this Promise fails, then the inner Promise also needs to fail.
         onResolve.add((result) -> next.schedule(next::runBody));
         onReject.add(next::handleReject);
 
@@ -234,7 +233,7 @@ public class Promise<TResult> {
             return next;
         }
 
-        // If we have been rejected, we invoke the regular body straight away.
+        // If we have been rejected, schedule the execution of the next body.
         if (state == REJECTED) {
             next.schedule(next::runBody);
             return next;
