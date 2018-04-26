@@ -42,8 +42,22 @@ public class TerrainCorrector {
 
         // juiste manier van vullen aanroepen
 
+        for (Hole h : holes) {
+            fillBasicHole(h, world);
+        }
+
         Set<Block> toRemove = getBlocksInBoundingBox(boundingBox, world);
         setListToAir(toRemove);
+        return true;
+    }
+
+    private boolean fillBasicHole(Hole hole, World world) {
+        List<Block> blocks = hole.getTopBlocks();
+
+        for (Block b : blocks) {
+            b.setType(Material.BARRIER);
+        }
+
         return true;
     }
 
@@ -69,7 +83,7 @@ public class TerrainCorrector {
         return holes;
     }
 
-    private boolean checkForRiver(final Set<Block> blocks, BoundingBox boundingBox) {
+    private boolean checkForRiver(final List<Block> blocks, BoundingBox boundingBox) {
         final int minX = boundingBox.getX1();
         final int maxX = boundingBox.getX2();
         final int minZ = boundingBox.getZ1();
