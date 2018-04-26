@@ -31,10 +31,29 @@ public class Template {
         DOOR, GROUND, PATH
     }
 
+    private static Material[] placeLate = new Material[] {
+            Material.WALL_SIGN,
+            Material.WALL_BANNER,
+            Material.BANNER,
+            Material.LADDER,
+            Material.PAINTING,
+            Material.ITEM_FRAME,
+            Material.STONE_BUTTON,
+            Material.WOOD_BUTTON,
+            Material.LEVER,
+            Material.REDSTONE,
+            Material.REDSTONE_TORCH_OFF,
+            Material.REDSTONE_TORCH_ON,
+            Material.VINE,
+            Material.TRIPWIRE_HOOK,
+            Material.PISTON_BASE,
+            Material.PISTON_EXTENSION,
+            Material.PISTON_STICKY_BASE
+    };
+
     private static String data = "data";
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
-
     @Getter private HashMap<String, Point> markers;
 
     /**
@@ -111,35 +130,52 @@ public class Template {
 
         CraftWorld w = (CraftWorld) loc.getWorld();
 
+        HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
+
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
+                    if (Arrays.asList(placeLate).contains(templateBlocks[x][y][z].getMaterial())) {
+                        toPlaceLast.put(new Point(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z),
+                                        templateBlocks[x][y][z]);
+                    } else {
+                        int locX = (int) loc.getX() + x;
+                        int locY = (int) loc.getY() + y;
+                        int locZ = (int) loc.getZ() + z;
 
-                    int locX = (int) loc.getX() + x;
-                    int locY = (int) loc.getY() + y;
-                    int locZ = (int) loc.getZ() + z;
+                        Block b = w.getBlockAt(locX, locY, locZ);
 
-                    Block b = w.getBlockAt(locX, locY, locZ);
+                        b.setType(getTemplateBlocks()[x][y][z].getMaterial());
+                        b.getState().update();
 
-                    b.setType(this.getTemplateBlocks()[x][y][z].getMaterial());
-                    b.getState().update();
+                        MaterialData copiedState = getTemplateBlocks()[x][y][z].getMetadata();
+                        BlockState blockState = b.getState();
+                        blockState.setData(copiedState);
+                        blockState.update(false, false);
 
-                    MaterialData copiedState = this.getTemplateBlocks()[x][y][z].getMetadata();
-                    BlockState blockState = b.getState();
-                    blockState.setData(copiedState);
-                    blockState.update();
+                        TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
 
-                    TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
-
-                    if (te != null) {
-                        NBTTagCompound ntc = this.getTemplateBlocks()[x][y][z].getData();
-                        ntc.setInt("x", locX);
-                        ntc.setInt("y", locY);
-                        ntc.setInt("z", locZ);
-                        te.load(ntc);
+                        if (te != null) {
+                            NBTTagCompound ntc = getTemplateBlocks()[x][y][z].getData();
+                            ntc.setInt("x", locX);
+                            ntc.setInt("y", locY);
+                            ntc.setInt("z", locZ);
+                            te.load(ntc);
+                        }
                     }
                 }
             }
+        }
+
+        for (Map.Entry pair : toPlaceLast.entrySet()) {
+            Point p = (Point) pair.getKey();
+            TemplateBlock block = (TemplateBlock) pair.getValue();
+
+            Block b = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+            b.setType(block.getMaterial());
+            BlockState state = b.getState();
+            state.setData(block.getMetadata());
+            state.update();
         }
     }
 
@@ -201,10 +237,8 @@ public class Template {
             templateName != null && other.templateName == null) {
             return false;
         }
-        if (templateName != null && other.templateName != null) {
-            if (!templateName.equals(other.templateName)) {
-                return false;
-            }
+        if ((templateName != null && other.templateName != null) && !templateName.equals(other.templateName)) {
+            return false;
         }
 
         // TemplateBlocks has to be null in both or the same in both

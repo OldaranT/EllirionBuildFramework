@@ -32,30 +32,24 @@ public class TemplateBlock {
             material != null && other.material == null) {
             return false;
         }
-        if (material != null && other.material != null) {
-            if (other.material != material) {
-                return false;
-            }
+        if (material != null && other.material != null && other.material != material) {
+            return false;
         }
 
         if (metadata == null && other.metadata != null ||
             metadata != null && other.metadata == null) {
             return false;
         }
-        if (metadata != null && other.metadata != null) {
-            if (!metadata.equals(other.metadata)) {
-                return false;
-            }
+        if (metadata != null && other.metadata != null && !metadata.equals(other.metadata)) {
+            return false;
         }
 
         if (data == null && other.data != null ||
             data != null && other.data == null) {
             return false;
         }
-        if (data != null && other.data != null) {
-            if (!data.equals(other.data)) {
-                return false;
-            }
+        if (data != null && other.data != null && !data.equals(other.data)) {
+            return false;
         }
 
         return true;
