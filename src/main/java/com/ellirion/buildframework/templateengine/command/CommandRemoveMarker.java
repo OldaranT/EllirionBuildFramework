@@ -21,7 +21,7 @@ public class CommandRemoveMarker implements CommandExecutor {
 
         Player player = (Player) commandSender;
 
-        TemplateSession ts = TemplateManager.getSelectedTemplateSession().get(player);
+        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
         String markers = Template.markersToString();
 
         if (ts == null) {
@@ -36,22 +36,22 @@ public class CommandRemoveMarker implements CommandExecutor {
 
         String marker = strings[0];
 
-        Point templateWorldPoint = TemplateManager.getSelectedTemplateSession().get(player).getPoint();
+        Point templateWorldPoint = TemplateManager.getTemplateSessions().get(player).getPoint();
 
         if (templateWorldPoint == null) {
             player.sendMessage(ChatColor.DARK_RED + "You can only remove markers on creations of a template");
             return true;
         }
 
-        ts.removeMarkersHologram(player);
+        ts.removeMarkerHolograms(player);
 
         if (ts.getTemplate().removeMarker(marker)) {
             player.sendMessage(ChatColor.GREEN + "The following marker has been removed: " + marker);
-            ts.placeMarkersHologram(player);
+            ts.placeMarkerHolograms(player);
             return true;
         }
 
-        ts.placeMarkersHologram(player);
+        ts.placeMarkerHolograms(player);
         player.sendMessage(
                 ChatColor.DARK_RED + "The following marker " + marker + " has not been created yet.");
         return true;

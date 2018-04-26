@@ -25,7 +25,7 @@ public class CommandAddMarker implements CommandExecutor {
         double playerY = player.getLocation().getY();
         double playerZ = player.getLocation().getZ();
 
-        TemplateSession ts = TemplateManager.getSelectedTemplateSession().get(player);
+        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
         String markers = Template.markersToString();
 
         if (ts == null) {
@@ -46,22 +46,22 @@ public class CommandAddMarker implements CommandExecutor {
         String marker = strings[0];
 
         Point markerPoint = new Point(playerX, playerY - 1, playerZ);
-        Point templateWorldPoint = TemplateManager.getSelectedTemplateSession().get(player).getPoint();
+        Point templateWorldPoint = TemplateManager.getTemplateSessions().get(player).getPoint();
 
         if (templateWorldPoint == null) {
             player.sendMessage(ChatColor.DARK_RED + "You can only add markers on creations of a template");
             return true;
         }
 
-        ts.removeMarkersHologram(player);
+        ts.removeMarkerHolograms(player);
 
         if (!ts.getTemplate().addMarker(marker, markerPoint, templateWorldPoint)) {
             player.sendMessage(ChatColor.DARK_RED + "This position is not within the template selection");
-            ts.placeMarkersHologram(player);
+            ts.placeMarkerHolograms(player);
             return true;
         }
 
-        ts.placeMarkersHologram(player);
+        ts.placeMarkerHolograms(player);
 
         player.sendMessage(
                 ChatColor.GREEN + "The following marker has been added: " + marker);

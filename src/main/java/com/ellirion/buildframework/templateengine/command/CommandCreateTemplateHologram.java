@@ -25,7 +25,7 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
             prevHologram.remove(player);
         }
 
-        TemplateSession ts = TemplateManager.getSelectedTemplateSession().get(player);
+        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
         if (ts == null) {
             player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
             return true;

@@ -51,7 +51,7 @@ public class CommandCreateTemplate implements CommandExecutor {
         name = name.replaceAll("[^a-zA-Z0-9 ]", "");
 
         // Remove existing templates from map
-        TemplateManager.getSelectedTemplateSession().remove(player);
+        TemplateManager.getTemplateSessions().remove(player);
 
         Selection sel = WorldEditHelper.getSelection(player);
         if (!(sel instanceof CuboidSelection)) {
@@ -65,7 +65,7 @@ public class CommandCreateTemplate implements CommandExecutor {
         TemplateSession templateSession = new TemplateSession(template, p1);
 
         // Add player to template manager map so the template can be linked to the player
-        TemplateManager.getSelectedTemplateSession().put(player, templateSession);
+        TemplateManager.getTemplateSessions().put(player, templateSession);
 
         player.sendMessage("Template with name " + ChatColor.BOLD + name + ChatColor.RESET + " started");
         player.sendMessage("Add markers before saving your template");
