@@ -8,10 +8,8 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class TerrainCorrector {
 
@@ -46,7 +44,7 @@ public class TerrainCorrector {
             fillBasicHole(h, world);
         }
 
-        Set<Block> toRemove = getBlocksInBoundingBox(boundingBox, world);
+        List<Block> toRemove = getBlocksInBoundingBox(boundingBox, world);
         setListToAir(toRemove);
         return true;
     }
@@ -72,7 +70,7 @@ public class TerrainCorrector {
                     // create new hole
                     Hole hole = new Hole(block);
 
-                    // find ajecent blocks (different function)
+                    // find adjacent blocks (different function)
                     hole.getBlockList().addAll(getConnectedBlocks(block, boundingBox));
 
                     // Add the hole to the list of holes
@@ -156,8 +154,8 @@ public class TerrainCorrector {
         return set;
     }
 
-    private Set<Block> getBlocksInBoundingBox(BoundingBox boundingBox, World world) {
-        Set<Block> blocks = new HashSet<>();
+    private List<Block> getBlocksInBoundingBox(BoundingBox boundingBox, World world) {
+        List<Block> blocks = new ArrayList<>();
 
         final int bottomBlockX = boundingBox.getX1();
         final int topBlockX = boundingBox.getX2();
@@ -186,7 +184,7 @@ public class TerrainCorrector {
         return blocks;
     }
 
-    private void setListToAir(Set<Block> blocks) {
+    private void setListToAir(List<Block> blocks) {
         for (Block b : blocks) {
             b.setType(Material.AIR);
         }

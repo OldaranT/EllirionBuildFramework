@@ -6,7 +6,6 @@ import org.bukkit.block.Block;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Hole {
@@ -32,9 +31,8 @@ public class Hole {
     /**
      * @param s The set that should be used to fill the list.
      */
-    public Hole(final Set<Block> s) {
-        blockList = new ArrayList<>();
-        blockList.addAll(s);
+    public Hole(final List<Block> s) {
+        blockList = s;
     }
 
     /**
