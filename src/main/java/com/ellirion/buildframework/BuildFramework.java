@@ -1,15 +1,15 @@
 package com.ellirion.buildframework;
 
-import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
-import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
-import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
-import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
-import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
+import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
@@ -63,10 +63,11 @@ public class BuildFramework extends JavaPlugin {
 
     private void createConfig() {
         this.config.options().header("Ellirion-BuildFramework configuration file");
-        config.addDefault("TerrainValidation_OverheadLimit", 0);
-        config.addDefault("TerrainValidation_BlocksLimit", 0);
-        config.addDefault("TerrainValidation_TotalLimit", 0);
+        config.addDefault("TerrainValidation_OverheadLimit", 20);
+        config.addDefault("TerrainValidation_BlocksLimit", 40);
+        config.addDefault("TerrainValidation_TotalLimit", 50);
         config.addDefault("TerrainValidation_Offset", 5);
+        config.addDefault("TerrainValidator_BoundingBoxMinDist", 5);
         config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
         config.addDefault("DOOR", 0);
         config.addDefault("PATH", 1);
