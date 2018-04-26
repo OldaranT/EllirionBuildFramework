@@ -130,7 +130,7 @@ public class BuildFramework extends JavaPlugin {
         raceList.add("ARGORIAN");
         raceList.add("DWARF");
         raceList.add("ELF");
-        raceList.add("KHAIJT");
+        raceList.add("KHAJIIT");
         raceList.add("ORC");
         raceList.add("VIKING");
         raceList.add("INFECTED");
