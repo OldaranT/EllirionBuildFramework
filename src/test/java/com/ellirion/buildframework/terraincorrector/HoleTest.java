@@ -1,11 +1,7 @@
 package com.ellirion.buildframework.terraincorrector;
 
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_12_R1.CraftChunk;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 
 import java.util.ArrayList;
@@ -14,8 +10,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({CraftChunk.class})
 public class HoleTest {
 
     @Test
