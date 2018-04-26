@@ -40,7 +40,11 @@ commands:
     description: Remove the selected hologram
     usage: /RemoveHologram, /rh
     aliases: [rh]
-  PathFind:
+  FindPath:
     description: find a path between two WorldEdit selections
-    usage: /pathfind, /findpath, /pf, /fp
-    aliases: [findpath, fp, pf]
+    usage: /findpath, /fp
+    aliases: [findpath, fp]
+  HidePath:
+    description: hides the current path if it exists
+    usage: /hidepath, /hp
+    aliases: [hidepath, hp]
