@@ -170,15 +170,6 @@ public class Template {
     }
 
     /**
-     * Get point of a marker.
-     * @param name name of the marker
-     * @return Point of the selected marker.
-     */
-    public Point findMarker(String name) {
-        return this.markers.get(name);
-    }
-
-    /**
      * Remove marker.
      * @param name name of the marker
      * @return Point of the selected marker.
@@ -191,11 +182,80 @@ public class Template {
      * @return boundingbox of the template.
      */
     public BoundingBox getBoundingBox() {
-        int xDepth = this.templateBlocks.length;
-        int yDepth = this.templateBlocks[0].length;
-        int zDepth = this.templateBlocks[0][0].length;
+        int xDepth = templateBlocks.length;
+        int yDepth = templateBlocks[0].length;
+        int zDepth = templateBlocks[0][0].length;
 
         return new BoundingBox(0, 0, 0, xDepth - 1, yDepth - 1, zDepth - 1);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Template)) {
+            return false;
+        }
+        Template other = (Template) obj;
+
+        // Template name has to be either null in both or the same in both
+        if (templateName == null && other.templateName != null ||
+            templateName != null && other.templateName == null) {
+            return false;
+        }
+        if (templateName != null && other.templateName != null) {
+            if (!templateName.equals(other.templateName)) {
+                return false;
+            }
+        }
+
+        // TemplateBlocks has to be null in both or the same in both
+        if (templateBlocks == null && other.templateBlocks != null ||
+            templateBlocks != null && other.templateBlocks == null) {
+            return false;
+        }
+        if (templateBlocks != null && other.templateBlocks != null) {
+            TemplateBlock[][][] otherblocks = other.getTemplateBlocks();
+            int x = 0, y = 0, z = 0;
+            try {
+                for (TemplateBlock[][] blockss : templateBlocks) {
+                    for (TemplateBlock[] blocks : blockss) {
+                        for (TemplateBlock block : blocks) {
+                            if (block.equals(otherblocks[x][y][z])) {
+                                z++;
+                            } else {
+                                return false;
+                            }
+                        }
+                        z = 0;
+                        y++;
+                    }
+                    y = 0;
+                    x++;
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                return false;
+            }
+        }
+
+        // Check markers
+        if (markers.size() != other.markers.size()) {
+            return false;
+        }
+        for (Map.Entry pair : markers.entrySet()) {
+            // Check if all markers have the same position
+            if (!other.markers.containsKey(pair.getKey())) {
+                return false;
+            }
+            if (!(other.markers.get(pair.getKey()).equals(pair.getValue()))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     /**
@@ -325,9 +385,8 @@ public class Template {
      */
     public static String markersToString() {
         String markers = "";
-        markers += ChatColor.RESET;
-        markers += ChatColor.BOLD;
-        markers += String.join(", ", Arrays.toString(Markers.values()).replaceAll("^.|.$", "").split(", "));
+        markers += String.join(ChatColor.RESET + ", " + ChatColor.BOLD,
+                               Arrays.toString(Markers.values()).replaceAll("^.|.$", "").split(", "));
         markers += ChatColor.RESET;
         return markers;
     }

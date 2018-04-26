@@ -1,0 +1,114 @@
+package com.ellirion.buildframework.templateengine;
+
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import org.bukkit.Material;
+import org.bukkit.material.MaterialData;
+import org.junit.Assert;
+import org.junit.Test;
+import com.ellirion.buildframework.templateengine.model.TemplateBlock;
+
+public class TemplateBlockEqualsTest {
+
+    @Test
+    public void equals_SameBlock_ShouldBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        Assert.assertEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_DifferentMaterial_ShouldNotBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        blocks[1].setMaterial(Material.AIR);
+
+        Assert.assertNotEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_MissingMaterial_ShouldNotBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        blocks[1].setMaterial(null);
+
+        Assert.assertNotEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_DifferentMetadata_ShouldNotBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        blocks[1].setMetadata(new MaterialData(0, (byte) 0));
+
+        Assert.assertNotEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_SameWithoutMetadata_ShouldBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        blocks[0].setMetadata(null);
+        blocks[1].setMetadata(null);
+
+        Assert.assertEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_MissingMetadata_ShouldNotBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        blocks[1].setMetadata(null);
+
+        Assert.assertNotEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_SameWithSameNBTData_ShouldBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        NBTTagCompound ntc = new NBTTagCompound();
+        ntc.setString("a", "a");
+        blocks[0].setData(ntc);
+        blocks[1].setData(ntc);
+
+        Assert.assertEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_SameWithDifferentNBTData_ShouldNotBeEquals() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        NBTTagCompound ntc = new NBTTagCompound();
+        ntc.setString("a", "a");
+        NBTTagCompound ntc2 = new NBTTagCompound();
+        ntc.setString("a", "b");
+        blocks[0].setData(ntc);
+        blocks[1].setData(ntc2);
+
+        Assert.assertNotEquals(blocks[0], blocks[1]);
+    }
+
+    @Test
+    public void equals_MissingNBTData_ShouldBeEqual() {
+        TemplateBlock[] blocks = createTemplateBlocks(2);
+
+        NBTTagCompound ntc = new NBTTagCompound();
+        ntc.setString("a", "a");
+        blocks[0].setData(null);
+        blocks[1].setData(ntc);
+
+        Assert.assertNotEquals(blocks[0], blocks[1]);
+    }
+
+    private TemplateBlock[] createTemplateBlocks(int n) {
+        TemplateBlock[] templates = new TemplateBlock[n];
+
+        for (int i = 0; i < n; i++) {
+            TemplateBlock a = new TemplateBlock(Material.STONE);
+            a.setMetadata(new MaterialData(1, (byte) 0));
+            templates[i] = a;
+        }
+
+        return templates;
+    }
+}

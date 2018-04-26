@@ -20,4 +20,49 @@ public class TemplateBlock {
     public TemplateBlock(final Material material) {
         this.material = material;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TemplateBlock)) {
+            return false;
+        }
+        TemplateBlock other = (TemplateBlock) obj;
+
+        if (material == null && other.material != null ||
+            material != null && other.material == null) {
+            return false;
+        }
+        if (material != null && other.material != null) {
+            if (other.material != material) {
+                return false;
+            }
+        }
+
+        if (metadata == null && other.metadata != null ||
+            metadata != null && other.metadata == null) {
+            return false;
+        }
+        if (metadata != null && other.metadata != null) {
+            if (!metadata.equals(other.metadata)) {
+                return false;
+            }
+        }
+
+        if (data == null && other.data != null ||
+            data != null && other.data == null) {
+            return false;
+        }
+        if (data != null && other.data != null) {
+            if (!data.equals(other.data)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
