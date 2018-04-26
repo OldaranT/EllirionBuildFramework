@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.templateengine.model;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.sk89q.worldedit.bukkit.selections.Selection;
@@ -18,20 +19,15 @@ import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Template {
 
-    /**
-     * Enum of markers.
-     */
-    public enum Markers {
-        DOOR, GROUND, PATH
-    }
-
     private static String data = "data";
+    @Getter private static List<String> finalMarkerList = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+            "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
 
@@ -156,7 +152,7 @@ public class Template {
      */
     public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
         if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
-            this.markers.put(name, markerPoint.toLocalTemplate(worldLocation));
+            this.markers.put(name, markerPoint.translate(worldLocation.invert()));
             return true;
         }
         return false;
@@ -327,7 +323,7 @@ public class Template {
         String markers = "";
         markers += ChatColor.RESET;
         markers += ChatColor.BOLD;
-        markers += String.join(", ", Arrays.toString(Markers.values()).replaceAll("^.|.$", "").split(", "));
+        markers += String.join(", ", finalMarkerList);
         markers += ChatColor.RESET;
         return markers;
     }

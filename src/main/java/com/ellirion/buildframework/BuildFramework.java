@@ -17,6 +17,7 @@ import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BuildFramework extends JavaPlugin {
@@ -69,6 +70,7 @@ public class BuildFramework extends JavaPlugin {
 
     private void createConfig() {
         this.config.options().header("Ellirion-BuildFramework configuration file");
+        config.addDefault("templatePath", "plugins/Ellirion-BuildFramework/templates/");
         config.addDefault("TerrainValidation_OverheadLimit", 20);
         config.addDefault("TerrainValidation_BlocksLimit", 40);
         config.addDefault("TerrainValidation_TotalLimit", 50);
@@ -126,42 +128,18 @@ public class BuildFramework extends JavaPlugin {
                                               "their are 3 options: RACE, TYPE, LEVEL.\n" +
                                               "Markers is a list of all the possible markers you can use.\n");
 
-        List<String> raceList = new ArrayList<>();
-        raceList.add("ARGORIAN");
-        raceList.add("DWARF");
-        raceList.add("ELF");
-        raceList.add("KHAJIIT");
-        raceList.add("ORC");
-        raceList.add("VIKING");
-        raceList.add("INFECTED");
-        raceList.add("HUMAN");
+        List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
+                                              "HUMAN");
 
-        List<String> typeList = new ArrayList<>();
-        typeList.add("HOUSE");
-        typeList.add("BLACKSMITH");
-        typeList.add("TOWNHALL");
-        typeList.add("SAWMILL");
-        typeList.add("STABLE");
-        typeList.add("BARRACK");
-        typeList.add("WINDMILL");
-        typeList.add("HARBOR");
+        List<String> typeList = Arrays.asList("HOUSE", "BLACKSMITH", "TOWNHALL", "SAWMILL", "STABLE", "BARRACK",
+                                              "WINDMILL", "HARBOR");
 
         List<String> levelList = new ArrayList<>();
-        levelList.add("1");
-        levelList.add("2");
-        levelList.add("3");
-        levelList.add("4");
-        levelList.add("5");
-        levelList.add("6");
-        levelList.add("7");
-        levelList.add("8");
-        levelList.add("9");
-        levelList.add("10");
+        for (int i = 1; i <= 10; i++) {
+            levelList.add(Integer.toString(i));
+        }
 
-        List<String> markerList = new ArrayList<>();
-        markerList.add("DOOR");
-        markerList.add("GROUND");
-        markerList.add("PATH");
+        List<String> markerList = Arrays.asList("DOOR", "GROUND", "PATH");
 
         templateFormatConfig.set("Races", raceList);
         templateFormatConfig.set("Types", typeList);

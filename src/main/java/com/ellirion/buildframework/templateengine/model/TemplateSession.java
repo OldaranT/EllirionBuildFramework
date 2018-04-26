@@ -34,7 +34,7 @@ public class TemplateSession {
      * Removes all marker holograms of the current session.
      * @param player current player.
      */
-    public void removeMakersHologram(Player player) {
+    public void removeMarkersHologram(Player player) {
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
 
         // Place the markers (Color of the markers is set in the config)
@@ -53,7 +53,7 @@ public class TemplateSession {
      * Places all marker holograms of the current session.
      * @param player current player.
      */
-    public void placeMakersHologram(Player player) {
+    public void placeMarkersHologram(Player player) {
 
         // Place the markers (Color of the markers is set in the config)
         for (Map.Entry pair : template.getMarkers().entrySet()) {

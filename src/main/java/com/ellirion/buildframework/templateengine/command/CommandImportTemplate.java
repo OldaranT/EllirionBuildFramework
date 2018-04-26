@@ -20,7 +20,8 @@ public class CommandImportTemplate implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
-            return false;
+            commandSender.sendMessage("You need to be a player to use this command.");
+            return true;
         }
         Player player = (Player) commandSender;
 
@@ -33,13 +34,13 @@ public class CommandImportTemplate implements CommandExecutor {
             ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));
         } catch (Exception e) {
             player.sendMessage(ChatColor.DARK_RED + "Something went wrong while loading the file");
-            return false;
+            return true;
         }
 
         TemplateSession ts = new TemplateSession(Template.fromNBT(ntc), null);
 
         // Update templatemanager
-        TemplateManager.getPointOfTemplate().put(player, ts);
+        TemplateManager.getSelectedTemplateSession().put(player, ts);
 
         //tell player what happened
         player.sendMessage(

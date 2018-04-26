@@ -12,6 +12,7 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class CommandCreateTemplate implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
+            commandSender.sendMessage("You need to be a player to use this command.");
             return true;
         }
         Player player = (Player) commandSender;
@@ -32,37 +34,15 @@ public class CommandCreateTemplate implements CommandExecutor {
             return true;
         }
 
-        List<String> raceList = (List<String>) BuildFramework.getInstance().getTemplateFormatConfig().getList("Races");
-        List<String> typeList = (List<String>) BuildFramework.getInstance().getTemplateFormatConfig().getList("Types");
-        List<String> levelList = (List<String>) BuildFramework.getInstance().getTemplateFormatConfig().getList(
-                "Levels");
+        FileConfiguration templateFormatConfig = BuildFramework.getInstance().getTemplateFormatConfig();
 
-        boolean argCheck = true;
-        if (!raceList.contains(strings[0].toUpperCase())) {
-            String raceOptions = String.join(", ", raceList);
-            player.sendMessage(
-                    ChatColor.DARK_RED + "The race you defined does not exist please use one of the following:");
-            player.sendMessage(ChatColor.BOLD + raceOptions);
-            argCheck = false;
-        }
+        List<String> raceList = templateFormatConfig.getStringList("Races");
+        List<String> typeList = templateFormatConfig.getStringList("Types");
+        List<String> levelList = templateFormatConfig.getStringList("Levels");
 
-        if (!typeList.contains(strings[1].toUpperCase())) {
-            String typeOptions = String.join(", ", typeList);
-            player.sendMessage(
-                    ChatColor.DARK_RED + "The type you defined does not exist please use one of the following:");
-            player.sendMessage(ChatColor.BOLD + typeOptions);
-            argCheck = false;
-        }
-
-        if (!levelList.contains(strings[2].toUpperCase())) {
-            String levelOptions = String.join(", ", levelList);
-            player.sendMessage(
-                    ChatColor.DARK_RED + "The level you defined does not exist please use one of the following:");
-            player.sendMessage(ChatColor.BOLD + levelOptions);
-            argCheck = false;
-        }
-
-        if (!argCheck) {
+        if (!checkIfStringIsInList(raceList, strings[0], player, "race") ||
+            !checkIfStringIsInList(typeList, strings[1], player, "type") ||
+            !checkIfStringIsInList(levelList, strings[2], player, "level")) {
             return true;
         }
 
@@ -71,7 +51,7 @@ public class CommandCreateTemplate implements CommandExecutor {
         name = name.replaceAll("[^a-zA-Z0-9 ]", "");
 
         // Remove existing templates from map
-        TemplateManager.getPointOfTemplate().remove(player);
+        TemplateManager.getSelectedTemplateSession().remove(player);
 
         Selection sel = WorldEditHelper.getSelection(player);
         if (!(sel instanceof CuboidSelection)) {
@@ -85,7 +65,7 @@ public class CommandCreateTemplate implements CommandExecutor {
         TemplateSession templateSession = new TemplateSession(template, p1);
 
         // Add player to template manager map so the template can be linked to the player
-        TemplateManager.getPointOfTemplate().put(player, templateSession);
+        TemplateManager.getSelectedTemplateSession().put(player, templateSession);
 
         player.sendMessage("Template with name " + ChatColor.BOLD + name + ChatColor.RESET + " started");
         player.sendMessage("Add markers before saving your template");
@@ -95,6 +75,18 @@ public class CommandCreateTemplate implements CommandExecutor {
 
         player.sendMessage("Possible markers are: " + markers);
 
+        return true;
+    }
+
+    private boolean checkIfStringIsInList(List<String> list, String toCheck, Player player, String nameOfList) {
+        if (!list.contains(toCheck.toUpperCase())) {
+            String options = String.join(", ", list);
+            player.sendMessage(
+                    ChatColor.DARK_RED + "The " + nameOfList +
+                    " you defined does not exist please use one of the following:");
+            player.sendMessage(ChatColor.BOLD + options);
+            return false;
+        }
         return true;
     }
 }

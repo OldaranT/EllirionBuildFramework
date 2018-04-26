@@ -215,19 +215,19 @@ public class Point {
     }
 
     /**
-     * Set a point to a local template point.
-     * @param worldPoint point in the world.
-     * @return A point localized to a template.
+     * Invert a point.
+     * @return an inverted point.
      */
-    public Point toLocalTemplate(Point worldPoint) {
-        double newX = 0;
-        double newY = 0;
-        double newZ = 0;
+    public Point invert() {
+        return new Point(x * -1, y * -1, z * -1);
+    }
 
-        newX = x - worldPoint.getX();
-        newY = y - worldPoint.getY();
-        newZ = z - worldPoint.getZ();
-
-        return new Point(newX, newY, newZ);
+    /**
+     * Translate a point.
+     * @param point point to translate with.
+     * @return an translated point.
+     */
+    public Point translate(Point point) {
+        return new Point(x + point.getX(), y + point.getY(), z + point.getZ());
     }
 }

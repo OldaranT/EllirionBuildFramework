@@ -21,12 +21,13 @@ public class CommandExportTemplate implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
-            return false;
+            commandSender.sendMessage("You need to be a player to use this command.");
+            return true;
         }
 
         Player player = (Player) commandSender;
 
-        TemplateSession ts = TemplateManager.getPointOfTemplate().get(player);
+        TemplateSession ts = TemplateManager.getSelectedTemplateSession().get(player);
 
         if (ts == null) {
             player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
@@ -43,7 +44,8 @@ public class CommandExportTemplate implements CommandExecutor {
             try {
                 theDir.mkdir();
             } catch (SecurityException se) {
-                //handle it
+                player.sendMessage(ChatColor.DARK_RED + "The template could not be saved, please contact staff.");
+                return true;
             }
         }
 

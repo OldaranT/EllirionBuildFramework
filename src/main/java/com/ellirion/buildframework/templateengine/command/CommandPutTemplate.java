@@ -13,18 +13,19 @@ public class CommandPutTemplate implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
-            return false;
+            commandSender.sendMessage("You need to be a player to use this command.");
+            return true;
         }
 
         Player player = (Player) commandSender;
 
-        TemplateSession ts = TemplateManager.getPointOfTemplate().get(player);
-        if (ts == null) {
+        TemplateSession ts = TemplateManager.getSelectedTemplateSession().get(player);
+        if (ts == null || ts.getTemplate() == null) {
             player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
-            return false;
+            return true;
         }
 
-        TemplateManager.getTemplate(player).putTemplateInWorld(player.getLocation());
+        ts.getTemplate().putTemplateInWorld(player.getLocation());
         return true;
     }
 }

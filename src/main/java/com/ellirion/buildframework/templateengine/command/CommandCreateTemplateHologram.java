@@ -15,7 +15,8 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
-            return false;
+            commandSender.sendMessage("You need to be a player to use this command.");
+            return true;
         }
         Player player = (Player) commandSender;
 
@@ -24,16 +25,16 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
             prevHologram.remove(player);
         }
 
-        TemplateSession ts = TemplateManager.getPointOfTemplate().get(player);
+        TemplateSession ts = TemplateManager.getSelectedTemplateSession().get(player);
         if (ts == null) {
             player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
             return true;
         }
 
         TemplateHologram hologram = new TemplateHologram(ts.getTemplate(), new Location(player.getWorld(),
-                                                                         player.getLocation().getBlockX(),
-                                                                         player.getLocation().getBlockY(),
-                                                                         player.getLocation().getBlockZ()));
+                                                                                        player.getLocation().getBlockX(),
+                                                                                        player.getLocation().getBlockY(),
+                                                                                        player.getLocation().getBlockZ()));
         TemplateManager.getSelectedHolograms().put(player, hologram);
 
         hologram.create(player);
