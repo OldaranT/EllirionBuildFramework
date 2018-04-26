@@ -52,6 +52,12 @@ public class TerrainCorrector {
     }
 
     private boolean fillBasicHole(Hole hole, World world) {
+        List<Block> blocks = hole.getTopBlocks();
+
+        for (Block b : blocks) {
+            b.setType(Material.BARRIER);
+        }
+
         return true;
     }
 

@@ -14,7 +14,7 @@ public class Hole {
     @Getter private List<Block> blockList;
 
     /**
-     * Creates an empty hole
+     * Creates an empty hole.
      */
     public Hole() {
         blockList = new ArrayList<>();
@@ -30,7 +30,7 @@ public class Hole {
     }
 
     /**
-     * @param s The set that should be used to fill the list
+     * @param s The set that should be used to fill the list.
      */
     public Hole(final Set<Block> s) {
         blockList = new ArrayList<>();
@@ -72,7 +72,7 @@ public class Hole {
     }
 
     /**
-     * Gets the highest blocks in the Hole
+     * Gets a List of the highest blocks in the Hole.
      * @return the highest blocks
      */
     public List<Block> getTopBlocks() {
