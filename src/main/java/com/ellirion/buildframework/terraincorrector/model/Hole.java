@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 public class Hole {
 
     @Getter private List<Block> blockList;
-    @Getter private boolean isLiquid;
 
     /**
      * Creates an empty hole
@@ -64,12 +63,8 @@ public class Hole {
      * @return a whether the hole has liquid
      */
     public boolean containsLiquid() {
-        if (isLiquid) {
-            return true;
-        }
         for (Block b : blockList) {
             if (b.isLiquid()) {
-                isLiquid = true;
                 return true;
             }
         }
