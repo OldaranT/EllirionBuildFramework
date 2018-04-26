@@ -1,15 +1,15 @@
 package com.ellirion.buildframework;
 
-import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
-import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
-import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
-import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
-import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
+import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
@@ -23,6 +23,7 @@ public class BuildFramework extends JavaPlugin {
 
     private static BuildFramework instance;
     private FileConfiguration config = getConfig();
+    private FileConfiguration blockValueConfig;
     private FileConfiguration templateFormatConfig;
 
     @Override
@@ -53,6 +54,10 @@ public class BuildFramework extends JavaPlugin {
         return instance;
     }
 
+    public FileConfiguration getBlockValueConfig() {
+        return blockValueConfig;
+    }
+
     public FileConfiguration getTemplateFormatConfig() {
         return templateFormatConfig;
     }
@@ -64,11 +69,11 @@ public class BuildFramework extends JavaPlugin {
 
     private void createConfig() {
         this.config.options().header("Ellirion-BuildFramework configuration file");
-        config.addDefault("TerrainValidation_OverheadLimit", 0);
-        config.addDefault("TerrainValidation_BlocksLimit", 0);
-        config.addDefault("TerrainValidation_TotalLimit", 0);
+        config.addDefault("TerrainValidation_OverheadLimit", 20);
+        config.addDefault("TerrainValidation_BlocksLimit", 40);
+        config.addDefault("TerrainValidation_TotalLimit", 50);
         config.addDefault("TerrainValidation_Offset", 5);
-        config.addDefault("templatePath", "plugins/Ellirion-BuildFramework/templates/");
+        config.addDefault("TerrainValidator_BoundingBoxMinDist", 5);
         config.addDefault("DOOR", 0);
         config.addDefault("PATH", 1);
         config.addDefault("GROUND", 2);
@@ -85,19 +90,19 @@ public class BuildFramework extends JavaPlugin {
             saveResource("BlockValues.yml", false);
         }
 
-        templateFormatConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
+        blockValueConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
 
         if (blockValueConfigFile.exists()) {
             return;
         }
 
-        templateFormatConfig.options().header("The values for each block type of block material.\n" +
-                                              "These values are used by the terrain validator.");
+        blockValueConfig.options().header("The values for each block type of block material.\n" +
+                                          "These values are used by the terrain validator.");
         for (Material m : Material.values()) {
-            templateFormatConfig.set(m.toString(), 1);
+            blockValueConfig.set(m.toString(), 1);
         }
         try {
-            templateFormatConfig.save(blockValueConfigFile);
+            blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {
             getLogger().warning(e.toString());
         }

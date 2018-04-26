@@ -68,7 +68,7 @@ public class CommandCreateTemplate implements CommandExecutor {
 
         String name = String.join(" ", strings);
 
-        name = name.replaceAll("[^a-zA-Z0-9]", "");
+        name = name.replaceAll("[^a-zA-Z0-9 ]", "");
 
         // Remove existing templates from map
         TemplateManager.getPointOfTemplate().remove(player);
