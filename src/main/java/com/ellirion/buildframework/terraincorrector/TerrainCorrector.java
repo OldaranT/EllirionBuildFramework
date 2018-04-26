@@ -117,10 +117,10 @@ public class TerrainCorrector {
         return depth;
     }
 
-    private void exploreNonSolidBlocks(Block block, Set<Block> results, List<Block> todo, BoundingBox boundingBox) {
+    private void exploreNonSolidBlocks(Block block, List<Block> results, List<Block> todo, BoundingBox boundingBox) {
         //Here I collect all blocks that are directly connected to variable 'block'.
         //(Shouldn't be more than 6, because a block has 6 sides)
-        Set<Block> result = results;
+        List<Block> result = results;
         final int minX = boundingBox.getX1();
         final int maxX = boundingBox.getX2();
         final int minZ = boundingBox.getZ1();
@@ -134,15 +134,16 @@ public class TerrainCorrector {
             //Check if the relative block is inside the to check area and
             //Check if the block is air or liquid and add the block if it wasn't added already
             if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ && b.getY() <= maxY &&
-                (b.isLiquid() || b.isEmpty()) && result.add(b)) {
+                (b.isLiquid() || b.isEmpty()) && !result.contains(b)) {
                 //Add this block to the list of blocks that are yet to be done.
+                result.add(b);
                 todo.add(b);
             }
         }
     }
 
-    private Set<Block> getConnectedBlocks(Block block, BoundingBox boundingBox) {
-        Set<Block> set = new HashSet<>();
+    private List<Block> getConnectedBlocks(Block block, BoundingBox boundingBox) {
+        List<Block> set = new ArrayList<>();
         LinkedList<Block> todoBlocks = new LinkedList<>();
 
         //Add the current block to the todoBlocks of blocks that are yet to be done
