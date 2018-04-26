@@ -23,6 +23,7 @@ public class CommandExportTemplate implements CommandExecutor {
         if (!(commandSender instanceof Player)) {
             return false;
         }
+
         Player player = (Player) commandSender;
 
         TemplateSession ts = TemplateManager.getPointOfTemplate().get(player);
