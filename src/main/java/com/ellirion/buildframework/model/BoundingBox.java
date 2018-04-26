@@ -190,10 +190,26 @@ public class BoundingBox {
                                root.getInt("x2"), root.getInt("y2"), root.getInt("z2"));
     }
 
+    /**
+     * Get all corners of this BoundingBox.
+     * @return an array of points.
+     */
+    public Point[] getCorners() {
+        return new Point[] {
+                new Point(x1, y1, z1),
+                new Point(x1, y1, z2),
+                new Point(x1, y2, z2),
+                new Point(x1, y2, z1),
+                new Point(x2, y1, z1),
+                new Point(x2, y1, z2),
+                new Point(x2, y2, z2),
+                new Point(x2, y2, z1)
+        };
+    }
+
     @Override
     public String toString() {
         return String.format("BoundingBox(x1=%d, y1=%d, z1=%d, x2=%d, y2=%d, z2=%d)",
-                             this.x1, this.y1, this.z1,
-                             this.x2, this.y2, this.z2);
+                             x1, y1, z1, x2, y2, z2);
     }
 }
