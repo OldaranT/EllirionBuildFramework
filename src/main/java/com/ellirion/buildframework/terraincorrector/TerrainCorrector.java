@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.terraincorrector;
 
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -14,7 +15,7 @@ import java.util.Set;
 
 public class TerrainCorrector {
 
-    // all the faces facing towards the X and Z axis
+    // These are all the faces of a block
     private static final BlockFace[] faces = {
             BlockFace.NORTH,
             BlockFace.EAST,
@@ -44,6 +45,9 @@ public class TerrainCorrector {
         for (Hole h : holes) {
             fillBasicHole(h, world);
         }
+
+        Set<Block> toRemove = getBlocksInBoundingBox(boundingBox, world);
+        setListToAir(toRemove);
         return true;
     }
 
@@ -111,10 +115,10 @@ public class TerrainCorrector {
         //Here I collect all blocks that are directly connected to variable 'block'.
         //(Shouldn't be more than 6, because a block has 6 sides)
         Set<Block> result = results;
-        final int minX = boundingBox.getX1() - 1;
-        final int maxX = boundingBox.getX2() + 1;
-        final int minZ = boundingBox.getZ1() - 1;
-        final int maxZ = boundingBox.getZ2() + 1;
+        final int minX = boundingBox.getX1();
+        final int maxX = boundingBox.getX2();
+        final int minZ = boundingBox.getZ1();
+        final int maxZ = boundingBox.getZ2();
         final int maxY = boundingBox.getY1() - 1;
 
         //Loop through all the relevant block faces
@@ -143,5 +147,41 @@ public class TerrainCorrector {
             exploreNonSolidBlocks(block, set, todoBlocks, boundingBox);
         }
         return set;
+    }
+
+    private Set<Block> getBlocksInBoundingBox(BoundingBox boundingBox, World world) {
+        Set<Block> blocks = new HashSet<>();
+
+        final int bottomBlockX = boundingBox.getX1();
+        final int topBlockX = boundingBox.getX2();
+
+        final int bottomBlockY = boundingBox.getY1();
+        final int topBlockY = boundingBox.getY2();
+
+        final int bottomBlockZ = boundingBox.getZ1();
+        final int topBlockZ = boundingBox.getZ2();
+
+        for (int x = bottomBlockX; x <= topBlockX; x++) {
+
+            for (int y = bottomBlockY; y <= topBlockY; y++) {
+
+                for (int z = bottomBlockZ; z <= topBlockZ; z++) {
+
+                    final Block b = world.getBlockAt(x, y, z);
+
+                    if (!b.isLiquid() && !b.isEmpty()) {
+                        blocks.add(b);
+                    }
+                }
+            }
+        }
+
+        return blocks;
+    }
+
+    private void setListToAir(Set<Block> blocks) {
+        for (Block b : blocks) {
+            b.setType(Material.AIR);
+        }
     }
 }

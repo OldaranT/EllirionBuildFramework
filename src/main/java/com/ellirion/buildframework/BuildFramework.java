@@ -12,6 +12,7 @@ import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
+import com.ellirion.buildframework.terraincorrector.command.CorrectCommand;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
@@ -35,6 +36,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("CorrectTerain").setExecutor(new CorrectCommand());
         createConfig();
         createBlockValueConfig();
         getLogger().info("BuildFramework is enabled.");
@@ -56,11 +58,11 @@ public class BuildFramework extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.getLogger().info("BuildFramework is disabled.");
+        getLogger().info("BuildFramework is disabled.");
     }
 
     private void createConfig() {
-        this.config.options().header("Ellirion-BuildFramework configuration file");
+        config.options().header("Ellirion-BuildFramework configuration file");
         config.addDefault("TerrainValidation_OverheadLimit", 20);
         config.addDefault("TerrainValidation_BlocksLimit", 40);
         config.addDefault("TerrainValidation_TotalLimit", 50);
