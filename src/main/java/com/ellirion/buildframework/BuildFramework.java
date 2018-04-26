@@ -20,8 +20,8 @@ import java.io.IOException;
 public class BuildFramework extends JavaPlugin {
 
     private static BuildFramework instance;
+    private static FileConfiguration blockValueConfig;
     private FileConfiguration config = getConfig();
-    private FileConfiguration blockValueConfig;
 
     @Override
     public void onEnable() {
@@ -56,11 +56,11 @@ public class BuildFramework extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.getLogger().info("BuildFramework is disabled.");
+        getLogger().info("BuildFramework is disabled.");
     }
 
     private void createConfig() {
-        this.config.options().header("Ellirion-BuildFramework configuration file");
+        config.options().header("Ellirion-BuildFramework configuration file");
         config.addDefault("TerrainValidation_OverheadLimit", 20);
         config.addDefault("TerrainValidation_BlocksLimit", 40);
         config.addDefault("TerrainValidation_TotalLimit", 50);
@@ -78,27 +78,28 @@ public class BuildFramework extends JavaPlugin {
     private void createBlockValueConfig() {
 
         File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
-
-        if (!blockValueConfigFile.exists() && blockValueConfigFile.getParentFile().mkdirs()) {
-            saveResource("BlockValues.yml", false);
-        }
-
         blockValueConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
 
-        if (blockValueConfigFile.exists()) {
-            return;
+        // custom addDefault because the normal addDefault doesn't work
+        if (!blockValueConfigFile.exists()) {
+            blockValueConfig.options().header("The values for each block type of block material.\n" +
+                                              "These values are used by the terrain validator.");
+            for (Material m : Material.values()) {
+                blockValueConfig.set(m.toString(), 1);
+            }
+        } else {
+            for (Material m : Material.values()) {
+                if (!blockValueConfig.isSet(m.toString())) {
+                    blockValueConfig.set(m.toString(), 1);
+                }
+            }
         }
 
-        blockValueConfig.options().header("The values for each block type of block material.\n" +
-                                          "These values are used by the terrain validator.");
-        blockValueConfig.set(Material.STONE.toString(), 1);
-        for (Material m : Material.values()) {
-            blockValueConfig.set(m.toString(), 1);
-        }
+        //try and save the file
         try {
             blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {
-            getLogger().warning(e.toString());
+            getLogger().throwing(getClass().toString(), "createBlockValueConfig", e);
         }
     }
 }
