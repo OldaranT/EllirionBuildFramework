@@ -1,6 +1,7 @@
 package com.ellirion.buildframework.util;
 
 import lombok.Getter;
+import org.apache.commons.lang.UnhandledException;
 import org.bukkit.Bukkit;
 import com.ellirion.buildframework.BuildFramework;
 
@@ -12,7 +13,7 @@ import static com.ellirion.buildframework.util.Promise.State.*;
 
 public class Promise<TResult> {
 
-    @Getter private State state;
+    private State state;
     @Getter private TResult result;
     @Getter private Exception exception;
 
@@ -212,7 +213,7 @@ public class Promise<TResult> {
 
     private <TNext> Promise<TNext> resumeFail(IPromiseContinuer<Exception, TNext> continuer, boolean async) {
 
-        // Create the promise we will execute upon succesful finishing of this promise.
+        // Create the promise we will execute upon the succesful finishing of this promise.
         Promise<TNext> next = new Promise<>((finisher) -> {
             TNext result = null;
             try {
@@ -283,12 +284,16 @@ public class Promise<TResult> {
         state = REJECTED;
         exception = ex;
 
+        if (onReject.size() == 0 && ex != null) {
+            throw new UnhandledException("Promise failed with unhandled exception", ex);
+        }
+
         for (Consumer<Exception> next : onReject) {
             next.accept(ex);
         }
     }
 
-    public enum State {
+    private enum State {
         PENDING,
         RESOLVED,
         REJECTED
