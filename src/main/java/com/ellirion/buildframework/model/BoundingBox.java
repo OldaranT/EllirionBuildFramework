@@ -80,9 +80,9 @@ public class BoundingBox {
         int px = p.getBlockX();
         int py = p.getBlockY();
         int pz = p.getBlockZ();
-        return this.x1 <= px && px <= this.x2 &&
-               this.y1 <= py && py <= this.y2 &&
-               this.z1 <= pz && pz <= this.z2;
+        return x1 <= px && px <= x2 &&
+               y1 <= py && py <= y2 &&
+               z1 <= pz && pz <= z2;
     }
 
     /**
@@ -91,9 +91,9 @@ public class BoundingBox {
      * @return Whether the two BoundingBoxes intersect
      */
     public boolean intersects(final BoundingBox bb) {
-        return this.x1 <= bb.x2 && bb.x1 <= this.x2 &&
-               this.y1 <= bb.y2 && bb.y1 <= this.y2 &&
-               this.z1 <= bb.z2 && bb.z1 <= this.z2;
+        return x1 <= bb.x2 && bb.x1 <= x2 &&
+               y1 <= bb.y2 && bb.y1 <= y2 &&
+               z1 <= bb.z2 && bb.z1 <= z2;
     }
 
     /**
@@ -101,10 +101,7 @@ public class BoundingBox {
      * @return A new BoundingBox with local coordinates
      */
     public BoundingBox toLocal() {
-        return new BoundingBox(0, 0, 0,
-                               this.x2 - this.x1,
-                               this.y2 - this.y1,
-                               this.z2 - this.z1);
+        return new BoundingBox(0, 0, 0, x2 - x1, y2 - y1, z2 - z1);
     }
 
     /**
@@ -113,10 +110,10 @@ public class BoundingBox {
      * @return The BoundingBox at the world coordinates
      */
     public BoundingBox toWorld(final Point pos) {
-        final BoundingBox local = this.toLocal();
-        final int px = (int) Math.round(pos.getX());
-        final int py = (int) Math.round(pos.getY());
-        final int pz = (int) Math.round(pos.getZ());
+        BoundingBox local = this.toLocal();
+        int px = (int) Math.round(pos.getX());
+        int py = (int) Math.round(pos.getY());
+        int pz = (int) Math.round(pos.getZ());
 
         return new BoundingBox(px, py, pz,
                                px + (local.x2 - local.x1),
@@ -129,7 +126,7 @@ public class BoundingBox {
      * @return The smallest-component point of this BoundingBox
      */
     public Point getPoint1() {
-        return new Point(this.x1, this.y1, this.z1);
+        return new Point(x1, y1, z1);
     }
 
     /**
@@ -137,7 +134,7 @@ public class BoundingBox {
      * @return The largest-component point of this BoundingBox
      */
     public Point getPoint2() {
-        return new Point(this.x2, this.y2, this.z2);
+        return new Point(x2, y2, z2);
     }
 
     /**
@@ -145,7 +142,7 @@ public class BoundingBox {
      * @return the width
      */
     public int getWidth() {
-        return this.x2 - this.x1 + 1;
+        return x2 - x1 + 1;
     }
 
     /**
@@ -153,7 +150,7 @@ public class BoundingBox {
      * @return the height
      */
     public int getHeight() {
-        return this.y2 - this.y1 + 1;
+        return y2 - y1 + 1;
     }
 
     /**
@@ -161,7 +158,7 @@ public class BoundingBox {
      * @return the depth
      */
     public int getDepth() {
-        return this.z2 - this.z1 + 1;
+        return z2 - z1 + 1;
     }
 
     /**
@@ -170,7 +167,7 @@ public class BoundingBox {
      * @return The resulting NBTTagCompound
      */
     public static NBTTagCompound toNBT(final BoundingBox bb) {
-        final NBTTagCompound root = new NBTTagCompound();
+        NBTTagCompound root = new NBTTagCompound();
         root.setInt("x1", bb.x1);
         root.setInt("y1", bb.y1);
         root.setInt("z1", bb.z1);
