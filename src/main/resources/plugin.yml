@@ -2,5 +2,41 @@ name: Ellirion-BuildFramework
 main: com.ellirion.buildframework.BuildFramework
 version: 0.0.1
 description: Ellirion-BuildFramework
-authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink]
-
+authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink, Richard de Vries]
+commands:
+  Validate:
+    description: Validates the terrain for terrain smoothing.
+    usage: /Validate, /va
+    aliases: [va]
+  CreateTemplate:
+    description: create a template of the selected area
+    usage: /CreateTemplate <name>, /ct <name>
+    aliases: [ct]
+  PutTemplate:
+    description: Places the current selected tempalte.
+    usage: /PutTemplate, /pt
+    aliases: [pt]
+  ExportTemplate:
+    description: Export current selected template to a json file.
+    usage: /ExportTemplate, /et
+    aliases: [et]
+  AddMarker:
+    description: Add marker DOOR, GROUND or PATH to a template.
+    usage: /AddMarker <name>, /am <name>
+    aliases: [am]
+  RemoveMarker:
+    description: Remove marker DOOR, GROUND or PATH from a template.
+    usage: /RemoveMarker <name>, /rm <name>
+    aliases: [rm]
+  ImportTemplate:
+    description: Import a template from a json file
+    usage: /ImportTemplate, /it
+    aliases: [it]
+  CreateHologram:
+    description: Create a template hologram from the selected template
+    usage: /CreateHologram, /ch
+    aliases: [ch]
+  RemoveHologram:
+    description: Remove the selected hologram
+    usage: /RemoveHologram, /rh
+    aliases: [rh]
