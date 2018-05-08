@@ -37,7 +37,13 @@ public class CorrectCommand implements CommandExecutor {
         BoundingBox bb = new BoundingBox(start, end);
 
         TerrainCorrector corrector = new TerrainCorrector();
-        corrector.correctTerrain(bb, player.getWorld());
+        String message = corrector.correctTerrain(bb, player.getWorld());
+
+        if (!message.equals("Cleared Terrain")) {
+            player.sendMessage(ChatColor.DARK_RED + message);
+            return false;
+        }
+        player.sendMessage(ChatColor.GREEN + message);
 
         return false;
     }
