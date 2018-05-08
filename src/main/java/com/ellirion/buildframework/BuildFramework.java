@@ -1,5 +1,6 @@
 package com.ellirion.buildframework;
 
+import com.ellirion.buildframework.pathfinder.command.CommandHideVisited;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -44,6 +45,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
         getCommand("FindPath").setExecutor(new CommandFindPath());
         getCommand("HidePath").setExecutor(new CommandHidePath());
+        getCommand("HideVisited").setExecutor(new CommandHideVisited());
         getServer().getPluginManager().registerEvents(new PathingListener(), this);
         createConfig();
         createBlockValueConfig();
