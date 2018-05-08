@@ -125,7 +125,7 @@ public class Promise<TResult> {
 
     private <TNext> Promise<TNext> resume(IPromiseContinuer<TResult, TNext> continuer, boolean async) {
 
-        // Create the promise we will execute upon succesful finishing of this promise.
+        // Create the promise we will execute upon the succesful finishing of this promise.
         Promise<TNext> next = new Promise<>((finisher) -> {
             TNext nextResult = null;
             try {
