@@ -11,6 +11,10 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -20,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({BuildFramework.class})
+@PrepareForTest({BuildFramework.class, TerrainManager.class})
 public class TerrainValidatorTest {
 
     private static final Block MOCK_BLOCK_AIR = createMockBlock(true, false, Material.AIR);
@@ -45,6 +49,7 @@ public class TerrainValidatorTest {
     @Before
     public void setup() {
         mockStatic(BuildFramework.class);
+        mockStatic(TerrainManager.class);
         final BuildFramework mockPlugin = mock(BuildFramework.class);
         final FileConfiguration mockConfig = mock(FileConfiguration.class);
 
@@ -53,10 +58,13 @@ public class TerrainValidatorTest {
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
         when(mockPlugin.getBlockValueConfig()).thenReturn(mockConfig);
 
+        when(TerrainManager.getBoundingBoxes()).thenReturn(new ArrayList<>());
+
         when(mockConfig.getInt("TerrainValidation_OverheadLimit", 50)).thenReturn(10);
         when(mockConfig.getInt("TerrainValidation_BlocksLimit", 100)).thenReturn(10);
         when(mockConfig.getInt("TerrainValidation_TotalLimit", 200)).thenReturn(15);
         when(mockConfig.getInt("TerrainValidation_Offset", 5)).thenReturn(5);
+        when(mockConfig.getInt("TerrainValidator_BoundingBoxMinDist", 5)).thenReturn(5);
 
         when(mockConfig.getInt(MOCK_BLOCK_STONE.getType().toString(), 1)).thenReturn(1);
     }
@@ -345,7 +353,6 @@ public class TerrainValidatorTest {
     public void Validate_WhenExactlyOnBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnFalse() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
         setFloor(mockWorld);
 
@@ -371,7 +378,6 @@ public class TerrainValidatorTest {
     public void Validate_WhenOneBelowBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnTrue() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
-
         World mockWorld = createDefaultWorld();
         setFloor(mockWorld);
 
@@ -390,6 +396,44 @@ public class TerrainValidatorTest {
 
         // Assert
         assertTrue(result);
+    }
+
+    @Test
+    public void Validate_WhenAnotherBoundingBoxWithinBoundingBox_ShouldReturnFalse() {
+        // Arrange
+        final TerrainValidator validator = new TerrainValidator();
+        World world = createDefaultWorld();
+        setFloor(world);
+
+        List<BoundingBox> boxList = new ArrayList<>();
+        boxList.add(boundingBox);
+
+        when(TerrainManager.getBoundingBoxes()).thenReturn(boxList);
+
+        // Act
+        boolean result = validator.validate(boundingBox, world);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    public void Validate_WhenAnotherBoundingBoxWithinCheckingRadius_ShouldReturnFalse() {
+        // Arrange
+        final TerrainValidator validator = new TerrainValidator();
+        World world = createDefaultWorld();
+        setFloor(world);
+
+        List<BoundingBox> boxList = new ArrayList<>();
+        boxList.add(new BoundingBox(new Point(11, 11, 11), new Point(12, 12, 12)));
+
+        when(TerrainManager.getBoundingBoxes()).thenReturn(boxList);
+
+        // Act
+        boolean result = validator.validate(boundingBox, world);
+
+        // Assert
+        assertFalse(result);
     }
 
     private void replaceFloorWithSpecifiedBlock(final World world, final BoundingBox boundingBox, final int amount,

@@ -3,6 +3,7 @@ package com.ellirion.buildframework.templateengine.command;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
 import net.md_5.bungee.api.ChatColor;
 import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
@@ -19,7 +20,8 @@ public class CommandImportTemplate implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
-            return false;
+            commandSender.sendMessage("You need to be a player to use this command.");
+            return true;
         }
         Player player = (Player) commandSender;
 
@@ -31,17 +33,19 @@ public class CommandImportTemplate implements CommandExecutor {
         try {
             ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));
         } catch (Exception e) {
-            player.sendMessage(ChatColor.DARK_RED + "Something went wrong while loading the file.");
-            return false;
+            player.sendMessage(ChatColor.DARK_RED + "Something went wrong while loading the file");
+            return true;
         }
 
-        Template t = Template.fromNBT(ntc);
+        TemplateSession ts = new TemplateSession(Template.fromNBT(ntc), null);
 
         // Update templatemanager
-        TemplateManager.getSelectedTemplates().put(player, t);
+        TemplateManager.getTemplateSessions().put(player, ts);
 
         //tell player what happened
-        player.sendMessage(ChatColor.GREEN + "The template " + ChatColor.BOLD + templateName + ChatColor.RESET + ChatColor.GREEN + " has been loaded");
+        player.sendMessage(
+                ChatColor.GREEN + "The template " + ChatColor.BOLD + templateName + ChatColor.RESET + ChatColor.GREEN +
+                " has been loaded");
         return true;
     }
 }
