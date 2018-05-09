@@ -1,6 +1,7 @@
 package com.ellirion.buildframework.terraincorrector.model;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.block.Block;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 public class Hole {
 
     @Getter private List<Block> blockList;
+    @Getter @Setter private boolean exceedsMaxDepth;
 
     /**
      * Creates an empty hole.

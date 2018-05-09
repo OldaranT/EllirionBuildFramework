@@ -4,6 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.file.FileConfiguration;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 
@@ -12,6 +14,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class TerrainCorrector {
+
+    private static final FileConfiguration CONFIG = BuildFramework.getInstance().getConfig();
 
     // These are all the faces of a block
     private static final BlockFace[] faces = {
@@ -125,6 +129,7 @@ public class TerrainCorrector {
         final int minZ = boundingBox.getZ1();
         final int maxZ = boundingBox.getZ2();
         final int maxY = boundingBox.getY1() - 1;
+        final int minY = maxY - CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
 
         //Loop through all the relevant block faces
         for (BlockFace face : faces) {
@@ -135,8 +140,12 @@ public class TerrainCorrector {
             if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ && b.getY() <= maxY &&
                 (b.isLiquid() || b.isEmpty()) && !result.contains(b)) {
                 //Add this block to the list of blocks that are yet to be done.
-                result.add(b);
-                todo.add(b);
+                if (b.getY() >= minY) {
+                    result.add(b);
+                    todo.add(b);
+                } else {
+
+                }
             }
         }
     }
