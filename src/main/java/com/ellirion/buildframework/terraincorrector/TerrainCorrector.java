@@ -10,8 +10,11 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class TerrainCorrector {
 
@@ -38,15 +41,12 @@ public class TerrainCorrector {
         // checken op blockers (river eg.)
         for (Hole h : holes) {
             if (h.containsLiquid() && checkForRiver(h.getBlockList(), boundingBox)) {
-
                 return "Could not correct the terrain because the selection is above a lake, pond or river";
             }
         }
 
-        // juiste manier van vullen aanroepen
-
         for (Hole h : holes) {
-            fillBasicHole(h, world);
+            correctHole(h, world, boundingBox);
         }
 
         List<Block> toRemove = getBlocksInBoundingBox(boundingBox, world);
@@ -54,14 +54,34 @@ public class TerrainCorrector {
         return "Corrected Terrain";
     }
 
-    private boolean fillBasicHole(Hole hole, World world) {
-        List<Block> blocks = hole.getTopBlocks();
-
-        for (Block b : blocks) {
-            b.setType(Material.BARRIER);
+    private boolean correctHole(Hole hole, World world, BoundingBox boundingbox) {
+        if (!hole.onlyBelowBoundingBox(boundingbox)) {
+            fillBasicHole(hole, world);
+            return true;
+        }
+        if (!hole.exceedsMaxDepth()) {
+            fillSmallHoleAtSide(hole, world, boundingbox);
+            return true;
         }
 
-        return true;
+        return false;
+    }
+
+    private void fillSmallHoleAtSide(Hole hole, World world, BoundingBox boundingBox) {
+        Material mat = getFloorMaterial(boundingBox, world);
+
+        BuildFramework.getInstance().getLogger().info(mat + "");
+        for (Block b : hole.getBlockList()) {
+            b.setType(mat);
+        }
+    }
+
+    private void fillBasicHole(Hole hole, World world) {
+        List<Block> topBlocks = hole.getTopBlocks();
+
+        for (Block b : topBlocks) {
+            b.setType(Material.BARRIER);
+        }
     }
 
     private List<Hole> findHoles(BoundingBox boundingBox, World world) {
@@ -71,15 +91,11 @@ public class TerrainCorrector {
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
                 Block block = world.getBlockAt(x, y, z);
-                if ((block.isEmpty() || block.isLiquid()) && holes.stream().noneMatch(hole -> hole.contains(block))) {
-                    // create new hole
-                    Hole hole = new Hole(block);
+                if ((block.isEmpty() || block.isLiquid()) ||
+                    isBlockTypeNonSolid(block.getType()) && holes.stream().noneMatch(hole -> hole.contains(block))) {
 
-                    // find adjacent blocks (different function)
-                    hole.getBlockList().addAll(getConnectedBlocks(block, boundingBox));
-
-                    // Add the hole to the list of holes
-                    holes.add(hole);
+                    // Add the hole to the list of holes once all blocks are found
+                    holes.add(getHole(block, boundingBox));
                 }
             }
         }
@@ -105,53 +121,33 @@ public class TerrainCorrector {
         return false;
     }
 
-    private int calculateDepth(final Block block) {
-        final World world = block.getWorld();
-        final int blockX = block.getX();
-        final int blockZ = block.getZ();
-        int depth = 0;
-        for (int y = block.getY(); y >= 0; y--) {
-            Block nextBlock = world.getBlockAt(blockX, y, blockZ);
-            if (!nextBlock.isEmpty() && !nextBlock.isLiquid()) {
-                break;
-            }
-            depth++;
-        }
-        return depth;
-    }
+    private Material getFloorMaterial(BoundingBox boundingBox, World world) {
+        List<Material> materials = new ArrayList<>();
 
-    private void exploreNonSolidBlocks(Block block, List<Block> results, List<Block> todo, BoundingBox boundingBox) {
-        //Here I collect all blocks that are directly connected to variable 'block'.
-        //(Shouldn't be more than 6, because a block has 6 sides)
-        List<Block> result = results;
-        final int minX = boundingBox.getX1();
-        final int maxX = boundingBox.getX2();
-        final int minZ = boundingBox.getZ1();
-        final int maxZ = boundingBox.getZ2();
-        final int maxY = boundingBox.getY1() - 1;
-        final int minY = maxY - CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
-
-        //Loop through all the relevant block faces
-        for (BlockFace face : faces) {
-            Block b = block.getRelative(face);
-
-            //Check if the relative block is inside the to check area and
-            //Check if the block is air or liquid and add the block if it wasn't added already
-            if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ && b.getY() <= maxY &&
-                (b.isLiquid() || b.isEmpty()) && !result.contains(b)) {
-                //Add this block to the list of blocks that are yet to be done.
-                if (b.getY() >= minY) {
-                    result.add(b);
-                    todo.add(b);
-                } else {
-
-                }
+        for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
+            for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
+                materials.add(world.getBlockAt(x, boundingBox.getY1() - 1, z).getType());
             }
         }
+
+        int max = 0;
+        int curr;
+        Material currKey = null;
+        Set<Material> unique = new HashSet<>(materials);
+
+        for (Material key : unique) {
+            curr = Collections.frequency(materials, key);
+
+            if (max < curr) {
+                max = curr;
+                currKey = key;
+            }
+        }
+        return currKey;
     }
 
-    private List<Block> getConnectedBlocks(Block block, BoundingBox boundingBox) {
-        List<Block> set = new ArrayList<>();
+    private Hole getHole(Block block, BoundingBox boundingBox) {
+        Hole hole = new Hole();
         LinkedList<Block> todoBlocks = new LinkedList<>();
 
         //Add the current block to the todoBlocks of blocks that are yet to be done
@@ -159,9 +155,40 @@ public class TerrainCorrector {
 
         //Execute this method for each block in the todoBlocks
         while ((block = todoBlocks.poll()) != null) {
-            exploreNonSolidBlocks(block, set, todoBlocks, boundingBox);
+            exploreAdjacentNonSolidBlocks(block, hole, todoBlocks, boundingBox);
         }
-        return set;
+
+        return hole;
+    }
+
+    private void exploreAdjacentNonSolidBlocks(Block block, Hole hole, List<Block> todo, BoundingBox boundingBox) {
+
+        final int minX = boundingBox.getX1() - 5;
+        final int maxX = boundingBox.getX2() + 5;
+        final int minZ = boundingBox.getZ1() - 5;
+        final int maxZ = boundingBox.getZ2() + 5;
+        final int maxY = boundingBox.getY1() - 1;
+        final int minY = maxY - CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
+
+        for (BlockFace face : faces) {
+            Block b = block.getRelative(face);
+
+            if (!(b.getY() <= maxY && (b.isLiquid() || b.isEmpty() || isBlockTypeNonSolid(b.getType())) &&
+                  !hole.contains(b))) {
+                continue;
+            }
+            if (!(b.getY() >= minY)) {
+                hole.setExceedsMaxDepth(true);
+                continue;
+            }
+            if (!(b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ)) {
+                hole.setExceedsAreaLimit(true);
+                continue;
+            }
+
+            hole.add(b);
+            todo.add(b);
+        }
     }
 
     private List<Block> getBlocksInBoundingBox(BoundingBox boundingBox, World world) {
@@ -199,4 +226,12 @@ public class TerrainCorrector {
             b.setType(Material.AIR, true);
         }
     }
+
+    private boolean isBlockTypeNonSolid(Material type) {
+        return type == Material.LONG_GRASS || type == Material.BROWN_MUSHROOM ||
+               type == Material.RED_MUSHROOM || type == Material.SAPLING ||
+               type == Material.CROPS || type == Material.DEAD_BUSH ||
+               type == Material.DOUBLE_PLANT;
+    }
 }
+

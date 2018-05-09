@@ -3,6 +3,7 @@ package com.ellirion.buildframework.terraincorrector.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.block.Block;
+import com.ellirion.buildframework.model.BoundingBox;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,7 +13,9 @@ import java.util.stream.Collectors;
 public class Hole {
 
     @Getter private List<Block> blockList;
-    @Getter @Setter private boolean exceedsMaxDepth;
+
+    @Setter private boolean exceedsMaxDepth = false;
+    @Setter private boolean exceedsAreaLimit = false;
 
     /**
      * Creates an empty hole.
@@ -60,6 +63,20 @@ public class Hole {
     }
 
     /**
+     * @return whether the hole exceeds the maximum depth
+     */
+    public boolean exceedsMaxDepth() {
+        return exceedsMaxDepth;
+    }
+
+    /**
+     * @return whether the hole exceeds the maximum depth
+     */
+    public boolean exceedsAreaLimit() {
+        return exceedsAreaLimit;
+    }
+
+    /**
      * @return a whether the hole has liquid
      */
     public boolean containsLiquid() {
@@ -78,5 +95,26 @@ public class Hole {
     public List<Block> getTopBlocks() {
         int highestY = blockList.stream().max(Comparator.comparing(Block::getY)).get().getY();
         return blockList.stream().filter(block -> block.getY() == highestY).collect(Collectors.toList());
+    }
+
+    /**
+     * @param boundingBox the BoundingBox that will be used for checking
+     * @return Whether the hole is fully below the BoundingBox
+     */
+    public boolean onlyBelowBoundingBox(BoundingBox boundingBox) {
+        return blockList.stream()
+                .anyMatch(block -> block.getX() < boundingBox.getX1() ||
+                                   block.getX() > boundingBox.getX2() ||
+                                   block.getZ() < boundingBox.getZ1() ||
+                                   block.getZ() > boundingBox.getZ2());
+    }
+
+    /**
+     * @return the depth of the hole
+     */
+    public int getDepth() {
+        int highestY = blockList.stream().max(Comparator.comparing(Block::getY)).get().getY();
+        int lowestY = blockList.stream().min(Comparator.comparing(Block::getY)).get().getY();
+        return highestY - lowestY;
     }
 }
