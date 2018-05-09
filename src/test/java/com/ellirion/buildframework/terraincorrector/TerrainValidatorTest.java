@@ -51,11 +51,11 @@ public class TerrainValidatorTest {
 
         when(TerrainManager.getBoundingBoxes()).thenReturn(new ArrayList<>());
 
-        when(mockConfig.getInt("TerrainValidation_OverheadLimit", 50)).thenReturn(10);
-        when(mockConfig.getInt("TerrainValidation_BlocksLimit", 100)).thenReturn(10);
-        when(mockConfig.getInt("TerrainValidation_TotalLimit", 200)).thenReturn(15);
-        when(mockConfig.getInt("TerrainValidation_Offset", 5)).thenReturn(5);
-        when(mockConfig.getInt("TerrainValidator_BoundingBoxMinDist", 5)).thenReturn(5);
+        when(mockConfig.getInt("TerrainCorrector.OverheadLimit", 50)).thenReturn(10);
+        when(mockConfig.getInt("TerrainCorrector.BlocksLimit", 100)).thenReturn(10);
+        when(mockConfig.getInt("TerrainCorrector.TotalLimit", 200)).thenReturn(15);
+        when(mockConfig.getInt("TerrainCorrector.Offset", 5)).thenReturn(5);
+        when(mockConfig.getInt("TerrainCorrector.BoundingBoxMinDist", 5)).thenReturn(5);
 
         when(mockConfig.getInt(MOCK_BLOCK_STONE.getType().toString(), 1)).thenReturn(1);
     }
