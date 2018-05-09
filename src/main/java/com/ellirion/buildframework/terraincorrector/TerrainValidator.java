@@ -21,10 +21,10 @@ public class TerrainValidator {
      * @return returns whether the terrain chances to the terrain will be within acceptable levels
      */
     public boolean validate(final BoundingBox boundingBox, final World world) {
-        final double overhangLimit = CONFIG.getInt("TerrainValidation_OverheadLimit", 50);
-        final double blocksLimit = CONFIG.getInt("TerrainValidation_BlocksLimit", 100);
-        final double totalLimit = CONFIG.getInt("TerrainValidation_TotalLimit", 200);
-        final int offset = CONFIG.getInt("TerrainValidation_Offset", 5);
+        final double overhangLimit = CONFIG.getInt("TerrainValidation.OverheadLimit", 50);
+        final double blocksLimit = CONFIG.getInt("TerrainValidation.BlocksLimit", 100);
+        final double totalLimit = CONFIG.getInt("TerrainValidation.TotalLimit", 200);
+        final int offset = CONFIG.getInt("TerrainValidation.Offset", 5);
 
         if (checkForBoundingBoxes(boundingBox)) {
             return false;
@@ -45,7 +45,7 @@ public class TerrainValidator {
     }
 
     private boolean checkForBoundingBoxes(BoundingBox boundingBox) {
-        final int checkRadius = CONFIG.getInt("TerrainValidator_BoundingBoxMinDist", 5);
+        final int checkRadius = CONFIG.getInt("TerrainValidation.BoundingBoxMinDist", 5);
 
         Point point1 = new Point(boundingBox.getX1() - checkRadius, boundingBox.getY1() - checkRadius,
                                  boundingBox.getZ1() - checkRadius);

@@ -1,9 +1,5 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.templateengine.TemplateManager;
-import com.ellirion.buildframework.templateengine.model.Template;
-import com.ellirion.buildframework.templateengine.model.TemplateSession;
 import net.md_5.bungee.api.ChatColor;
 import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
@@ -11,6 +7,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.Template;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +28,7 @@ public class CommandImportTemplate implements CommandExecutor {
         String templateName = String.join(" ", strings);
 
         // Load template
-        String path = BuildFramework.getInstance().getConfig().getString("templatePath") + templateName + ".nbt";
+        String path = BuildFramework.getInstance().getConfig().getString("template.Path") + templateName + ".nbt";
         NBTTagCompound ntc;
         try {
             ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));

@@ -70,15 +70,14 @@ public class BuildFramework extends JavaPlugin {
 
     private void createConfig() {
         config.options().header("Ellirion-BuildFramework configuration file");
-        config.addDefault("templatePath", "plugins/Ellirion-BuildFramework/templates/");
-        config.addDefault("TerrainValidation_OverheadLimit", 20);
-        config.addDefault("TerrainValidation_BlocksLimit", 40);
-        config.addDefault("TerrainValidation_TotalLimit", 50);
-        config.addDefault("TerrainValidation_Offset", 5);
-        config.addDefault("TerrainValidator_BoundingBoxMinDist", 5);
-        config.addDefault("DOOR", 0);
-        config.addDefault("PATH", 1);
-        config.addDefault("GROUND", 2);
+        // terrain validation config settings
+        config.addDefault("TerrainValidation.OverheadLimit", 20);
+        config.addDefault("TerrainValidation.BlocksLimit", 40);
+        config.addDefault("TerrainValidation.TotalLimit", 50);
+        config.addDefault("TerrainValidation.Offset", 5);
+        config.addDefault("TerrainValidation.BoundingBoxMinDist", 5);
+        // template config settings
+        config.addDefault("template.Path", "plugins/Ellirion-BuildFramework/templates/");
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
