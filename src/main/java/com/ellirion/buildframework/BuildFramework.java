@@ -88,17 +88,16 @@ public class BuildFramework extends JavaPlugin {
         File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
         blockValueConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
 
-        // check if the config file exists
-        // if it doesn't exist create the config file
-        if (!blockValueConfigFile.exists()) {
-            blockValueConfig.options().header("The values for each block type of block material.\n" +
-                                              "These values are used by the terrain validator.");
-            for (Material m : Material.values()) {
-                blockValueConfig.set(m.toString(), 1);
-            }
+        blockValueConfig.options().header("The values for each block type of block material.\n" +
+                                          "These values are used by the terrain validator.");
+        for (Material m : Material.values()) {
+            blockValueConfig.addDefault(m.toString(), 1);
         }
 
+        blockValueConfig.options().copyDefaults(true);
+
         //try and save the file
+
         try {
             blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {
@@ -107,7 +106,7 @@ public class BuildFramework extends JavaPlugin {
     }
 
     private void createTemplateFormatConfig() {
-        //set the lists that need to go into the config
+        //set the variables that are needed for the config
 
         List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
                                               "HUMAN");
@@ -131,32 +130,16 @@ public class BuildFramework extends JavaPlugin {
         File templateFormatConfigFile = new File(getDataFolder(), "TemplateFormat.yml");
         templateFormatConfig = YamlConfiguration.loadConfiguration(templateFormatConfigFile);
 
-        //check if config exists and if it does not exist create the config.
-        //if it does exist then check if all the paths are set.
-        if (!templateFormatConfigFile.exists()) {
+        templateFormatConfig.options().header("This file has all the filters to create a template.\n" +
+                                              "their are 3 options: RACE, TYPE, LEVEL.\n" +
+                                              "Markers is a list of all the possible markers you can use.\n");
 
-            templateFormatConfig.options().header("This file has all the filters to create a template.\n" +
-                                                  "their are 3 options: RACE, TYPE, LEVEL.\n" +
-                                                  "Markers is a list of all the possible markers you can use.\n");
+        templateFormatConfig.addDefault(racePath, raceList);
+        templateFormatConfig.addDefault(typePath, typeList);
+        templateFormatConfig.addDefault(levelPath, levelList);
+        templateFormatConfig.addDefault(markersPath, markerList);
 
-            templateFormatConfig.set(racePath, raceList);
-            templateFormatConfig.set(typePath, typeList);
-            templateFormatConfig.set(levelPath, levelList);
-            templateFormatConfig.set(markersPath, markerList);
-        } else {
-            if (!templateFormatConfig.isSet(racePath)) {
-                templateFormatConfig.set(racePath, raceList);
-            }
-            if (!templateFormatConfig.isSet(typePath)) {
-                templateFormatConfig.set(typePath, typeList);
-            }
-            if (!templateFormatConfig.isSet(levelPath)) {
-                templateFormatConfig.set(levelPath, levelList);
-            }
-            if (!templateFormatConfig.isSet(markersPath)) {
-                templateFormatConfig.set(markersPath, markerList);
-            }
-        }
+        templateFormatConfig.options().copyDefaults(true);
 
         try {
             templateFormatConfig.save(templateFormatConfigFile);
