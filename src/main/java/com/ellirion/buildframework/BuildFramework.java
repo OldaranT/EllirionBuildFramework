@@ -101,7 +101,7 @@ public class BuildFramework extends JavaPlugin {
         try {
             blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {
-            getLogger().throwing(getClass().toString(), "createBlockValueConfig", e);
+            getLogger().throwing(BuildFramework.class.toString(), "createBlockValueConfig", e);
         }
     }
 
@@ -144,7 +144,7 @@ public class BuildFramework extends JavaPlugin {
         try {
             templateFormatConfig.save(templateFormatConfigFile);
         } catch (IOException e) {
-            getLogger().warning(e.toString());
+            getLogger().throwing(BuildFramework.class.toString(), "createTemplateFormatConfig", e);
         }
     }
 }
