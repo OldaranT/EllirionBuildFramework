@@ -1,6 +1,7 @@
 package com.ellirion.buildframework;
 
 import com.ellirion.buildframework.pathbuilder.command.CommandCreatePath;
+import com.ellirion.buildframework.pathbuilder.command.CommandPathBuilder;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
@@ -37,7 +38,9 @@ public class BuildFramework extends JavaPlugin {
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
         getCommand("CreatePath").setExecutor(new CommandCreatePath());
+        getCommand("PathBuilder").setExecutor(new CommandPathBuilder());
         createConfig();
+        createFilePaths();
         createBlockValueConfig();
         getLogger().info("BuildFramework is enabled.");
     }
@@ -68,6 +71,7 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainValidation_TotalLimit", 0);
         config.addDefault("TerrainValidation_Offset", 5);
         config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
+        config.addDefault("pathbuilderPath", "plugins/Ellirion-BuildFramework/pathbuilders/");
         config.addDefault("DOOR", 0);
         config.addDefault("PATH", 1);
         config.addDefault("GROUND", 2);
@@ -76,8 +80,19 @@ public class BuildFramework extends JavaPlugin {
         reloadConfig();
     }
 
-    private void createBlockValueConfig() {
+    //create filepaths if they don't exist yet
+    private void createFilePaths() {
+        String path = config.getString("templatePath");
+        if (!(new File(path).mkdirs())) {
+            getLogger().warning("The path for templates could not be created");
+        }
+        path = config.getString("pathbuilderPath");
+        if (!(new File(path).mkdirs())) {
+            getLogger().warning("The path for PathBuilders could not be created");
+        }
+    }
 
+    private void createBlockValueConfig() {
         File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
 
         if (!blockValueConfigFile.exists() && blockValueConfigFile.getParentFile().mkdirs()) {

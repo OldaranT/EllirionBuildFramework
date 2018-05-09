@@ -1,12 +1,12 @@
 package com.ellirion.buildframework.pathbuilder.command;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.pathbuilder.BuilderManager;
 import com.ellirion.buildframework.pathbuilder.model.PathBuilder;
 
 import java.util.LinkedList;
@@ -21,30 +21,33 @@ public class CommandCreatePath implements CommandExecutor {
         }
         Player player = (Player) commandSender;
 
-        PathBuilder builder = new PathBuilder("builder");
-        builder.addBlock(Material.DIRT, 1);
-        builder.addBlock(Material.DIRT, 1);
-        builder.addBlock(Material.GRAVEL, 1);
-        builder.addBlock(Material.COBBLESTONE, 0.4);
-        builder.addBlock(Material.STONE, 0.1);
-        builder.setFenceType(Material.FENCE);
-        builder.setRadius(3);
+        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
 
         Location loc = player.getLocation();
+        int x = loc.getBlockX(), y = loc.getBlockY() - 1, z = loc.getBlockZ();
 
         List<Point> points = new LinkedList<>();
-        //        points.add(new Point(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()));
+        points.add(new Point(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()));
         for (int i = 0; i < 10; i++) {
-            points.add(new Point(loc.getBlockX() + i, loc.getBlockY() - 1, loc.getZ() + i));
+            x++;
+            z++;
+            points.add(new Point(x, y, z));
         }
         for (int i = 0; i < 10; i++) {
-            points.add(new Point(loc.getBlockX() + 10, loc.getBlockY() - 1, loc.getZ() + 10 + i));
+            z++;
+            points.add(new Point(x, y, z));
         }
         for (int i = 0; i < 10; i++) {
-            points.add(new Point(loc.getBlockX() + 10 - i, loc.getBlockY() - 1, loc.getZ() + 20 + i));
+            z++;
+            x++;
+            points.add(new Point(x, y, z));
         }
-        for (int i = 0; i < 20; i++) {
-            points.add(new Point(loc.getBlockX(), loc.getBlockY() - 1, loc.getZ() + 30 + i));
+        for (int i = 0; i < (20 * builder.getRadius()); i++) {
+            x++;
+            if (i % builder.getRadius() == 0) {
+                y++;
+            }
+            points.add(new Point(x, y, z));
         }
 
         builder.build(points, player.getWorld());

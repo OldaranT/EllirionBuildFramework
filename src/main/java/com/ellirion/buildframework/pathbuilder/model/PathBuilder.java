@@ -2,12 +2,20 @@ package com.ellirion.buildframework.pathbuilder.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import net.minecraft.server.v1_12_R1.NBTTagList;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import com.ellirion.buildframework.model.Point;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +25,7 @@ import java.util.Random;
 public class PathBuilder {
 
     @Getter @Setter private String name;
-    @Getter private HashMap<Material, Double> weightedBlocks;
+    @Getter private HashMap<PathMaterial, Double> weightedBlocks;
     private double totalWeight;
     @Getter @Setter private Material fenceType;
     @Getter @Setter private int radius;
@@ -35,23 +43,26 @@ public class PathBuilder {
     }
 
     /**
-     * Overload of other method, does the same but with data set to 0.
+     * Add a block to the weighted blocks map.
      * @param mat material
      * @param weight weight
+     * @param data metadata
      */
-    public void addBlock(final Material mat, double weight) {
+    public void addBlock(final Material mat, double weight, byte data) {
         denormalizeWeights();
-        weightedBlocks.put(mat, weight);
+        weightedBlocks.put(new PathMaterial(mat, data), weight);
+        //        weightedBlocks.put(mat, weight);
         totalWeight += weight;
         normalizeWeights();
     }
 
     /**
-     * Removes a block from the weighted blocks map.
-     * @param mat The block to remove
+     * Overload of other method, does the same but with data set to 0.
+     * @param mat material
+     * @param weight weight
      */
-    public void removeBlock(final Material mat) {
-        weightedBlocks.remove(mat);
+    public void addBlock(final Material mat, double weight) {
+        addBlock(mat, weight, (byte) 0);
     }
 
     /**
@@ -67,43 +78,35 @@ public class PathBuilder {
             //replace these blocks according to the weight map
             for (Point point : nearbyPoints) {
                 Block b = w.getBlockAt(point.toLocation(w));
-                if (b.getType() != Material.AIR) {
-                    double random = r.nextDouble();
-                    for (Map.Entry pair2 : weightedBlocks.entrySet()) {
-                        if (random < ((double) pair2.getValue())) {
-                            b.setType((Material) pair2.getKey());
-                            break;
-                        }
-                    }
-                    //place fences
-                    if (distanceToPath(point, points) >= radius) {
-                        w.getBlockAt(b.getX(), b.getY() + 1, b.getZ()).setType(fenceType);
+                //                if (b.getType() != Material.AIR) {
+                double random = r.nextDouble();
+                for (Map.Entry pair2 : weightedBlocks.entrySet()) {
+                    if (random < ((double) pair2.getValue())) {
+                        PathMaterial pm = (PathMaterial) pair2.getKey();
+                        b.setType(pm.getMat());
+                        b.setData(pm.getData());
+                        break;
                     }
                 }
+                //                }
             }
         }
     }
 
     private List<Point> getPoints(Point p) {
         List<Point> points = new LinkedList<>();
-        int localRadius = radius;
-        Point localPoint = randomMutation(p);
+        double localRadius = radius;
+        Point localPoint = p;
+        double dist = localRadius * 0.66;
 
-        double random = r.nextDouble();
-        if (random < 0.33) {
-            localRadius -= 1;
-        } else if (random > 0.66) {
-            localRadius += 1;
-        }
-
-        int x1 = localPoint.getBlockX() - (localRadius + 1);
-        int x2 = localPoint.getBlockX() + (localRadius + 1);
+        int x1 = localPoint.getBlockX() - (int) (localRadius + 1);
+        int x2 = localPoint.getBlockX() + (int) (localRadius + 1);
 
         for (int x = x1; x <= x2; x++) {
             //keep going forwards until we're out of range
             int z = localPoint.getBlockZ();
             Point point = new Point(x, localPoint.getBlockY(), z);
-            while (point.distanceEuclidian(localPoint) < localRadius) {
+            while (point.distanceEuclidian(localPoint) < dist) {
                 points.add(new Point(x, localPoint.getBlockY(), z));
                 z++;
                 point = new Point(point.getBlockX(), point.getBlockY(), z);
@@ -112,7 +115,7 @@ public class PathBuilder {
             //keep going backwards until we're out of range
             z = localPoint.getBlockZ();
             point = new Point(x, localPoint.getBlockY(), z);
-            while (point.distanceEuclidian(localPoint) < localRadius) {
+            while (point.distanceEuclidian(localPoint) < dist) {
                 points.add(new Point(x, localPoint.getBlockY(), z));
                 z--;
                 point = new Point(point.getBlockX(), point.getBlockY(), z);
@@ -146,29 +149,26 @@ public class PathBuilder {
     private void denormalizeWeights() {
         double previous = 0;
         for (Map.Entry pair : weightedBlocks.entrySet()) {
-            weightedBlocks.put((Material) pair.getKey(),
+            weightedBlocks.put((PathMaterial) pair.getKey(),
                                (double) pair.getValue() - previous);
             previous = (double) pair.getValue();
         }
 
-        // weight * totalWeight
         for (Map.Entry pair : weightedBlocks.entrySet()) {
-            weightedBlocks.put((Material) pair.getKey(),
+            weightedBlocks.put((PathMaterial) pair.getKey(),
                                (double) pair.getValue() * totalWeight);
         }
     }
 
     private void normalizeWeights() {
-        // weight / total
-        // Counting up all weights should total 1
         for (Map.Entry pair : weightedBlocks.entrySet()) {
-            weightedBlocks.put((Material) pair.getKey(),
+            weightedBlocks.put((PathMaterial) pair.getKey(),
                                (double) pair.getValue() / totalWeight);
         }
 
         double previous = 0;
         for (Map.Entry pair : weightedBlocks.entrySet()) {
-            weightedBlocks.put((Material) pair.getKey(),
+            weightedBlocks.put((PathMaterial) pair.getKey(),
                                (double) pair.getValue() + previous);
             previous = (double) pair.getValue();
         }
@@ -180,5 +180,92 @@ public class PathBuilder {
             closest = Math.min(closest, p.distanceEuclidian(point));
         }
         return closest;
+    }
+
+    /**
+     * Serialize the pathbuilder to NBT format.
+     * @param pb the PathBuilder to serialize
+     * @return the serialized PathBuilder
+     */
+    public static NBTTagCompound serialize(PathBuilder pb) {
+        NBTTagCompound ntc = new NBTTagCompound();
+
+        //name, radius, weightedblocks
+        ntc.setString("name", pb.name);
+        ntc.setInt("radius", pb.radius);
+
+        NBTTagList blocks = new NBTTagList();
+        for (Map.Entry pair : pb.weightedBlocks.entrySet()) {
+            PathMaterial pm = (PathMaterial) pair.getKey();
+            double weight = (double) pair.getValue();
+
+            NBTTagCompound mat = new NBTTagCompound();
+            mat.set("PathMaterial", PathMaterial.serialize(pm));
+            mat.setDouble("weight", weight);
+            blocks.add(mat);
+        }
+        ntc.set("weightedBlocks", blocks);
+
+        return ntc;
+    }
+
+    /**
+     * Deserialize a PathBuilder from NBT.
+     * @param ntc the NBTTagCompound
+     * @return the PathBuilder
+     */
+    public static PathBuilder deserialize(NBTTagCompound ntc) {
+        String name = ntc.getString("name");
+        int radius = ntc.getInt("radius");
+        PathBuilder builder = new PathBuilder(name);
+        builder.setRadius(radius);
+
+        NBTTagList blocks = ntc.getList("weightedBlocks", 10);
+        for (int i = 0; i < blocks.size(); i++) {
+            NBTTagCompound block = blocks.get(i);
+            PathMaterial mat = PathMaterial.deserialize(block.getCompound("PathMaterial"));
+            double weight = block.getDouble("weight");
+            builder.addBlock(mat.getMat(), weight, mat.getData());
+        }
+
+        return builder;
+    }
+
+    /**
+     * Saves the pathbuilder to a file.
+     * @param pb the PathBuilder to save
+     * @param path the path to the file
+     * @return whether the PathBuilder was successfully saved
+     */
+    public static boolean save(PathBuilder pb, String path) {
+        try {
+            //create directory if not exists
+            //create file if not exists
+            //write to file
+            NBTTagCompound ntc = PathBuilder.serialize(pb);
+            OutputStream out = new FileOutputStream(new File(path));
+            NBTCompressedStreamTools.a(ntc, out);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Loads a PathBuilder from a file.
+     * @param path the path of the file
+     * @return the PathBuilder
+     */
+    public static PathBuilder load(String path) {
+        //check if the file exists
+        //load the NBTTagCompound
+        //create path builder
+        try {
+            InputStream in = new FileInputStream(new File(path));
+            NBTTagCompound ntc = NBTCompressedStreamTools.a(in);
+            return PathBuilder.deserialize(ntc);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
