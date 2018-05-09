@@ -65,20 +65,19 @@ public class BuildFramework extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.getLogger().info("BuildFramework is disabled.");
+        getLogger().info("BuildFramework is disabled.");
     }
 
     private void createConfig() {
-        this.config.options().header("Ellirion-BuildFramework configuration file");
-        config.addDefault("templatePath", "plugins/Ellirion-BuildFramework/templates/");
-        config.addDefault("TerrainValidation_OverheadLimit", 20);
-        config.addDefault("TerrainValidation_BlocksLimit", 40);
-        config.addDefault("TerrainValidation_TotalLimit", 50);
-        config.addDefault("TerrainValidation_Offset", 5);
-        config.addDefault("TerrainValidator_BoundingBoxMinDist", 5);
-        config.addDefault("DOOR", 0);
-        config.addDefault("PATH", 1);
-        config.addDefault("GROUND", 2);
+        config.options().header("Ellirion-BuildFramework configuration file");
+        // terrain validation config settings
+        config.addDefault("TerrainCorrector.OverheadLimit", 20);
+        config.addDefault("TerrainCorrector.BlocksLimit", 40);
+        config.addDefault("TerrainCorrector.TotalLimit", 50);
+        config.addDefault("TerrainCorrector.Offset", 5);
+        config.addDefault("TerrainCorrector.BoundingBoxMinDist", 5);
+        // template config settings
+        config.addDefault("TemplateEngine.Path", "plugins/Ellirion-BuildFramework/templates/");
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
@@ -87,46 +86,27 @@ public class BuildFramework extends JavaPlugin {
     private void createBlockValueConfig() {
 
         File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
-
-        if (!blockValueConfigFile.exists() && blockValueConfigFile.getParentFile().mkdirs()) {
-            saveResource("BlockValues.yml", false);
-        }
-
         blockValueConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
-
-        if (blockValueConfigFile.exists()) {
-            return;
-        }
 
         blockValueConfig.options().header("The values for each block type of block material.\n" +
                                           "These values are used by the terrain validator.");
         for (Material m : Material.values()) {
-            blockValueConfig.set(m.toString(), 1);
+            blockValueConfig.addDefault(m.toString(), 1);
         }
+
+        blockValueConfig.options().copyDefaults(true);
+
+        //try and save the file
+
         try {
             blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {
-            getLogger().warning(e.toString());
+            getLogger().throwing(BuildFramework.class.toString(), "createBlockValueConfig", e);
         }
     }
 
     private void createTemplateFormatConfig() {
-
-        File templateFormatConfigFile = new File(getDataFolder(), "TemplateFormat.yml");
-
-        if (!templateFormatConfigFile.exists() && templateFormatConfigFile.getParentFile().mkdirs()) {
-            saveResource("TemplateFormat.yml", false);
-        }
-
-        templateFormatConfig = YamlConfiguration.loadConfiguration(templateFormatConfigFile);
-
-        if (templateFormatConfigFile.exists()) {
-            return;
-        }
-
-        templateFormatConfig.options().header("This file has all the filters to create a template.\n" +
-                                              "their are 3 options: RACE, TYPE, LEVEL.\n" +
-                                              "Markers is a list of all the possible markers you can use.\n");
+        //set the variables that are needed for the config
 
         List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
                                               "HUMAN");
@@ -141,15 +121,30 @@ public class BuildFramework extends JavaPlugin {
 
         List<String> markerList = Arrays.asList("DOOR", "GROUND", "PATH");
 
-        templateFormatConfig.set("Races", raceList);
-        templateFormatConfig.set("Types", typeList);
-        templateFormatConfig.set("Levels", levelList);
-        templateFormatConfig.set("Markers", markerList);
+        String racePath = "Races";
+        String typePath = "Types";
+        String levelPath = "Levels";
+        String markersPath = "Markers";
+
+        //get the file and load the config from the file
+        File templateFormatConfigFile = new File(getDataFolder(), "TemplateFormat.yml");
+        templateFormatConfig = YamlConfiguration.loadConfiguration(templateFormatConfigFile);
+
+        templateFormatConfig.options().header("This file has all the filters to create a template.\n" +
+                                              "their are 3 options: RACE, TYPE, LEVEL.\n" +
+                                              "Markers is a list of all the possible markers you can use.\n");
+
+        templateFormatConfig.addDefault(racePath, raceList);
+        templateFormatConfig.addDefault(typePath, typeList);
+        templateFormatConfig.addDefault(levelPath, levelList);
+        templateFormatConfig.addDefault(markersPath, markerList);
+
+        templateFormatConfig.options().copyDefaults(true);
 
         try {
             templateFormatConfig.save(templateFormatConfigFile);
         } catch (IOException e) {
-            getLogger().warning(e.toString());
+            getLogger().throwing(BuildFramework.class.toString(), "createTemplateFormatConfig", e);
         }
     }
 }
