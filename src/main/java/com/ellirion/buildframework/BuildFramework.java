@@ -71,13 +71,13 @@ public class BuildFramework extends JavaPlugin {
     private void createConfig() {
         config.options().header("Ellirion-BuildFramework configuration file");
         // terrain validation config settings
-        config.addDefault("TerrainValidation.OverheadLimit", 20);
-        config.addDefault("TerrainValidation.BlocksLimit", 40);
-        config.addDefault("TerrainValidation.TotalLimit", 50);
-        config.addDefault("TerrainValidation.Offset", 5);
-        config.addDefault("TerrainValidation.BoundingBoxMinDist", 5);
+        config.addDefault("TerrainCorrector.OverheadLimit", 20);
+        config.addDefault("TerrainCorrector.BlocksLimit", 40);
+        config.addDefault("TerrainCorrector.TotalLimit", 50);
+        config.addDefault("TerrainCorrector.Offset", 5);
+        config.addDefault("TerrainCorrector.BoundingBoxMinDist", 5);
         // template config settings
-        config.addDefault("template.Path", "plugins/Ellirion-BuildFramework/templates/");
+        config.addDefault("TemplateEngine.Path", "plugins/Ellirion-BuildFramework/templates/");
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
@@ -88,18 +88,13 @@ public class BuildFramework extends JavaPlugin {
         File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
         blockValueConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
 
-        // custom addDefault because the normal addDefault doesn't work
+        // check if the config file exists
+        // if it doesn't exist create the config file
         if (!blockValueConfigFile.exists()) {
             blockValueConfig.options().header("The values for each block type of block material.\n" +
                                               "These values are used by the terrain validator.");
             for (Material m : Material.values()) {
                 blockValueConfig.set(m.toString(), 1);
-            }
-        } else {
-            for (Material m : Material.values()) {
-                if (!blockValueConfig.isSet(m.toString())) {
-                    blockValueConfig.set(m.toString(), 1);
-                }
             }
         }
 

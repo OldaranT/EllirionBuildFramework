@@ -28,7 +28,7 @@ public class CommandImportTemplate implements CommandExecutor {
         String templateName = String.join(" ", strings);
 
         // Load template
-        String path = BuildFramework.getInstance().getConfig().getString("template.Path") + templateName + ".nbt";
+        String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path") + templateName + ".nbt";
         NBTTagCompound ntc;
         try {
             ntc = NBTCompressedStreamTools.a(new FileInputStream(new File(path)));

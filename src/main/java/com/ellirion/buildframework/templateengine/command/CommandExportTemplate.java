@@ -34,10 +34,10 @@ public class CommandExportTemplate implements CommandExecutor {
             return false;
         }
 
-        String path = BuildFramework.getInstance().getConfig().getString("template.Path") +
+        String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path") +
                       ts.getTemplate().getTemplateName() + ".nbt";
 
-        File theDir = new File(BuildFramework.getInstance().getConfig().getString("template.Path"));
+        File theDir = new File(BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path"));
 
         // if the directory does not exist, create it
         if (!theDir.exists()) {
