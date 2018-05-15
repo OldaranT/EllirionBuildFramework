@@ -12,6 +12,8 @@ import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
+import com.ellirion.buildframework.templateengine.util.TabCompletionFileNameList;
+import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
@@ -31,9 +33,11 @@ public class BuildFramework extends JavaPlugin {
     public void onEnable() {
         instance = this;
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
         getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
         getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
         getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
         getCommand("Validate").setExecutor(new ValidateCommand());
         getCommand("AddMarker").setExecutor(new CommandAddMarker());
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
