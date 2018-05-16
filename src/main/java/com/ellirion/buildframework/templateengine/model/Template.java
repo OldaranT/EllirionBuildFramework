@@ -14,6 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
@@ -183,10 +184,26 @@ public class Template {
             TemplateBlock block = (TemplateBlock) pair.getValue();
 
             Block b = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+
+            Block below = b.getRelative(BlockFace.DOWN);
+            Material belowMaterial = below.getType();
+            byte metadata = below.getState().getData().getData();
+            NBTTagCompound ntc = new NBTTagCompound();
+            TileEntity te = w.getHandle().getTileEntity(new BlockPosition(below.getX(), below.getY(), below.getZ()));
+            if (te != null) {
+                ntc.a(te.d());
+            }
+
+            below.setType(Material.STONE);
+
             b.setType(block.getMaterial());
             BlockState state = b.getState();
             state.setData(block.getMetadata());
             state.update();
+
+            below.setType(belowMaterial);
+            below.getState().setData(new MaterialData(belowMaterial, metadata));
+            below.getState().update(false, false);
         }
     }
 

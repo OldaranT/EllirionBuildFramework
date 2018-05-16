@@ -40,7 +40,7 @@ public class CommandCreateTemplate implements CommandExecutor {
             return false;
         }
 
-        Template template = new Template(name, sel);
+        Template template = Template.fromNBT(Template.toNBT(new Template(name, sel)));
         Point p1 = new Point(sel.getMinimumPoint().getX(), sel.getMinimumPoint().getY(), sel.getMinimumPoint().getZ());
 
         TemplateSession templateSession = new TemplateSession(template, p1);
