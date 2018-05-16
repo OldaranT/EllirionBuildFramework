@@ -113,7 +113,8 @@ public class Template {
 
                     Block b = world.getBlockAt(x, y, z);
                     BlockState state = b.getState();
-                    this.templateBlocks[templateX][templateY][templateZ].setMetadata(state.getData());
+                    this.templateBlocks[templateX][templateY][templateZ].setMetadata(
+                            new MaterialData(state.getType(), state.getData().getData()));
 
                     TileEntity te = w.getTileEntityAt(x, y, z);
                     if (te != null) {
