@@ -33,6 +33,7 @@ public class CommandImportTemplate implements CommandExecutor {
 
         if (!fileNames.contains(templateName.toUpperCase())) {
             player.sendMessage(ChatColor.DARK_RED + "This file does not exist.");
+            return true;
         }
         // Load template
         String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path") + templateName + ".nbt";

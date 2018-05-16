@@ -67,8 +67,10 @@ public class CommandCreateTemplate implements CommandExecutor {
         // Add player to template manager map so the template can be linked to the player
         TemplateManager.getTemplateSessions().put(player, templateSession);
 
-        player.sendMessage("Template with name " + ChatColor.BOLD + name + ChatColor.RESET + " started");
-        player.sendMessage("Add markers before saving your template");
+        player.sendMessage(
+                ChatColor.GREEN + "Template with name " + ChatColor.WHITE + ChatColor.BOLD + name + ChatColor.RESET +
+                ChatColor.GREEN + " started");
+        player.sendMessage(ChatColor.WHITE + "Add markers before saving your template");
 
         // Put all Marker values in a string
         String markers = Template.markersToString();
