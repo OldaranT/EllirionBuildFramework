@@ -48,7 +48,17 @@ public class Template {
             Material.TRIPWIRE_HOOK,
             Material.PISTON_BASE,
             Material.PISTON_EXTENSION,
-            Material.PISTON_STICKY_BASE
+            Material.PISTON_STICKY_BASE,
+            Material.TORCH,
+            Material.ACACIA_DOOR,
+            Material.BIRCH_DOOR,
+            Material.DARK_OAK_DOOR,
+            Material.IRON_DOOR,
+            Material.JUNGLE_DOOR,
+            Material.SPRUCE_DOOR,
+            Material.WOOD_DOOR,
+            Material.WOODEN_DOOR,
+            Material.IRON_DOOR_BLOCK
     };
 
     private static String data = "data";
@@ -139,9 +149,9 @@ public class Template {
                         toPlaceLast.put(new Point(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z),
                                         templateBlocks[x][y][z]);
                     } else {
-                        int locX = (int) loc.getX() + x;
-                        int locY = (int) loc.getY() + y;
-                        int locZ = (int) loc.getZ() + z;
+                        int locX = loc.getBlockX() + x;
+                        int locY = loc.getBlockY() + y;
+                        int locZ = loc.getBlockZ() + z;
 
                         Block b = w.getBlockAt(locX, locY, locZ);
 
