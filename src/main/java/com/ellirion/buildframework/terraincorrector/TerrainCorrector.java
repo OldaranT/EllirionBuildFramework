@@ -55,14 +55,18 @@ public class TerrainCorrector {
     }
 
     private boolean correctHole(Hole hole, World world, BoundingBox boundingbox) {
-        if (!hole.onlyBelowBoundingBox(boundingbox)) {
-            fillBasicHole(hole, world);
-            return true;
-        }
-        if (!hole.exceedsMaxDepth()) {
-            fillSmallHoleAtSide(hole, world, boundingbox);
-            return true;
-        }
+
+        //        if (!hole.onlyBelowBoundingBox(boundingbox)) {
+        //            fillBasicHole(hole, world);
+        //            return true;
+        //        }
+        //        if (!hole.exceedsMaxDepth()) {
+        //            fillSmallHoleAtSide(hole, world, boundingbox);
+        //            return true;
+        //        }
+        //        if (hole.exceedsMaxDepth()) {
+        buildSupports(hole, boundingbox);
+        //        }
 
         return false;
     }
@@ -91,8 +95,8 @@ public class TerrainCorrector {
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
                 Block block = world.getBlockAt(x, y, z);
-                if ((block.isEmpty() || block.isLiquid()) ||
-                    isBlockTypeNonSolid(block.getType()) && holes.stream().noneMatch(hole -> hole.contains(block))) {
+                if ((block.isEmpty() || block.isLiquid() ||
+                     isBlockTypeNonSolid(block.getType())) && holes.stream().noneMatch(hole -> hole.contains(block))) {
 
                     // Add the hole to the list of holes once all blocks are found
                     holes.add(getHole(block, boundingBox));
@@ -147,7 +151,7 @@ public class TerrainCorrector {
     }
 
     private Hole getHole(Block block, BoundingBox boundingBox) {
-        Hole hole = new Hole();
+        Hole hole = new Hole(block);
         LinkedList<Block> todoBlocks = new LinkedList<>();
 
         //Add the current block to the todoBlocks of blocks that are yet to be done
@@ -177,12 +181,15 @@ public class TerrainCorrector {
                   !hole.contains(b))) {
                 continue;
             }
-            if (!(b.getY() >= minY)) {
-                hole.setExceedsMaxDepth(true);
-                continue;
-            }
             if (!(b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ)) {
                 hole.setExceedsAreaLimit(true);
+                if (b.getY() < minY) {
+                    hole.setExceedsMaxDepth(true);
+                }
+                continue;
+            }
+            if (b.getY() < minY) {
+                hole.setExceedsMaxDepth(true);
                 continue;
             }
 
@@ -232,6 +239,111 @@ public class TerrainCorrector {
                type == Material.RED_MUSHROOM || type == Material.SAPLING ||
                type == Material.CROPS || type == Material.DEAD_BUSH ||
                type == Material.DOUBLE_PLANT;
+    }
+
+    private void buildSupports(Hole hole, BoundingBox boundingBox) {
+        List<Block> topBlocks = hole.getTopBlocks();
+        List<Block> toChange = new ArrayList<>();
+
+        int minX = boundingBox.getX1();
+        int maxX = boundingBox.getX2();
+        int minZ = boundingBox.getZ1();
+        int maxZ = boundingBox.getZ2();
+
+        for (Block b : topBlocks) {
+            if (b.getX() < minX || b.getX() > maxX || b.getZ() < minZ || b.getZ() > maxZ || surroundingIsNotSolid(b)) {
+                continue;
+            }
+            toChange.addAll(getLowerBlocks(b, boundingBox));
+        }
+
+        for (Block b : toChange) {
+            b.setType(Material.FENCE);
+        }
+
+        List<Block> toBarrier = new ArrayList(topBlocks);
+        toBarrier.removeAll(toChange);
+
+        for (Block b : toBarrier) {
+            if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ) {
+                b.setType(Material.BARRIER);
+            }
+        }
+    }
+
+    private boolean surroundingIsNotSolid(Block b) {
+        BlockFace[] currentYPlaneFaces = {
+                BlockFace.NORTH,
+                BlockFace.EAST,
+                BlockFace.SOUTH,
+                BlockFace.WEST
+        };
+        for (BlockFace f : currentYPlaneFaces) {
+            Block relative = b.getRelative(f);
+            if (!(relative.isEmpty() || relative.isLiquid())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private List<Block> getLowerBlocks(Block b, BoundingBox boundingBox) {
+        int maxDepth = CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
+        List<Block> temp = new ArrayList<>();
+        Block current = b;
+        for (int i = 0; i < maxDepth; i++) {
+            temp.add(current);
+            Block nextBlock = current.getRelative(BlockFace.DOWN);
+            if (i == maxDepth - 1 && (nextBlock.isEmpty() || nextBlock.isLiquid())) {
+                temp.clear();
+                break;
+            }
+            if (!nextBlock.isEmpty() && !nextBlock.isLiquid()) {
+                break;
+            }
+            current = nextBlock;
+        }
+        return getConeShape(temp, boundingBox);
+    }
+
+    private List<Block> getConeShape(List<Block> blocks, BoundingBox bb) {
+        if (blocks.isEmpty() || blocks.size() == 1) {
+            return blocks;
+        }
+        Block topBlock = blocks.get(0);
+        Block bottomBlock = blocks.get(blocks.size() - 1);
+
+        int height = topBlock.getY() - bottomBlock.getY();
+        int bottomY = bottomBlock.getY();
+        int midX = topBlock.getX();
+        int midZ = topBlock.getZ();
+
+        int minX = bb.getX1();
+        int maxX = bb.getX2();
+        int minZ = bb.getZ1();
+        int maxZ = bb.getZ2();
+
+        World world = topBlock.getWorld();
+
+        for (int i = height; i >= 0; i--) {
+            for (int x = midX - i; x <= midX + i; x++) {
+                for (int z = midZ - i; z <= midZ + i; z++) {
+                    Block current = world.getBlockAt(x, bottomY + i, z);
+                    if (blocks.contains(current)) {
+                        continue;
+                    }
+                    if (!current.isLiquid() && !current.isEmpty()) {
+                        continue;
+                    }
+                    if (z < minZ || z > maxZ || x < minX || x > maxX) {
+                        continue;
+                    }
+                    blocks.add(current);
+                }
+            }
+        }
+
+        return blocks;
     }
 }
 
