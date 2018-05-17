@@ -4,6 +4,8 @@ import lombok.Getter;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
 
+import java.text.DecimalFormat;
+
 public class PathMaterial {
 
     @Getter private Material mat;
@@ -45,5 +47,21 @@ public class PathMaterial {
         PathMaterial pm = new PathMaterial(mat, data);
 
         return pm;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof PathMaterial)) {
+            return false;
+        }
+        PathMaterial other = (PathMaterial) obj;
+
+        return mat == other.mat && data == other.data;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.parseInt(
+                new DecimalFormat("000").format(mat.getId()) + "" + new DecimalFormat("00").format((int) data));
     }
 }

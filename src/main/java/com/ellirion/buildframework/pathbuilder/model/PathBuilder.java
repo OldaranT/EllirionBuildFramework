@@ -5,9 +5,11 @@ import lombok.Setter;
 import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.NBTTagList;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 import com.ellirion.buildframework.model.Point;
 
@@ -16,6 +18,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +31,7 @@ public class PathBuilder {
     @Getter @Setter private String name;
     @Getter private HashMap<PathMaterial, Double> weightedBlocks;
     private double totalWeight;
-    @Getter @Setter private Material fenceType;
+    @Getter @Setter private Material supportType;
     @Getter @Setter private int radius;
     private Random r;
 
@@ -40,6 +44,7 @@ public class PathBuilder {
         weightedBlocks = new HashMap<>();
         r = new Random();
         totalWeight = 0;
+        supportType = Material.FENCE;
     }
 
     /**
@@ -48,11 +53,10 @@ public class PathBuilder {
      * @param weight weight
      * @param data metadata
      */
-    public void addBlock(final Material mat, double weight, byte data) {
+    public void addBlock(Material mat, double weight, byte data) {
         denormalizeWeights();
         weightedBlocks.put(new PathMaterial(mat, data), weight);
-        //        weightedBlocks.put(mat, weight);
-        totalWeight += weight;
+        totalWeight = getTotalWeight();
         normalizeWeights();
     }
 
@@ -61,8 +65,18 @@ public class PathBuilder {
      * @param mat material
      * @param weight weight
      */
-    public void addBlock(final Material mat, double weight) {
+    public void addBlock(Material mat, double weight) {
         addBlock(mat, weight, (byte) 0);
+    }
+
+    /**
+     * Removes a material from the weighted blocks list.
+     * @param mat the material to remove
+     * @param data the metadata on the material to remove
+     */
+    public void removeBlock(final Material mat, byte data) {
+        PathMaterial toRemove = new PathMaterial(mat, data);
+        weightedBlocks.remove(toRemove);
     }
 
     /**
@@ -88,8 +102,22 @@ public class PathBuilder {
                         break;
                     }
                 }
-                //                }
+                //
             }
+            //for now, we'll put supports under just the center blocks
+            int y = p.getBlockY() - 1;
+            boolean groundFound = !w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).isEmpty();
+            while (!groundFound) {
+                //replace block with fence
+                //move 1 down
+                //update groundFound
+
+                w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).setType(supportType);
+                y--;
+                groundFound = !w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).getType().isSolid();
+            }
+
+            //eventually we'll want to find the closest anchor point and build supports towards that point
         }
     }
 
@@ -146,12 +174,20 @@ public class PathBuilder {
         return localPoint;
     }
 
+    private int getTotalWeight() {
+        int weight = 0;
+        for (double d : weightedBlocks.values()) {
+            weight += d;
+        }
+        return weight;
+    }
+
     private void denormalizeWeights() {
         double previous = 0;
         for (Map.Entry pair : weightedBlocks.entrySet()) {
             weightedBlocks.put((PathMaterial) pair.getKey(),
                                (double) pair.getValue() - previous);
-            previous = (double) pair.getValue();
+            previous += (double) pair.getValue();
         }
 
         for (Map.Entry pair : weightedBlocks.entrySet()) {
@@ -183,6 +219,86 @@ public class PathBuilder {
     }
 
     /**
+     * Get anchor point.
+     * @param point s
+     * @param w s
+     * @param p s
+     * @return s
+     */
+    public Point getAnchorPoint(Point point, World w, Player p) {
+        Point anchor = new Point();
+
+        //flood fill until we find an anchor point
+        //can only go down, not up
+        //first block found (that isn't part of a path) will be the anchor point
+
+        LinkedList<Point> pointsToCheck = new LinkedList<>();
+        pointsToCheck.add(point);
+
+        boolean anchorFound = false;
+        int steps = 0;
+        List<Point> visited = new ArrayList<>();
+        while (!anchorFound) {
+            //for each point,
+            //check if it's an anchor point
+            //if not,
+            //add surrounding points
+
+            Point curr = pointsToCheck.removeFirst();
+
+            p.sendBlockChange(new Location(w, curr.getBlockX(), curr.getBlockY(), curr.getBlockZ()), Material.GLASS,
+                              (byte) 0);
+
+            if (!w.getBlockAt(curr.getBlockX(), curr.getBlockY(), curr.getBlockZ()).isEmpty()) {
+                return curr;
+            }
+
+            Point[] points = new Point[] {
+                    curr.north(),
+                    curr.east(),
+                    curr.south(),
+                    curr.west(),
+                    curr.down(),
+                    //                    curr.down().translate(new Point(0, 0, -1)),
+                    //                    curr.down().translate(new Point(-1, 0, 0)),
+                    //                    curr.down().translate(new Point(0, 0, 1)),
+                    //                    curr.down().translate(new Point(1, 0, 0))
+            };
+
+            for (int i = 0; i < points.length; i++) {
+                if (!pointsToCheck.contains(points[i])) {
+                    pointsToCheck.addLast(points[i]);
+                }
+            }
+
+            visited.add(curr);
+
+            steps++;
+            if (steps >= 1000000) {
+                break;
+            }
+        }
+
+        return anchor;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(
+                "PathBuilder with name '" + name + "'\nRadius: " + radius + "\nWeightmap:");
+        double previous = 0;
+        for (Map.Entry pair : weightedBlocks.entrySet()) {
+            PathMaterial mat = (PathMaterial) pair.getKey();
+            String matName = mat.getMat().name() + ":" + mat.getData();
+            String percentage = new DecimalFormat("00.0").format((((double) pair.getValue()) - previous) * 100);
+            sb.append("\n-" + matName + " [" + percentage + "%]");
+            previous = (double) pair.getValue();
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * Serialize the pathbuilder to NBT format.
      * @param pb the PathBuilder to serialize
      * @return the serialized PathBuilder
@@ -194,6 +310,7 @@ public class PathBuilder {
         ntc.setString("name", pb.name);
         ntc.setInt("radius", pb.radius);
 
+        pb.denormalizeWeights();
         NBTTagList blocks = new NBTTagList();
         for (Map.Entry pair : pb.weightedBlocks.entrySet()) {
             PathMaterial pm = (PathMaterial) pair.getKey();
@@ -205,6 +322,7 @@ public class PathBuilder {
             blocks.add(mat);
         }
         ntc.set("weightedBlocks", blocks);
+        pb.normalizeWeights();
 
         return ntc;
     }

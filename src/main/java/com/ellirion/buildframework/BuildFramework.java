@@ -81,7 +81,7 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainValidation_TotalLimit", 50);
         config.addDefault("TerrainValidation_Offset", 5);
         config.addDefault("templatePath", "plugins/Ellirion/BuildFramework/templates/");
-        config.addDefault("pathbuilderPath", "plugins/Ellirion-BuildFramework/pathbuilders/");
+        config.addDefault("PathBuilder.pathbuilderPath", "plugins/Ellirion-BuildFramework/pathbuilders/");
         config.addDefault("TerrainValidator_BoundingBoxMinDist", 5);
         config.addDefault("DOOR", 0);
         config.addDefault("PATH", 1);
@@ -97,7 +97,7 @@ public class BuildFramework extends JavaPlugin {
         if (!(new File(path).mkdirs())) {
             getLogger().warning("The path for templates could not be created");
         }
-        path = config.getString("pathbuilderPath");
+        path = config.getString("PathBuilder.pathbuilderPath");
         if (!(new File(path).mkdirs())) {
             getLogger().warning("The path for PathBuilders could not be created");
         }

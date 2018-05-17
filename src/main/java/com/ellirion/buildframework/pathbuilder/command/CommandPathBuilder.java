@@ -1,12 +1,14 @@
 package com.ellirion.buildframework.pathbuilder.command;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathbuilder.BuilderManager;
 import com.ellirion.buildframework.pathbuilder.model.PathBuilder;
 import com.ellirion.buildframework.util.StringHelper;
@@ -24,7 +26,7 @@ public class CommandPathBuilder implements CommandExecutor {
 
         if (strings.length < 1) {
             player.sendMessage(ChatColor.DARK_RED +
-                               "Please enter an action\nSupported actions are: create, setname, setradius, addblock, save, load");
+                               "Please enter an action\nSupported actions are: create, setname, setradius, addblock, save, load, info");
             return true;
         }
 
@@ -41,11 +43,20 @@ public class CommandPathBuilder implements CommandExecutor {
             case "ADDBLOCK":
                 addBlock(player, strings);
                 break;
+            case "REMOVEBLOCK":
+                removeBlock(player, strings);
+                break;
             case "SAVE":
                 save(player, strings);
                 break;
             case "LOAD":
                 load(player, strings);
+                break;
+            case "INFO":
+                info(player);
+                break;
+            case "ANCHOR":
+                anchor(player);
                 break;
             default:
                 player.sendMessage(ChatColor.DARK_RED +
@@ -128,6 +139,29 @@ public class CommandPathBuilder implements CommandExecutor {
         }
     }
 
+    private void removeBlock(Player player, String[] strings) {
+        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
+        if (builder == null) {
+            player.sendMessage(ChatColor.DARK_RED + "You have no path builder selected");
+            return;
+        }
+
+        if (strings.length < 3) {
+            player.sendMessage(ChatColor.DARK_RED + "Command usage: /pathbuilder removeblock <material> <metadata>");
+            return;
+        }
+
+        try {
+            Material mat = Material.valueOf(strings[1]);
+            byte data = (byte) Integer.parseInt(strings[2]);
+            builder.removeBlock(mat, data);
+            player.sendMessage("Block " + mat + ":" + data + " removed from path builder " + builder.getName());
+        } catch (Exception e) {
+            player.sendMessage(ChatColor.DARK_RED + "Command usage: /pathbuilder removeblock <material> <metadata>");
+            return;
+        }
+    }
+
     //Save the selected PathBuilder to a file,
     //Params: none
     private void save(Player player, String[] strings) {
@@ -139,7 +173,7 @@ public class CommandPathBuilder implements CommandExecutor {
             return;
         }
 
-        String path = BuildFramework.getInstance().getConfig().getString("pathbuilderPath") + name + ".nbt";
+        String path = BuildFramework.getInstance().getConfig().getString("PathBuilder.pathbuilderPath") + name + ".nbt";
         if (PathBuilder.save(builder, path)) {
             player.sendMessage(ChatColor.GREEN + "The path builder was succesfully saved");
         } else {
@@ -158,7 +192,7 @@ public class CommandPathBuilder implements CommandExecutor {
             return;
         }
 
-        String path = BuildFramework.getInstance().getConfig().getString("pathbuilderPath") + name + ".nbt";
+        String path = BuildFramework.getInstance().getConfig().getString("PathBuilder.pathbuilderPath") + name + ".nbt";
         PathBuilder builder = PathBuilder.load(path);
         if (builder == null) {
             player.sendMessage(ChatColor.DARK_RED + "This path builder could not be loaded");
@@ -167,5 +201,21 @@ public class CommandPathBuilder implements CommandExecutor {
 
         BuilderManager.getBuilderSessions().put(player, builder);
         player.sendMessage(ChatColor.GREEN + "The path builder " + name + " was successfully loaded");
+    }
+
+    private void info(Player player) {
+        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
+
+        player.sendMessage(builder.toString());
+    }
+
+    private void anchor(Player player) {
+        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
+        Location l = player.getLocation();
+        Point start = new Point(l.getBlockX(), l.getBlockY(), l.getBlockZ());
+        Point p = builder.getAnchorPoint(start, player.getWorld(), player);
+        player.sendBlockChange(start.toLocation(player.getWorld()), Material.GLOWSTONE, (byte) 0);
+        player.sendBlockChange(p.toLocation(player.getWorld()), Material.GLOWSTONE, (byte) 0);
+        BuildFramework.getInstance().getLogger().info(p.toString());
     }
 }
