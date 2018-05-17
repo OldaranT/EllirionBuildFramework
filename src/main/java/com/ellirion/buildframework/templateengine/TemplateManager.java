@@ -9,6 +9,6 @@ import java.util.HashMap;
 
 public class TemplateManager {
 
-    @Getter private static HashMap<Player, TemplateHologram> selectedHolograms = new HashMap<>();
-    @Getter private static HashMap<Player, TemplateSession> templateSessions = new HashMap<>();
+    @Getter private static final HashMap<Player, TemplateHologram> SELECTEDHOLOGRAMS = new HashMap<>();
+    @Getter private static final HashMap<Player, TemplateSession> TEMPLATESESSIONS = new HashMap<>();
 }

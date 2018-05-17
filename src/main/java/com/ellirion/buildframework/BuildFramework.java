@@ -25,14 +25,23 @@ import java.util.List;
 
 public class BuildFramework extends JavaPlugin {
 
-    private static BuildFramework instance;
+    @SuppressWarnings("PMD.SuspiciousConstantFieldName")
+    private static BuildFramework INSTANCE;
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
     private FileConfiguration templateFormatConfig;
 
+    /**
+     * Constructor to set instance.
+     */
+    public BuildFramework() {
+        super();
+
+        INSTANCE = this;
+    }
+
     @Override
     public void onEnable() {
-        instance = this;
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
         getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
         getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
@@ -56,10 +65,7 @@ public class BuildFramework extends JavaPlugin {
      * @return BuildFramework instance
      */
     public static BuildFramework getInstance() {
-        if (instance == null) {
-            instance = new BuildFramework();
-        }
-        return instance;
+        return INSTANCE;
     }
 
     public FileConfiguration getBlockValueConfig() {

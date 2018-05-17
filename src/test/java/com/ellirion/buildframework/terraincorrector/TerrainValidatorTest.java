@@ -70,7 +70,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorIsFilledAndAreaToCheckIsAir_ShouldReturnTrue() {
+    public void validate_whenFloorIsFilledAndAreaToCheckIsAir_shouldReturnTrue() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -84,7 +84,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorNotFilledAndAreaToCheckIsAir_ShouldReturnFalse() {
+    public void validate_whenFloorNotFilledAndAreaToCheckIsAir_shouldReturnFalse() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -97,7 +97,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorNotFilledAndAreaToCheckIsContainsBlocks_ShouldReturnFalse() {
+    public void validate_whenFloorNotFilledAndAreaToCheckIsContainsBlocks_shouldReturnFalse() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -112,7 +112,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorNotFilledAirIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
+    public void validate_whenFloorNotFilledAirIsBelowThresholdAndAreaToCheckIsAir_shouldReturnTrue() {
         // Arragne
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -127,7 +127,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorNotFilledWaterIsBelowThresholdAndAreaToCheckIsAir_ShouldReturnTrue() {
+    public void validate_whenFloorNotFilledWaterIsBelowThresholdAndAreaToCheckIsAir_shouldReturnTrue() {
         // Arragne
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -142,7 +142,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorAndAreaAndTotalBelowThreshold_ShouldReturnTrue() {
+    public void validate_whenFloorAndAreaAndTotalBelowThreshold_shouldReturnTrue() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -159,7 +159,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorAndAreaBelowThresholdAndTotalAboveThreshold_ShouldReturnFalse() {
+    public void validate_whenFloorAndAreaBelowThresholdAndTotalAboveThreshold_shouldReturnFalse() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -181,7 +181,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFloorNotFilledIsAboveThresholdAndAreaToCheckIsAir_ShouldReturnFalse() {
+    public void validate_whenFloorNotFilledIsAboveThresholdAndAreaToCheckIsAir_shouldReturnFalse() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -196,7 +196,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFlooredAndAreaToCheckContainsLiquid_ShouldReturnFalse() {
+    public void validate_whenFlooredAndAreaToCheckContainsLiquid_shouldReturnFalse() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -215,7 +215,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFlooredAndHasThreeNormalBlocks_ShouldReturnTrue() {
+    public void validate_whenFlooredAndHasThreeNormalBlocks_shouldReturnTrue() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         final World world = createDefaultWorld();
@@ -233,7 +233,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFlooredAndHasLiquidOneBlockOutsideBoundingBox_ShouldReturnFalse() {
+    public void validate_whenFlooredAndHasLiquidOneBlockOutsideBoundingBox_shouldReturnFalse() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -249,7 +249,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFlooredAndHasThreeNormalBlocksOneBlockOutSideTheBoundingBox_ShouldReturnTrue() {
+    public void validate_whenFlooredAndHasThreeNormalBlocksOneBlockOutSideTheBoundingBox_shouldReturnTrue() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -267,7 +267,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenFlooredAndBlocksAreOutsideValidationArea_ShouldReturnTrue() {
+    public void validate_whenFlooredAndBlocksAreOutsideValidationArea_shouldReturnTrue() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -285,7 +285,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenCompletelyFilledWithBlocks_ShouldReturnFalse() {
+    public void validate_whenCompletelyFilledWithBlocks_shouldReturnFalse() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -299,7 +299,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenOneBlockOverLimitAndFloored_ShouldReturnFalse() {
+    public void validate_whenOneBlockOverLimitAndFloored_shouldReturnFalse() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -316,7 +316,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenOneBlockUnderLimitAndFloored_ShouldReturnTrue() {
+    public void validate_whenOneBlockUnderLimitAndFloored_shouldReturnTrue() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -334,7 +334,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenExactlyOnBlockLimitAndFloored_ShouldReturnFalse() {
+    public void validate_whenExactlyOnBlockLimitAndFloored_shouldReturnFalse() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -350,7 +350,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenExactlyOnBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnFalse() {
+    public void validate_whenExactlyOnBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnFalse() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -375,7 +375,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenOneBelowBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnTrue() {
+    public void validate_whenOneBelowBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnTrue() {
         // Arrange
         final TerrainValidator t = new TerrainValidator();
         World mockWorld = createDefaultWorld();
@@ -399,7 +399,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenAnotherBoundingBoxWithinBoundingBox_ShouldReturnFalse() {
+    public void validate_whenAnotherBoundingBoxWithinBoundingBox_shouldReturnFalse() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         World world = createDefaultWorld();
@@ -418,7 +418,7 @@ public class TerrainValidatorTest {
     }
 
     @Test
-    public void Validate_WhenAnotherBoundingBoxWithinCheckingRadius_ShouldReturnFalse() {
+    public void validate_whenAnotherBoundingBoxWithinCheckingRadius_shouldReturnFalse() {
         // Arrange
         final TerrainValidator validator = new TerrainValidator();
         World world = createDefaultWorld();
