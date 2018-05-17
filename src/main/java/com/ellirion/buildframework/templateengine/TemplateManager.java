@@ -1,14 +1,21 @@
 package com.ellirion.buildframework.templateengine;
 
+import org.bukkit.entity.Player;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
-import lombok.Getter;
-import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 
 public class TemplateManager {
 
-    @Getter private static final HashMap<Player, TemplateHologram> SELECTEDHOLOGRAMS = new HashMap<>();
-    @Getter private static final HashMap<Player, TemplateSession> TEMPLATESESSIONS = new HashMap<>();
+    private static final HashMap<Player, TemplateHologram> SELECTED_HOLOGRAMS = new HashMap<>();
+    private static final HashMap<Player, TemplateSession> TEMPLATE_SESSIONS = new HashMap<>();
+
+    public static HashMap<Player, TemplateHologram> getSelectedHolograms() {
+        return SELECTED_HOLOGRAMS;
+    }
+
+    public static HashMap<Player, TemplateSession> getTemplateSessions() {
+        return TEMPLATE_SESSIONS;
+    }
 }
