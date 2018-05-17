@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class Template {
 
-    private static Material[] PLACELATE = new Material[] {
+    private static final Material[] PLACELATE = new Material[] {
             Material.WALL_SIGN,
             Material.WALL_BANNER,
             Material.BANNER,
