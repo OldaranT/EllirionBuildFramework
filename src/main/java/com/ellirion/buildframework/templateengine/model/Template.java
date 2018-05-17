@@ -2,7 +2,6 @@ package com.ellirion.buildframework.templateengine.model;
 
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
@@ -77,14 +76,15 @@ public class Template {
     /**
      * @param name Name of the template
      * @param selection Selected area
+     * @param world the world the template is in
      */
-    public Template(final String name, final Selection selection) {
-        this.templateName = name;
-        this.markers = new HashMap<>();
+    public Template(final String name, final BoundingBox selection, final World world) {
+        templateName = name;
+        markers = new HashMap<>();
 
         // Get all blocks from the area
-        Location start = selection.getMinimumPoint();
-        Location end = selection.getMaximumPoint();
+        Point start = selection.getPoint1();
+        Point end = selection.getPoint2();
 
         int startX = Math.min((int) start.getX(), (int) end.getX());
         int startY = Math.min((int) start.getY(), (int) end.getY());
@@ -101,25 +101,24 @@ public class Template {
         int xDepth = endX - startX + 1;
         int yDepth = endY - startY + 1;
         int zDepth = endZ - startZ + 1;
-        this.templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
+        templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
 
-        World world = selection.getWorld();
         CraftWorld w = (CraftWorld) world;
 
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
-                    this.templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(
+                    templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(
                             world.getBlockAt(x, y, z).getType());
 
                     Block b = world.getBlockAt(x, y, z);
                     BlockState state = b.getState();
-                    this.templateBlocks[templateX][templateY][templateZ].setMetadata(
+                    templateBlocks[templateX][templateY][templateZ].setMetadata(
                             new MaterialData(state.getType(), state.getData().getData()));
 
                     TileEntity te = w.getTileEntityAt(x, y, z);
                     if (te != null) {
-                        this.templateBlocks[templateX][templateY][templateZ].setData(te.save(new NBTTagCompound()));
+                        templateBlocks[templateX][templateY][templateZ].setData(te.save(new NBTTagCompound()));
                     }
                     templateZ++;
                 }
@@ -261,17 +260,12 @@ public class Template {
         Template other = (Template) obj;
 
         // Template name has to be either null in both or the same in both
-        if (templateName == null && other.templateName != null ||
-            templateName != null && other.templateName == null) {
-            return false;
-        }
-        if ((templateName != null && other.templateName != null) && !templateName.equals(other.templateName)) {
+        if (templateName == null ? other.templateName != null : !templateName.equals(other.templateName)) {
             return false;
         }
 
         // TemplateBlocks has to be null in both or the same in both
-        if (templateBlocks == null && other.templateBlocks != null ||
-            templateBlocks != null && other.templateBlocks == null) {
+        if (templateBlocks == null ^ other.templateBlocks == null) {
             return false;
         }
         if (templateBlocks != null && other.templateBlocks != null) {
