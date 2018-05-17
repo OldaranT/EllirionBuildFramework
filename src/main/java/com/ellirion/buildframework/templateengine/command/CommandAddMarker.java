@@ -38,7 +38,7 @@ public class CommandAddMarker implements CommandExecutor {
             return true;
         }
 
-        if (!Template.getFinalMarkerList().contains(strings[0].toUpperCase())) {
+        if (!Template.getFINALMARKERLIST().contains(strings[0].toUpperCase())) {
             player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
             return true;
         }
