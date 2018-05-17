@@ -25,8 +25,8 @@ import java.util.Map;
 
 public class Template {
 
-    private static String DATA = "data";
-    @Getter private static List<String> FINALMARKERLIST = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+    private static final String DATA = "data";
+    @Getter private static final List<String> FINALMARKERLIST = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
             "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
