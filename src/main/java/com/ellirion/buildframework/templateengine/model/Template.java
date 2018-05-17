@@ -27,13 +27,6 @@ import java.util.Map;
 
 public class Template {
 
-    /**
-     * Enum of markers.
-     */
-    public enum Markers {
-        DOOR, GROUND, PATH
-    }
-
     private static Material[] placeLate = new Material[] {
             Material.WALL_SIGN,
             Material.WALL_BANNER,
