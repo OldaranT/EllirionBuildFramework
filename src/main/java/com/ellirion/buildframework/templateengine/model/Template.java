@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.templateengine.model;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import lombok.Getter;
@@ -18,8 +19,10 @@ import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Template {
@@ -46,6 +49,7 @@ public class Template {
             Material.REDSTONE_TORCH_ON,
             Material.VINE,
             Material.TRIPWIRE_HOOK,
+            Material.PAINTING,
             Material.PISTON_BASE,
             Material.PISTON_EXTENSION,
             Material.PISTON_STICKY_BASE,
@@ -62,6 +66,8 @@ public class Template {
     };
 
     private static String data = "data";
+    @Getter private static List<String> finalMarkerList = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+            "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
     @Getter private HashMap<String, Point> markers;
@@ -142,20 +148,31 @@ public class Template {
         CraftWorld w = (CraftWorld) loc.getWorld();
 
         HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
+        List<DoorWrapper> doors = new ArrayList<>();
 
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
                     if (Arrays.asList(placeLate).contains(templateBlocks[x][y][z].getMaterial())) {
-                        toPlaceLast.put(new Point(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z),
-                                        templateBlocks[x][y][z]);
+                        if (templateBlocks[x][y][z].getMaterial().toString().contains("DOOR") &&
+                            !templateBlocks[x][y][z].getMaterial().toString().contains("TRAP")) {
+                            if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
+                                doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
+                                                          templateBlocks[x][y + 1][z].getMetadata().getData(),
+                                                          templateBlocks[x][y][z].getMetadata().getData(),
+                                                          new Point(loc.getBlockX() + x, loc.getBlockY() + y,
+                                                                    loc.getBlockZ() + z)));
+                            }
+                        } else {
+                            toPlaceLast.put(new Point(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z),
+                                            templateBlocks[x][y][z]);
+                        }
                     } else {
                         int locX = loc.getBlockX() + x;
                         int locY = loc.getBlockY() + y;
                         int locZ = loc.getBlockZ() + z;
 
                         Block b = w.getBlockAt(locX, locY, locZ);
-
                         b.setType(getTemplateBlocks()[x][y][z].getMaterial());
                         b.getState().update();
 
@@ -178,17 +195,18 @@ public class Template {
             }
         }
 
+        //Place blocks that need other blocks to stay on their position.
         for (Map.Entry pair : toPlaceLast.entrySet()) {
             Point p = (Point) pair.getKey();
             TemplateBlock block = (TemplateBlock) pair.getValue();
-
             Block b = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
 
             Block below = b.getRelative(BlockFace.DOWN);
             Material belowMaterial = below.getType();
             byte metadata = below.getState().getData().getData();
             NBTTagCompound ntc = new NBTTagCompound();
-            TileEntity te = w.getHandle().getTileEntity(new BlockPosition(below.getX(), below.getY(), below.getZ()));
+            TileEntity te = w.getHandle().getTileEntity(
+                    new BlockPosition(below.getX(), below.getY(), below.getZ()));
             if (te != null) {
                 ntc.a(te.d());
             }
@@ -203,6 +221,23 @@ public class Template {
             below.setType(belowMaterial);
             below.getState().setData(new MaterialData(belowMaterial, metadata));
             below.getState().update(false, false);
+        }
+
+        //Place doors as last.
+        for (DoorWrapper dw : doors) {
+            Point p = dw.getPoint();
+
+            Block doorBottem = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+            Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
+
+            doorBottem.setType(dw.getMaterialData().getItemType());
+            doorTop.setType(dw.getMaterialData().getItemType());
+
+            doorBottem.setData(dw.getBottem());
+            doorTop.setData(dw.getTop());
+
+            doorBottem.getState().update();
+            doorTop.getState().update();
         }
     }
 
@@ -219,7 +254,7 @@ public class Template {
      */
     public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
         if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
-            this.markers.put(name, markerPoint);
+            this.markers.put(name, markerPoint.translate(worldLocation.invert()));
             return true;
         }
         return false;
@@ -441,9 +476,9 @@ public class Template {
      */
     public static String markersToString() {
         String markers = "";
-        markers += String.join(ChatColor.RESET + ", " + ChatColor.BOLD,
-                               Arrays.toString(Markers.values()).replaceAll("^.|.$", "").split(", "));
         markers += ChatColor.RESET;
+        markers += ChatColor.BOLD;
+        markers += String.join(", ", finalMarkerList);
         return markers;
     }
 }

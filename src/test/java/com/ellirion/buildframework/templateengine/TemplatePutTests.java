@@ -7,18 +7,50 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({BuildFramework.class})
+@PowerMockIgnore("javax.management.*")
 public class TemplatePutTests {
 
     private static final Block MOCK_BLOCK_AIR = createMockBlock(true, false, Material.AIR);
+    private List<String> markers = new ArrayList<>();
+
+    @Before
+    public void setup() {
+        markers.add("GROUND");
+        markers.add("PATH");
+        markers.add("DOOR");
+
+        mockStatic(BuildFramework.class);
+
+        final BuildFramework mockPlugin = mock(BuildFramework.class);
+        final FileConfiguration mockConfig = mock(FileConfiguration.class);
+
+        when(BuildFramework.getInstance()).thenReturn(mockPlugin);
+        when(mockPlugin.getTemplateFormatConfig()).thenReturn(mockConfig);
+
+        when(mockConfig.getStringList("Markers")).thenReturn(markers);
+    }
 
     private static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
         final Block mockBlock = mock(Block.class);
