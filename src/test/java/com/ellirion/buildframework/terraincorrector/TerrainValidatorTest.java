@@ -47,7 +47,7 @@ public class TerrainValidatorTest {
     }
 
     @Before
-    void setup() {
+    public void setup() {
         mockStatic(BuildFramework.class);
         mockStatic(TerrainManager.class);
         final BuildFramework mockPlugin = mock(BuildFramework.class);
