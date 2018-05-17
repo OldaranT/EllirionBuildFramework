@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TerrainManager {
 
-    private static List<BoundingBox> BOUNDING_BOXES = new ArrayList<>();
+    private static final List<BoundingBox> BOUNDING_BOXES = new ArrayList<>();
 
     public static List<BoundingBox> getBoundingBoxes() {
         return BOUNDING_BOXES;
