@@ -20,7 +20,7 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
         }
         Player player = (Player) commandSender;
 
-        TemplateHologram prevHologram = TemplateManager.getSelectedHologram().get(player);
+        TemplateHologram prevHologram = TemplateManager.getSelectedHolograms().get(player);
         if (prevHologram != null) {
             prevHologram.remove(player);
         }
@@ -35,7 +35,7 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
                                                                                         player.getLocation().getBlockX(),
                                                                                         player.getLocation().getBlockY(),
                                                                                         player.getLocation().getBlockZ()));
-        TemplateManager.getSelectedHologram().put(player, hologram);
+        TemplateManager.getSelectedHolograms().put(player, hologram);
 
         hologram.create(player);
 

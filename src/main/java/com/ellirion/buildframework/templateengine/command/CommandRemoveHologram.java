@@ -18,14 +18,14 @@ public class CommandRemoveHologram implements CommandExecutor {
         }
         Player player = (Player) commandSender;
 
-        TemplateHologram hologram = TemplateManager.getSelectedHologram().get(player);
+        TemplateHologram hologram = TemplateManager.getSelectedHolograms().get(player);
         if (hologram == null) {
             player.sendMessage(ChatColor.DARK_RED + "No template hologram to remove");
             return true;
         }
 
         hologram.remove(player);
-        TemplateManager.getSelectedHologram().remove(player);
+        TemplateManager.getSelectedHolograms().remove(player);
 
         player.sendMessage(ChatColor.GREEN + "Template hologram was successfully removed");
 

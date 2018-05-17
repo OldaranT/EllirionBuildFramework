@@ -11,7 +11,7 @@ public class TemplateManager {
     private static final HashMap<Player, TemplateHologram> SELECTED_HOLOGRAMS = new HashMap<>();
     private static final HashMap<Player, TemplateSession> TEMPLATE_SESSIONS = new HashMap<>();
 
-    public static HashMap<Player, TemplateHologram> getSelectedHologram() {
+    public static HashMap<Player, TemplateHologram> getSelectedHolograms() {
         return SELECTED_HOLOGRAMS;
     }
 
