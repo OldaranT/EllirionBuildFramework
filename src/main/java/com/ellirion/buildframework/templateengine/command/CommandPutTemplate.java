@@ -19,7 +19,7 @@ public class CommandPutTemplate implements CommandExecutor {
 
         Player player = (Player) commandSender;
 
-        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
+        TemplateSession ts = TemplateManager.getTEMPLATESESSIONS().get(player);
         if (ts == null || ts.getTemplate() == null) {
             player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
             return true;
