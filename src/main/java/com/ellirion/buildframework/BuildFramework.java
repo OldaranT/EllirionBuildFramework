@@ -22,14 +22,14 @@ import java.util.List;
 
 public class BuildFramework extends JavaPlugin {
 
-    private static BuildFramework instance;
+    private static BuildFramework INSTANCE;
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
     private FileConfiguration templateFormatConfig;
 
     @Override
     public void onEnable() {
-        instance = this;
+        INSTANCE = this;
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
         getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
         getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
@@ -49,10 +49,10 @@ public class BuildFramework extends JavaPlugin {
      * @return BuildFramework instance
      */
     public static BuildFramework getInstance() {
-        if (instance == null) {
-            instance = new BuildFramework();
+        if (INSTANCE == null) {
+            INSTANCE = new BuildFramework();
         }
-        return instance;
+        return INSTANCE;
     }
 
     public FileConfiguration getBlockValueConfig() {
