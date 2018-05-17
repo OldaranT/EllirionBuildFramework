@@ -49,7 +49,7 @@ public class TemplateSerializerTest {
     }
 
     @Test
-    public void Serialize_SingleBlock_ShouldSerialize() {
+    public void serialize_whenSingleBlock_shouldSerialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -84,7 +84,7 @@ public class TemplateSerializerTest {
     }
 
     @Test
-    public void Serialize_3DNormalBlocks_ShouldSerialize() {
+    public void serialize_when3DNormalBlocks_shouldSerialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -142,7 +142,7 @@ public class TemplateSerializerTest {
     }
 
     @Test
-    public void Serialize_SingleTileEntity_ShouldSerialize() {
+    public void serialize_whenSingleTileEntity_shouldSerialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -190,7 +190,7 @@ public class TemplateSerializerTest {
     }
 
     @Test
-    public void Serialize_3DTileEntities_ShouldSerialize() {
+    public void serialize_when3DTileEntities_shouldSerialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -249,7 +249,7 @@ public class TemplateSerializerTest {
     }
 
     @Test
-    public void Serialize_CombinationTileEntitiesAndNormalBlocks_ShouldSerialize() {
+    public void serialize_whenCombinationTileEntitiesAndNormalBlocks_shouldSerialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -326,7 +326,7 @@ public class TemplateSerializerTest {
     }
 
     @Test
-    public void Serialize_TemplateWithMarkers_ShouldSerialize() {
+    public void serialize_whenTemplateWithMarkers_shouldSerialize() {
         Template t = new Template();
         t.setTemplateName("template");
 

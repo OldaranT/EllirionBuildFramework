@@ -47,7 +47,7 @@ public class MarkerTests {
     }
 
     @Test
-    public void add_AddMarker_ShouldAddMarker() {
+    public void addMarker_whenAllValuesEnteredCorrectly_shouldAddMarker() {
         Template t = template();
 
         boolean added = t.addMarker("DOOR", new Point(0, 0, 0), new Point(0, 0, 0));
@@ -56,7 +56,7 @@ public class MarkerTests {
     }
 
     @Test
-    public void add_AddMarkerWhenWorldLocationIsNot0_ShouldAddMarker() {
+    public void addMarker_whenWorldLocationIsNot0_shouldAddMarker() {
         Template t = template();
 
         boolean added = t.addMarker("DOOR", new Point(5, 5, 5), new Point(3, 3, 3));
@@ -65,7 +65,7 @@ public class MarkerTests {
     }
 
     @Test
-    public void add_AddingSameMarkerMultipleTimes_ShouldOverwritePosition() {
+    public void addMarker_whenSameMarkerAddedMultipleTimes_shouldOverwritePosition() {
         Template t = template();
 
         t.addMarker("DOOR", new Point(0, 0, 0), new Point(0, 0, 0));
@@ -76,7 +76,7 @@ public class MarkerTests {
     }
 
     @Test
-    public void add_AddingMarkerOutsideTemplate_ShouldNotAddMarker() {
+    public void addMarker_whenOutsideTemplate_shouldNotAddMarker() {
         Template t = template();
 
         boolean added = t.addMarker("DOOR", new Point(10, 10, 10), new Point(0, 0, 0));
@@ -85,7 +85,7 @@ public class MarkerTests {
     }
 
     @Test
-    public void add_OverwritingMarkerOutsideTemplate_ShouldNotOverwrite() {
+    public void overwriteMarker_whenOutsideTemplate_shouldNotOverwrite() {
         Template t = template();
 
         t.addMarker("DOOR", new Point(0, 0, 0), new Point(0, 0, 0));
@@ -95,7 +95,7 @@ public class MarkerTests {
     }
 
     @Test
-    public void remove_RemoveMarker_ShouldRemoveMarker() {
+    public void removeMarker_whenAllValuesEnteredCorrectly_shouldRemoveMarker() {
         Template t = template();
 
         t.addMarker("DOOR", new Point(0, 0, 0), new Point(0, 0, 0));
@@ -105,7 +105,7 @@ public class MarkerTests {
     }
 
     @Test
-    public void remove_RemoveNonExistingMarker_ShouldReturnFalse() {
+    public void removeMarker_whenMarkerDoesntExist_shouldReturnFalse() {
         Template t = template();
 
         boolean removed = t.removeMarker("DOOR");

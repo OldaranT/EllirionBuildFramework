@@ -63,7 +63,7 @@ public class TemplatePutTests {
     }
 
     @Test
-    public void put_PutTemplateInWorld_ShouldPutTemplateInWorld() {
+    public void putTemplateInWorld_whenCorrect_shouldSetBlocksCorrectAmountOfTimes() {
         Template t = createTemplate();
 
         t.putTemplateInWorld(createDefaultLocation());

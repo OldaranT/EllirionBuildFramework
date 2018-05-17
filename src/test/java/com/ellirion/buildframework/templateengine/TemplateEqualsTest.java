@@ -46,7 +46,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_EmptyTemplate_ShouldBeEqual() {
+    public void equals_whenEmptyTemplate_shouldBeEqual() {
         Template a = new Template();
         Template b = new Template();
 
@@ -54,14 +54,14 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_FilledTemplate_ShouldBeEqual() {
+    public void equals_whenFilledTemplate_shouldBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         Assert.assertEquals(templates[0], templates[1]);
     }
 
     @Test
-    public void equals_DifferentName_ShouldNotBeEqual() {
+    public void equals_whenDifferentName_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         templates[1].setTemplateName("not template");
@@ -70,7 +70,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_DifferentSize_ShouldNotBeEqual() {
+    public void equals_whenDifferentSize_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         TemplateBlock block = new TemplateBlock(Material.STONE);
@@ -82,7 +82,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_SameSizeDifferentBlocks_ShouldNotBeEqual() {
+    public void equals_whenSameSizeDifferentBlocks_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         TemplateBlock block = new TemplateBlock(Material.COBBLESTONE);
@@ -93,7 +93,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_MissingMarker_ShouldNotBeEqual() {
+    public void equals_whenMissingMarker_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         templates[1].getMarkers().remove("GROUND");
@@ -102,7 +102,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_ExtraMarker_ShouldNotBeEqual() {
+    public void equals_whenExtraMarker_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         templates[1].getMarkers().put("TEST", new Point(0, 0, 0));
@@ -111,7 +111,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_DifferentMarker_ShouldNotBeEqual() {
+    public void equals_whenDifferentMarker_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         templates[1].getMarkers().remove("GROUND");
@@ -121,7 +121,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_SameMarkerAtDifferentPlace_ShouldNotBeEqual() {
+    public void equals_whenSameMarkerAtDifferentPlace_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         templates[1].getMarkers().put("GROUND", new Point(1, 0, 0));
@@ -130,12 +130,12 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_DifferentType_ShouldNotBeEqual() {
+    public void equals_whenDifferentType_shouldNotBeEqual() {
         Assert.assertNotEquals(new Template(), new Object());
     }
 
     @Test
-    public void equals_MissingName_ShouldNotBeEqual() {
+    public void equals_whenMissingName_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         templates[0].setTemplateName(null);
@@ -144,7 +144,7 @@ public class TemplateEqualsTest {
     }
 
     @Test
-    public void equals_MissingBlocks_ShouldNotBeEqual() {
+    public void equals_whenMissingBlocks_shouldNotBeEqual() {
         Template[] templates = createSameTemplates(2);
 
         templates[0].setTemplateBlocks(null);

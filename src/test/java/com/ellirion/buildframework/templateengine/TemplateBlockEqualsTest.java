@@ -45,14 +45,14 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_SameBlock_ShouldBeEqual() {
+    public void equals_whenSameBlock_shouldBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         Assert.assertEquals(blocks[0], blocks[1]);
     }
 
     @Test
-    public void equals_DifferentMaterial_ShouldNotBeEqual() {
+    public void equals_whenDifferentMaterial_shouldNotBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         blocks[1].setMaterial(Material.AIR);
@@ -61,7 +61,7 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_MissingMaterial_ShouldNotBeEqual() {
+    public void equals_whenMissingMaterial_shouldNotBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         blocks[1].setMaterial(null);
@@ -70,7 +70,7 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_DifferentMetadata_ShouldNotBeEqual() {
+    public void equals_whenDifferentMetadata_shouldNotBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         blocks[1].setMetadata(new MaterialData(0, (byte) 0));
@@ -79,7 +79,7 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_SameWithoutMetadata_ShouldBeEqual() {
+    public void equals_whenSameWithoutMetadata_shouldBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         blocks[0].setMetadata(null);
@@ -89,7 +89,7 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_MissingMetadata_ShouldNotBeEqual() {
+    public void equals_whenMissingMetadata_shouldNotBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         blocks[1].setMetadata(null);
@@ -98,7 +98,7 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_SameWithSameNBTData_ShouldBeEqual() {
+    public void equals_whenSameWithSameNBTData_shouldBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         NBTTagCompound ntc = new NBTTagCompound();
@@ -110,7 +110,7 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_SameWithDifferentNBTData_ShouldNotBeEquals() {
+    public void equals_whenSameWithDifferentNBTData_shouldNotBeEquals() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         NBTTagCompound ntc = new NBTTagCompound();
@@ -124,7 +124,7 @@ public class TemplateBlockEqualsTest {
     }
 
     @Test
-    public void equals_MissingNBTData_ShouldBeEqual() {
+    public void equals_whenMissingNBTData_shouldBeEqual() {
         TemplateBlock[] blocks = createTemplateBlocks(2);
 
         NBTTagCompound ntc = new NBTTagCompound();

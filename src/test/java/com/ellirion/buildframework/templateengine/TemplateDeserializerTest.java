@@ -49,7 +49,7 @@ public class TemplateDeserializerTest {
     }
 
     @Test
-    public void Deserialize_SingleBlock_ShouldDeserialize() {
+    public void deserialize_whenSingleBlock_shouldDeserialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -85,7 +85,7 @@ public class TemplateDeserializerTest {
     }
 
     @Test
-    public void Deserialize3DNormalBlocks() {
+    public void deserialize_when3DNormalBlocks_shouldDeserialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -145,7 +145,7 @@ public class TemplateDeserializerTest {
     }
 
     @Test
-    public void DeserializeSingleTileEntity() {
+    public void deserialize_whenSingleTileEntity_shouldDeserialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -193,7 +193,7 @@ public class TemplateDeserializerTest {
     }
 
     @Test
-    public void Deserialize3DTileEntities() {
+    public void deserialize_when3DTileEntities_shouldDeserialize() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -252,7 +252,7 @@ public class TemplateDeserializerTest {
     }
 
     @Test
-    public void DeserializeCombinationTileEntitiesAndNormalBlocks() {
+    public void deserialize_whenCombinationTileEntitiesAndNormalBlocks_shouldWork() {
         Template t = new Template();
         t.setTemplateName("template");
 
@@ -331,7 +331,7 @@ public class TemplateDeserializerTest {
     }
 
     @Test
-    public void Deserialize_TemplateWithMarkers_ShouldDeserialize() {
+    public void deserialize_whenTemplateWithMarkers_shouldDeserialize() {
 
         Template t = new Template();
         t.setTemplateName("template");
