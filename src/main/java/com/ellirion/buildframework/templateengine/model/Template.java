@@ -193,6 +193,7 @@ public class Template {
             }
         }
 
+        //Place blocks that need other blocks to stay on their position.
         for (Map.Entry pair : toPlaceLast.entrySet()) {
             Point p = (Point) pair.getKey();
             TemplateBlock block = (TemplateBlock) pair.getValue();
@@ -220,18 +221,16 @@ public class Template {
             below.getState().update(false, false);
         }
 
+        //Place doors as last.
         for (DoorWrapper dw : doors) {
             Point p = dw.getPoint();
 
-            // Create top and bottem door block.
             Block doorBottem = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
             Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
 
-            //Set materiel.
             doorBottem.setType(dw.getMaterialData().getItemType());
             doorTop.setType(dw.getMaterialData().getItemType());
 
-            //Set data and update.
             doorBottem.setData(dw.getBottem());
             doorTop.setData(dw.getTop());
 
