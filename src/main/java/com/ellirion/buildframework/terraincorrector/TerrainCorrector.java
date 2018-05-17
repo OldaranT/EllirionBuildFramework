@@ -388,13 +388,13 @@ public class TerrainCorrector {
 
         if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ && maxHoleZ >= maxZ)) {
             // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-            toChange = getBridgeSupportOnZLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            toChange = getBridgeSupportOnZAxis(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else if (!(minHoleX <= minX && maxHoleX <= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
             // build bridge style supports for structure from point 1 to point 2 on the X axis.
-            toChange = getBridgeSupportOnXLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            toChange = getBridgeSupportOnXAxis(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else {
             // build building supports under the bounding box.
-            toChange = getToChangeBlocks(topBlocks.get(0).getWorld(), boundingBox);
+            toChange = getSupportMap(topBlocks.get(0).getWorld(), boundingBox);
         }
 
         for (Block b : toChange) {
@@ -418,7 +418,7 @@ public class TerrainCorrector {
         return result;
     }
 
-    private List<Block> getBridgeSupportOnZLine(BoundingBox boundingBox, List<Block> underBoundingBox,
+    private List<Block> getBridgeSupportOnZAxis(BoundingBox boundingBox, List<Block> underBoundingBox,
                                                 int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
 
         int holeCentreZ = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
@@ -432,14 +432,14 @@ public class TerrainCorrector {
 
         for (int x = minHoleX; x <= maxHoleX; x++) {
             for (int i = 0; i <= maxDepth; i++) {
-                toChange.addAll(blocksToChange(world, x, y, holeCentreZ + i, i, underBoundingBox));
-                toChange.addAll(blocksToChange(world, x, y, holeCentreZ - i, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(world, x, y, holeCentreZ + i, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(world, x, y, holeCentreZ - i, i, underBoundingBox));
             }
         }
         return toChange;
     }
 
-    private List<Block> getBridgeSupportOnXLine(BoundingBox boundingBox, List<Block> underBoundingBox,
+    private List<Block> getBridgeSupportOnXAxis(BoundingBox boundingBox, List<Block> underBoundingBox,
                                                 int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
 
         int holeCentreX = maxHoleX - ((maxHoleX - minHoleX) / 2);
@@ -453,14 +453,14 @@ public class TerrainCorrector {
 
         for (int z = minHoleZ; z <= maxHoleZ; z++) {
             for (int i = 0; i <= maxDepth; i++) {
-                toChange.addAll(blocksToChange(world, holeCentreX + i, y, z, i, underBoundingBox));
-                toChange.addAll(blocksToChange(world, holeCentreX - i, y, z, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(world, holeCentreX + i, y, z, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(world, holeCentreX - i, y, z, i, underBoundingBox));
             }
         }
         return toChange;
     }
 
-    private List<Block> blocksToChange(World world, int x, int y, int z, int depth, List<Block> underBB) {
+    private List<Block> blocksToReplace(World world, int x, int y, int z, int depth, List<Block> underBB) {
         List<Block> toChange = new ArrayList<>();
         Block b = world.getBlockAt(x, y, z);
         if (underBB.contains(b)) {
@@ -469,7 +469,7 @@ public class TerrainCorrector {
         return toChange;
     }
 
-    private List<Block> getToChangeBlocks(World world, BoundingBox boundingBox) {
+    private List<Block> getSupportMap(World world, BoundingBox boundingBox) {
         List<Block> toChange = new ArrayList<>();
         int x1 = boundingBox.getX1();
         int x2 = boundingBox.getX2();
