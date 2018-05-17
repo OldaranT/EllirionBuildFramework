@@ -387,10 +387,9 @@ public class TerrainCorrector {
         int spaceX = maxHoleX - minHoleX;
         int spaceZ = maxHoleZ - minHoleZ;
 
-        //todo change >= <= wrong way around
-        if ((minHoleX >= minX && maxHoleX <= maxX) && !(minHoleZ <= minZ || maxHoleZ >= maxZ)) {
+        if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ && maxHoleZ >= maxZ)) {
             toChange = getBridgeSupportOnZLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-        } else if (!(minHoleX <= minX || maxHoleX <= maxX) && (minHoleZ >= minZ && maxHoleZ <= maxZ)) {
+        } else if (!(minHoleX <= minX && maxHoleX <= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
             toChange = getBridgeSupportOnXLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else {
             toChange = getToChangeBlocks(spaceX, spaceZ, boundingBox, underBoundingBox, minHoleX, maxHoleX,
@@ -461,6 +460,9 @@ public class TerrainCorrector {
                             toChange.addAll(getBlocksBelow(b, i));
                         }
                     }
+                }
+                for (int i = maxDepth; i >= 0; i--){
+                    toChange.addAll(blocksToChange(world, centreX + i, y, centreZ - i, i, underBoundingBox));
                 }
             }
             if (!(minHoleZ == minZ) && !(maxHoleZ == maxZ)) {
@@ -583,35 +585,14 @@ public class TerrainCorrector {
         int maxDepth = maxHoleZ - holeCentreZ;
 
         for (int x = minHoleX; x <= maxHoleX; x++) {
-            //            for (int z = holeCentreZ + i; z <= maxHoleZ; z++) {
-            //                Block b = world.getBlockAt(x, y, z);
-            //                if (!underBoundingBox.contains(b)) {
-            //                    continue;
-            //                }
-            //                toChange.addAll(getBlocksBelow(b, i));
-            //            }
-            //            for (int z = holeCentreZ - i; z >= minHoleZ; z--) {
-            //                Block b = world.getBlockAt(x, y, z);
-            //                if (!underBoundingBox.contains(b)) {
-            //                    continue;
-            //                }
-            //                toChange.addAll(getBlocksBelow(b, i));
-            //            }
-            for (int i = 0; i < maxDepth; i++) {
-                Block b = world.getBlockAt(x, holeCentreZ + i, y);
-                Block a = world.getBlockAt(x, holeCentreZ - i, y);
-                if (underBoundingBox.contains(b)) {
-                    toChange.addAll(getBlocksBelow(b, i));
-                }
-                if (underBoundingBox.contains(a)) {
-                    toChange.addAll(getBlocksBelow(a, i));
-                }
+            for (int i = 0; i <= maxDepth; i++) {
+                toChange.addAll(blocksToChange(world, x, y, holeCentreZ + i, i, underBoundingBox));
+                toChange.addAll(blocksToChange(world, x, y, holeCentreZ - i, i, underBoundingBox));
             }
         }
         return toChange;
     }
 
-    @SuppressWarnings("Duplicates")
     private List<Block> getBridgeSupportOnXLine(BoundingBox boundingBox, List<Block> underBoundingBox,
                                                 int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
 
@@ -624,25 +605,20 @@ public class TerrainCorrector {
 
         int maxDepth = maxHoleX - holeCentreX;
 
-        for (int i = 0; i < maxDepth; i++) {
-            for (int x = holeCentreX + i; x <= maxHoleX; x++) {
-                for (int z = minHoleZ; z <= maxHoleZ; z++) {
-                    Block b = world.getBlockAt(x, y, z);
-                    if (!underBoundingBox.contains(b)) {
-                        continue;
-                    }
-                    toChange.addAll(getBlocksBelow(b, i));
-                }
+        for (int z = minHoleZ; z <= maxHoleZ; z++) {
+            for (int i = 0; i <= maxDepth; i++) {
+                toChange.addAll(blocksToChange(world, holeCentreX + i, y, z, i, underBoundingBox));
+                toChange.addAll(blocksToChange(world, holeCentreX - i, y, z, i, underBoundingBox));
             }
-            for (int x = holeCentreX - i; x >= minHoleX; x--) {
-                for (int z = minHoleZ; z <= maxHoleZ; z++) {
-                    Block b = world.getBlockAt(x, y, z);
-                    if (!underBoundingBox.contains(b)) {
-                        continue;
-                    }
-                    toChange.addAll(getBlocksBelow(b, i));
-                }
-            }
+        }
+        return toChange;
+    }
+
+    private List<Block> blocksToChange(World world, int x, int y, int z, int depth, List<Block> underBB) {
+        List<Block> toChange = new ArrayList<>();
+        Block b = world.getBlockAt(x, y, z);
+        if (underBB.contains(b)) {
+            toChange.addAll(getBlocksBelow(b, depth));
         }
         return toChange;
     }
