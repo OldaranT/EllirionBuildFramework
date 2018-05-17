@@ -58,19 +58,18 @@ public class TerrainCorrector {
 
     private boolean correctHole(Hole hole, World world, BoundingBox boundingbox) {
 
-        //        if (!hole.onlyBelowBoundingBox(boundingbox)) {
-        //            fillBasicHole(hole, world);
-        //            return true;
-        //        }
-        //        if (!hole.exceedsMaxDepth()) {
-        //            fillSmallHoleAtSide(hole, world, boundingbox);
-        //            return true;
-        //        }
-        //        if (hole.exceedsMaxDepth()) {
-        //        buildSupports(hole, boundingbox);
-        //        }
-        buildRavineSupports(hole, boundingbox);
-
+        if (!hole.onlyBelowBoundingBox(boundingbox) && hole.exceedsMaxDepth()) {
+            buildRavineSupports(hole, boundingbox);
+            return true;
+        }
+        if (hole.onlyBelowBoundingBox(boundingbox)) {
+            fillBasicHole(hole, world);
+            return true;
+        }
+        if (!hole.exceedsMaxDepth()) {
+            fillSmallHoleAtSide(hole, world, boundingbox);
+            return true;
+        }
         return false;
     }
 
@@ -175,7 +174,7 @@ public class TerrainCorrector {
         final int minZ = boundingBox.getZ1() - 5;
         final int maxZ = boundingBox.getZ2() + 5;
         final int maxY = boundingBox.getY1() - 1;
-        final int minY = maxY - CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
+        final int minY = boundingBox.getY1() - CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
 
         for (BlockFace face : faces) {
             Block b = block.getRelative(face);
@@ -394,7 +393,7 @@ public class TerrainCorrector {
             toChange = getBridgeSupportOnXAxis(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else {
             // build building supports under the bounding box.
-            toChange = getSupportMap(topBlocks.get(0).getWorld(), boundingBox);
+            toChange = createSupportsLocationMap(topBlocks.get(0).getWorld(), boundingBox);
         }
 
         for (Block b : toChange) {
@@ -469,7 +468,7 @@ public class TerrainCorrector {
         return toChange;
     }
 
-    private List<Block> getSupportMap(World world, BoundingBox boundingBox) {
+    private List<Block> createSupportsLocationMap(World world, BoundingBox boundingBox) {
         List<Block> toChange = new ArrayList<>();
         int x1 = boundingBox.getX1();
         int x2 = boundingBox.getX2();
