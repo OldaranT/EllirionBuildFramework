@@ -8,6 +8,11 @@
     <!-- Suppressions for unit testing code -->
     <suppress checks="MethodName"
               files="[/\\]test"
+              id="MethodNameMain"
+    />
+    <suppress checks="MethodName"
+              files="[/\\]main"
+              id="MethodNameTest"
     />
     <suppress checks="MagicNumber"
               files="[/\\]test"
