@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.templateengine.model;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.sk89q.worldedit.bukkit.selections.Selection;
@@ -66,6 +67,8 @@ public class Template {
     };
 
     private static String data = "data";
+    @Getter private static List<String> finalMarkerList = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+            "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
     @Getter private HashMap<String, Point> markers;
@@ -252,7 +255,7 @@ public class Template {
      */
     public boolean addMarker(String name, Point markerPoint, Point worldLocation) {
         if (checkIfMarkerIsWithInTemplate(markerPoint, worldLocation)) {
-            this.markers.put(name, markerPoint);
+            this.markers.put(name, markerPoint.translate(worldLocation.invert()));
             return true;
         }
         return false;
@@ -479,9 +482,9 @@ public class Template {
      */
     public static String markersToString() {
         String markers = "";
-        markers += String.join(ChatColor.RESET + ", " + ChatColor.BOLD,
-                               Arrays.toString(Markers.values()).replaceAll("^.|.$", "").split(", "));
         markers += ChatColor.RESET;
+        markers += ChatColor.BOLD;
+        markers += String.join(", ", finalMarkerList);
         return markers;
     }
 }

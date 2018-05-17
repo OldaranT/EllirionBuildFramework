@@ -3,15 +3,50 @@ package com.ellirion.buildframework.templateengine;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.NBTTagList;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.material.MaterialData;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({BuildFramework.class})
+@PowerMockIgnore("javax.management.*")
 public class TemplateDeserializerTest {
+
+    private List<String> markers = new ArrayList<>();
+
+    @Before
+    public void setup() {
+        markers.add("GROUND");
+        markers.add("PATH");
+        markers.add("DOOR");
+
+        mockStatic(BuildFramework.class);
+
+        final BuildFramework mockPlugin = mock(BuildFramework.class);
+        final FileConfiguration mockConfig = mock(FileConfiguration.class);
+
+        when(BuildFramework.getInstance()).thenReturn(mockPlugin);
+        when(mockPlugin.getTemplateFormatConfig()).thenReturn(mockConfig);
+
+        when(mockConfig.getStringList("Markers")).thenReturn(markers);
+    }
 
     @Test
     public void Deserialize_SingleBlock_ShouldDeserialize() {
