@@ -178,37 +178,37 @@ public class BoundingBoxTest {
     }
 
     @Test
-    public void getWidth_whenOnePoint_returnsOne() {
+    public void getWidth_whenOnePoint_shouldReturnOne() {
         BoundingBox bb = new BoundingBox(0, 0, 0);
         assertEquals(1, bb.getWidth());
     }
 
     @Test
-    public void getHeight_whenOnePoint_returnsOne() {
+    public void getHeight_whenOnePoint_shouldReturnOne() {
         BoundingBox bb = new BoundingBox(0, 0, 0);
         assertEquals(1, bb.getHeight());
     }
 
     @Test
-    public void getDepth_whenOnePoint_returnsOne() {
+    public void getDepth_whenOnePoint_shouldReturnOne() {
         BoundingBox bb = new BoundingBox(0, 0, 0);
         assertEquals(1, bb.getDepth());
     }
 
     @Test
-    public void getWidth_whenLarger_returnsWidth() {
+    public void getWidth_whenLarger_shouldReturnWidth() {
         BoundingBox bb = new BoundingBox(0, 0, 0, 2, 2, 2);
         assertEquals(3, bb.getWidth());
     }
 
     @Test
-    public void getHeight_whenLarger_returnsWidth() {
+    public void getHeight_whenLarger_shouldReturnWidth() {
         BoundingBox bb = new BoundingBox(0, 0, 0, 2, 2, 2);
         assertEquals(3, bb.getHeight());
     }
 
     @Test
-    public void getDepth_whenLarger_returnsWidth() {
+    public void getDepth_whenLarger_shouldReturnWidth() {
         BoundingBox bb = new BoundingBox(0, 0, 0, 2, 2, 2);
         assertEquals(3, bb.getDepth());
     }
