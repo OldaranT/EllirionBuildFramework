@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.terraincorrector;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -7,6 +8,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 
 import java.util.ArrayList;
@@ -384,16 +386,15 @@ public class TerrainCorrector {
             }
         }
 
-        int spaceX = maxHoleX - minHoleX;
-        int spaceZ = maxHoleZ - minHoleZ;
-
         if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ && maxHoleZ >= maxZ)) {
+            // build bridge style supports for structure from point 1 to point 2 on the Z axis.
             toChange = getBridgeSupportOnZLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else if (!(minHoleX <= minX && maxHoleX <= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
+            // build bridge style supports for structure from point 1 to point 2 on the X axis.
             toChange = getBridgeSupportOnXLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else {
-            toChange = getToChangeBlocks(spaceX, spaceZ, boundingBox, underBoundingBox, minHoleX, maxHoleX,
-                                         minHoleZ, maxHoleZ);
+            // build building supports under the bounding box.
+            toChange = getToChangeBlocks(topBlocks.get(0).getWorld(), boundingBox);
         }
 
         for (Block b : toChange) {
@@ -415,161 +416,6 @@ public class TerrainCorrector {
         }
 
         return result;
-    }
-
-    @SuppressWarnings("Duplicates")
-    private List<Block> getToChangeBlocks(int spaceX, int spaceZ, BoundingBox boundingBox, List<Block> underBoundingBox,
-                                          int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
-        int minX = boundingBox.getX1();
-        int maxX = boundingBox.getX2();
-        int centreX = maxX - ((maxX - minX) / 2);
-
-        int minZ = boundingBox.getZ1();
-        int maxZ = boundingBox.getZ2();
-        int centreZ = maxZ - ((maxZ - minZ) / 2);
-
-        int y = boundingBox.getY1() - 1;
-
-        World world = underBoundingBox.get(0).getWorld();
-        List<Block> toChange = new ArrayList<>(underBoundingBox);
-        int maxDepth;
-
-        if (minHoleX == minX) {
-            maxDepth = (spaceX > spaceZ) ? spaceX : spaceZ;
-            if (minHoleZ == minZ) {
-                for (int i = 0; i < maxDepth; i++) {
-                    for (int x = minX + i; x <= centreX; x++) {
-                        for (int z = minZ + i; z <= centreZ; z++) {
-                            Block b = world.getBlockAt(x, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                    }
-                }
-            }
-            if (maxHoleZ == maxZ) {
-                for (int i = 0; i < maxDepth; i++) {
-                    for (int x = minX + i; x <= centreX; x++) {
-                        for (int z = maxZ - i; z >= centreZ; z--) {
-                            Block b = world.getBlockAt(x, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                    }
-                }
-                for (int i = maxDepth; i >= 0; i--){
-                    toChange.addAll(blocksToChange(world, centreX + i, y, centreZ - i, i, underBoundingBox));
-                }
-            }
-            if (!(minHoleZ == minZ) && !(maxHoleZ == maxZ)) {
-                maxDepth = spaceX;
-
-                for (int i = 0; i < maxDepth; i++) {
-                    for (int x = minX + i; x <= centreX; x++) {
-                        for (int z = minZ; z <= centreZ; z++) {
-                            Block b = world.getBlockAt(x, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                        for (int z = maxZ; z >= centreZ; z--) {
-                            Block b = world.getBlockAt(x, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                    }
-                }
-            }
-        }
-
-        if (maxHoleX == maxX) {
-            maxDepth = (spaceX > spaceZ) ? spaceX : spaceZ;
-            if (minHoleZ == minZ) {
-                for (int i = 0; i < maxDepth; i++) {
-                    for (int x = maxX - i; x >= centreX; x--) {
-                        for (int z = minZ + i; z <= centreZ; z++) {
-                            Block b = world.getBlockAt(x, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                    }
-                }
-            }
-            if (maxHoleZ == maxZ) {
-                for (int i = 0; i < maxDepth; i++) {
-                    for (int x = maxX - i; x >= centreX; x--) {
-                        for (int z = maxZ - i; z >= centreZ; z--) {
-                            Block b = world.getBlockAt(x, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                    }
-                }
-            }
-            if (!(minHoleZ == minZ) && !(maxHoleZ == maxZ)) {
-                maxDepth = spaceX;
-
-                for (int i = 0; i < maxDepth; i++) {
-                    for (int xLoc = maxX - i; xLoc >= centreX; xLoc--) {
-                        for (int z = minZ; z <= centreZ; z++) {
-                            Block b = world.getBlockAt(xLoc, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                        for (int z = maxZ; z >= centreZ; z--) {
-                            Block b = world.getBlockAt(xLoc, y, z);
-                            if (!underBoundingBox.contains(b)) {
-                                continue;
-                            }
-                            toChange.addAll(getBlocksBelow(b, i));
-                        }
-                    }
-                }
-            }
-        }
-        if (minHoleZ == minZ && !(minHoleX == minX || maxHoleX == maxX)) {
-            maxDepth = spaceZ;
-            for (int i = 0; i < maxDepth; i++) {
-                for (int x = minX; x <= centreX; x++) {
-                    for (int z = minZ + i; z <= centreZ; z++) {
-                        Block b = world.getBlockAt(x, y, z);
-                        if (!underBoundingBox.contains(b)) {
-                            continue;
-                        }
-                        toChange.addAll(getBlocksBelow(b, i));
-                    }
-                }
-            }
-        }
-        if (maxHoleZ == maxZ && !(minHoleX == minX || maxHoleX == maxX)) {
-            maxDepth = spaceZ;
-            for (int i = 0; i < maxDepth; i++) {
-                for (int x = minX; x <= centreX; x++) {
-                    for (int z = maxZ - i; z >= centreZ; z--) {
-                        Block b = world.getBlockAt(x, y, z);
-                        if (!underBoundingBox.contains(b)) {
-                            continue;
-                        }
-                        toChange.addAll(getBlocksBelow(b, i));
-                    }
-                }
-            }
-        }
-
-        return toChange;
     }
 
     private List<Block> getBridgeSupportOnZLine(BoundingBox boundingBox, List<Block> underBoundingBox,
@@ -620,6 +466,67 @@ public class TerrainCorrector {
         if (underBB.contains(b)) {
             toChange.addAll(getBlocksBelow(b, depth));
         }
+        return toChange;
+    }
+
+    private List<Block> getToChangeBlocks(World world, BoundingBox boundingBox) {
+        List<Block> toChange = new ArrayList<>();
+        int x1 = boundingBox.getX1();
+        int x2 = boundingBox.getX2();
+
+        int z1 = boundingBox.getZ1();
+        int z2 = boundingBox.getZ2();
+
+        int width = x2 - x1 + 1;
+        int depth = z2 - z1 + 1;
+
+        int minX = 0;
+        int maxX = width - 1;
+        int minZ = 0;
+        int maxZ = depth - 1;
+
+        int baseY = boundingBox.getY1();
+        int offsetY = 1;
+
+        // Keep track of what is done and what isn't
+        boolean[][] done = new boolean[width][];
+        for (int i = 0; i < width; i++) {
+            done[i] = new boolean[depth];
+        }
+
+        // Keep going until we've shrunk to zero (or lower) width
+        while (minX <= maxX && minZ <= maxZ) {
+
+            // Trace down if it is not done
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+
+                    // If we already encountered a solid, ignore
+                    if (done[x][z]) {
+                        continue;
+                    }
+
+                    // If it's a solid, this column is done
+                    Location loc = new Point(x1 + x, baseY - offsetY, z1 + z).toLocation(world);
+                    Block block = world.getBlockAt(loc);
+                    if (block.getType().isSolid()) {
+                        //                        done[x][z] = true;
+                        continue;
+                    }
+                    toChange.add(block);
+                }
+            }
+
+            // Shrink the area by one on all sides
+            minX++;
+            minZ++;
+            maxX--;
+            maxZ--;
+
+            // Go down one layer
+            offsetY++;
+        }
+
         return toChange;
     }
 }
