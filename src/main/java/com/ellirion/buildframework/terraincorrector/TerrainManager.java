@@ -1,6 +1,5 @@
 package com.ellirion.buildframework.terraincorrector;
 
-import lombok.Getter;
 import com.ellirion.buildframework.model.BoundingBox;
 
 import java.util.ArrayList;
@@ -8,5 +7,9 @@ import java.util.List;
 
 public class TerrainManager {
 
-    @Getter private static List<BoundingBox> BoundingBoxes = new ArrayList<>();
+    private static final List<BoundingBox> BOUNDING_BOXES = new ArrayList<>();
+
+    public static List<BoundingBox> getBoundingBoxes() {
+        return BOUNDING_BOXES;
+    }
 }
