@@ -220,16 +220,16 @@ public class Template {
         for (DoorWrapper dw : doors) {
             Point p = dw.getPoint();
 
-            Block doorBottem = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+            Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
             Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
 
-            doorBottem.setType(dw.getMaterialData().getItemType());
+            doorBottom.setType(dw.getMaterialData().getItemType());
             doorTop.setType(dw.getMaterialData().getItemType());
 
-            doorBottem.setData(dw.getBottem());
+            doorBottom.setData(dw.getBottom());
             doorTop.setData(dw.getTop());
 
-            doorBottem.getState().update();
+            doorBottom.getState().update();
             doorTop.getState().update();
         }
     }
