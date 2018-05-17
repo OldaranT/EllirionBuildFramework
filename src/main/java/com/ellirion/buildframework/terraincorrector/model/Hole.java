@@ -17,6 +17,11 @@ public class Hole {
     @Setter private boolean exceedsMaxDepth = false;
     @Setter private boolean exceedsAreaLimit = false;
 
+    @Setter @Getter private int minX;
+    @Setter @Getter private int maxX;
+    @Setter @Getter private int minZ;
+    @Setter @Getter private int maxZ;
+
     /**
      * Creates an empty hole.
      */
@@ -31,6 +36,10 @@ public class Hole {
     public Hole(final Block b) {
         blockList = new ArrayList<>();
         blockList.add(b);
+        minX = b.getX();
+        maxX = minX;
+        minZ = b.getZ();
+        maxZ = minZ;
     }
 
     /**
@@ -59,6 +68,18 @@ public class Hole {
         }
 
         blockList.add(b);
+        if (minX > b.getX()) {
+            minX = b.getX();
+        }
+        if (maxX < b.getX()) {
+            maxX = b.getX();
+        }
+        if (minZ > b.getZ()) {
+            minZ = b.getZ();
+        }
+        if (maxZ < b.getZ()) {
+            maxZ = b.getZ();
+        }
         return true;
     }
 

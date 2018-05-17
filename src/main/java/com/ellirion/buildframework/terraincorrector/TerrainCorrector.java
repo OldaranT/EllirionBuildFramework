@@ -65,8 +65,9 @@ public class TerrainCorrector {
         //            return true;
         //        }
         //        if (hole.exceedsMaxDepth()) {
-        buildSupports(hole, boundingbox);
+        //        buildSupports(hole, boundingbox);
         //        }
+        buildRavineSupports(hole, boundingbox);
 
         return false;
     }
@@ -344,6 +345,306 @@ public class TerrainCorrector {
         }
 
         return blocks;
+    }
+
+    private void buildRavineSupports(Hole hole, BoundingBox boundingBox) {
+        int minX = boundingBox.getX1();
+        int maxX = boundingBox.getX2();
+
+        int minZ = boundingBox.getZ1();
+        int maxZ = boundingBox.getZ2();
+
+        int minHoleX = maxX - ((maxX - minX) / 2);
+        int maxHoleX = maxX - ((maxX - minX) / 2);
+
+        int minHoleZ = maxZ - ((maxZ - minZ) / 2);
+        int maxHoleZ = maxZ - ((maxZ - minZ) / 2);
+
+        List<Block> topBlocks = hole.getTopBlocks();
+        List<Block> underBoundingBox = new ArrayList<>();
+        List<Block> toChange = new ArrayList<>();
+
+        for (Block b : topBlocks) {
+            int blockX = b.getX();
+            int blockZ = b.getZ();
+            if (!(blockX < minX || blockX > maxX || blockZ < minZ || blockZ > maxZ)) {
+                underBoundingBox.add(b);
+                if (blockX < minHoleX) {
+                    minHoleX = blockX;
+                }
+                if (blockX > maxHoleX) {
+                    maxHoleX = blockX;
+                }
+                if (blockZ < minHoleZ) {
+                    minHoleZ = blockZ;
+                }
+                if (blockZ > maxHoleZ) {
+                    maxHoleZ = blockZ;
+                }
+            }
+        }
+
+        int spaceX = maxHoleX - minHoleX;
+        int spaceZ = maxHoleZ - minHoleZ;
+
+        //todo change >= <= wrong way around
+        if ((minHoleX >= minX && maxHoleX <= maxX) && !(minHoleZ <= minZ || maxHoleZ >= maxZ)) {
+            toChange = getBridgeSupportOnZLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+        } else if (!(minHoleX <= minX || maxHoleX <= maxX) && (minHoleZ >= minZ && maxHoleZ <= maxZ)) {
+            toChange = getBridgeSupportOnXLine(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+        } else {
+            toChange = getToChangeBlocks(spaceX, spaceZ, boundingBox, underBoundingBox, minHoleX, maxHoleX,
+                                         minHoleZ, maxHoleZ);
+        }
+
+        for (Block b : toChange) {
+            b.setType(Material.FENCE);
+        }
+    }
+
+    private List<Block> getBlocksBelow(Block b, int depth) {
+        List<Block> result = new ArrayList<>();
+        BlockFace down = BlockFace.DOWN;
+        Block current = b.getRelative(down);
+
+        for (int i = 0; i < depth; i++) {
+            if (!current.isEmpty() && !current.isLiquid()) {
+                break;
+            }
+            result.add(current);
+            current = current.getRelative(down);
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("Duplicates")
+    private List<Block> getToChangeBlocks(int spaceX, int spaceZ, BoundingBox boundingBox, List<Block> underBoundingBox,
+                                          int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
+        int minX = boundingBox.getX1();
+        int maxX = boundingBox.getX2();
+        int centreX = maxX - ((maxX - minX) / 2);
+
+        int minZ = boundingBox.getZ1();
+        int maxZ = boundingBox.getZ2();
+        int centreZ = maxZ - ((maxZ - minZ) / 2);
+
+        int y = boundingBox.getY1() - 1;
+
+        World world = underBoundingBox.get(0).getWorld();
+        List<Block> toChange = new ArrayList<>(underBoundingBox);
+        int maxDepth;
+
+        if (minHoleX == minX) {
+            maxDepth = (spaceX > spaceZ) ? spaceX : spaceZ;
+            if (minHoleZ == minZ) {
+                for (int i = 0; i < maxDepth; i++) {
+                    for (int x = minX + i; x <= centreX; x++) {
+                        for (int z = minZ + i; z <= centreZ; z++) {
+                            Block b = world.getBlockAt(x, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                    }
+                }
+            }
+            if (maxHoleZ == maxZ) {
+                for (int i = 0; i < maxDepth; i++) {
+                    for (int x = minX + i; x <= centreX; x++) {
+                        for (int z = maxZ - i; z >= centreZ; z--) {
+                            Block b = world.getBlockAt(x, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                    }
+                }
+            }
+            if (!(minHoleZ == minZ) && !(maxHoleZ == maxZ)) {
+                maxDepth = spaceX;
+
+                for (int i = 0; i < maxDepth; i++) {
+                    for (int x = minX + i; x <= centreX; x++) {
+                        for (int z = minZ; z <= centreZ; z++) {
+                            Block b = world.getBlockAt(x, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                        for (int z = maxZ; z >= centreZ; z--) {
+                            Block b = world.getBlockAt(x, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (maxHoleX == maxX) {
+            maxDepth = (spaceX > spaceZ) ? spaceX : spaceZ;
+            if (minHoleZ == minZ) {
+                for (int i = 0; i < maxDepth; i++) {
+                    for (int x = maxX - i; x >= centreX; x--) {
+                        for (int z = minZ + i; z <= centreZ; z++) {
+                            Block b = world.getBlockAt(x, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                    }
+                }
+            }
+            if (maxHoleZ == maxZ) {
+                for (int i = 0; i < maxDepth; i++) {
+                    for (int x = maxX - i; x >= centreX; x--) {
+                        for (int z = maxZ - i; z >= centreZ; z--) {
+                            Block b = world.getBlockAt(x, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                    }
+                }
+            }
+            if (!(minHoleZ == minZ) && !(maxHoleZ == maxZ)) {
+                maxDepth = spaceX;
+
+                for (int i = 0; i < maxDepth; i++) {
+                    for (int xLoc = maxX - i; xLoc >= centreX; xLoc--) {
+                        for (int z = minZ; z <= centreZ; z++) {
+                            Block b = world.getBlockAt(xLoc, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                        for (int z = maxZ; z >= centreZ; z--) {
+                            Block b = world.getBlockAt(xLoc, y, z);
+                            if (!underBoundingBox.contains(b)) {
+                                continue;
+                            }
+                            toChange.addAll(getBlocksBelow(b, i));
+                        }
+                    }
+                }
+            }
+        }
+        if (minHoleZ == minZ && !(minHoleX == minX || maxHoleX == maxX)) {
+            maxDepth = spaceZ;
+            for (int i = 0; i < maxDepth; i++) {
+                for (int x = minX; x <= centreX; x++) {
+                    for (int z = minZ + i; z <= centreZ; z++) {
+                        Block b = world.getBlockAt(x, y, z);
+                        if (!underBoundingBox.contains(b)) {
+                            continue;
+                        }
+                        toChange.addAll(getBlocksBelow(b, i));
+                    }
+                }
+            }
+        }
+        if (maxHoleZ == maxZ && !(minHoleX == minX || maxHoleX == maxX)) {
+            maxDepth = spaceZ;
+            for (int i = 0; i < maxDepth; i++) {
+                for (int x = minX; x <= centreX; x++) {
+                    for (int z = maxZ - i; z >= centreZ; z--) {
+                        Block b = world.getBlockAt(x, y, z);
+                        if (!underBoundingBox.contains(b)) {
+                            continue;
+                        }
+                        toChange.addAll(getBlocksBelow(b, i));
+                    }
+                }
+            }
+        }
+
+        return toChange;
+    }
+
+    private List<Block> getBridgeSupportOnZLine(BoundingBox boundingBox, List<Block> underBoundingBox,
+                                                int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
+
+        int holeCentreZ = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
+
+        int y = boundingBox.getY1() - 1;
+
+        World world = underBoundingBox.get(0).getWorld();
+        List<Block> toChange = new ArrayList<>(underBoundingBox);
+
+        int maxDepth = maxHoleZ - holeCentreZ;
+
+        for (int x = minHoleX; x <= maxHoleX; x++) {
+            //            for (int z = holeCentreZ + i; z <= maxHoleZ; z++) {
+            //                Block b = world.getBlockAt(x, y, z);
+            //                if (!underBoundingBox.contains(b)) {
+            //                    continue;
+            //                }
+            //                toChange.addAll(getBlocksBelow(b, i));
+            //            }
+            //            for (int z = holeCentreZ - i; z >= minHoleZ; z--) {
+            //                Block b = world.getBlockAt(x, y, z);
+            //                if (!underBoundingBox.contains(b)) {
+            //                    continue;
+            //                }
+            //                toChange.addAll(getBlocksBelow(b, i));
+            //            }
+            for (int i = 0; i < maxDepth; i++) {
+                Block b = world.getBlockAt(x, holeCentreZ + i, y);
+                Block a = world.getBlockAt(x, holeCentreZ - i, y);
+                if (underBoundingBox.contains(b)) {
+                    toChange.addAll(getBlocksBelow(b, i));
+                }
+                if (underBoundingBox.contains(a)) {
+                    toChange.addAll(getBlocksBelow(a, i));
+                }
+            }
+        }
+        return toChange;
+    }
+
+    @SuppressWarnings("Duplicates")
+    private List<Block> getBridgeSupportOnXLine(BoundingBox boundingBox, List<Block> underBoundingBox,
+                                                int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
+
+        int holeCentreX = maxHoleX - ((maxHoleX - minHoleX) / 2);
+
+        int y = boundingBox.getY1() - 1;
+
+        World world = underBoundingBox.get(0).getWorld();
+        List<Block> toChange = new ArrayList<>(underBoundingBox);
+
+        int maxDepth = maxHoleX - holeCentreX;
+
+        for (int i = 0; i < maxDepth; i++) {
+            for (int x = holeCentreX + i; x <= maxHoleX; x++) {
+                for (int z = minHoleZ; z <= maxHoleZ; z++) {
+                    Block b = world.getBlockAt(x, y, z);
+                    if (!underBoundingBox.contains(b)) {
+                        continue;
+                    }
+                    toChange.addAll(getBlocksBelow(b, i));
+                }
+            }
+            for (int x = holeCentreX - i; x >= minHoleX; x--) {
+                for (int z = minHoleZ; z <= maxHoleZ; z++) {
+                    Block b = world.getBlockAt(x, y, z);
+                    if (!underBoundingBox.contains(b)) {
+                        continue;
+                    }
+                    toChange.addAll(getBlocksBelow(b, i));
+                }
+            }
+        }
+        return toChange;
     }
 }
 
