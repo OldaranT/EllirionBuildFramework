@@ -125,6 +125,17 @@ public class PointTest {
     }
 
     @Test
+    public void distanceFromLine_whenInvoked_shouldReturnCorrectValues() {
+        // luie unit test naam
+
+        Point p0 = new Point(0, 10, 0);
+        Point p1 = new Point(0, 0, 0);
+        Point p2 = new Point(10, 0, 10);
+
+        assertEquals(10, p0.distanceFromLine(p1, p2), 0.000001);
+    }
+
+    @Test
     public void toPosition_whenInvoked_shouldReturnPositionWithIdenticalComponents() {
         Point point = new Point(1.2, -3.4, 6.7);
 

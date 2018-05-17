@@ -1,13 +1,37 @@
 package com.ellirion.buildframework.model;
 
+import lombok.Getter;
+
 public enum Direction {
     NORTH(0, -1),
-    SOUTH(0, 1),
     EAST(1, 0),
+    SOUTH(0, 1),
     WEST(-1, 0),
     NONE(0, 0);
+    static {
+        NORTH.left = Direction.WEST;
+        NORTH.right = Direction.EAST;
+        NORTH.reverse = Direction.SOUTH;
+
+        EAST.left = Direction.NORTH;
+        EAST.right = Direction.SOUTH;
+        EAST.reverse = Direction.WEST;
+
+        SOUTH.left = Direction.EAST;
+        SOUTH.right = Direction.WEST;
+        SOUTH.reverse = Direction.NORTH;
+
+        WEST.left = Direction.SOUTH;
+        WEST.right = Direction.NORTH;
+        WEST.reverse = Direction.EAST;
+
+        NONE.left = Direction.NONE;
+        NONE.right = Direction.NONE;
+        NONE.reverse = Direction.NONE;
+    }
 
     private int dx, dz;
+    @Getter private Direction left, right, reverse;
 
     /**
      * Constructs a Direction with the given deltas.
@@ -30,6 +54,23 @@ public enum Direction {
     }
 
     /**
+     * Gets the DirectionChange that, when applied to this Direction, will yield Direction {@code d}.
+     * @param d The Direction that we want to go in
+     * @return The DirectionChange that would yield {@code d} when applied to this Direction
+     */
+    public DirectionChange getChangeTo(final Direction d) {
+        if (left == d) {
+            return DirectionChange.LEFT;
+        } else if (right == d) {
+            return DirectionChange.RIGHT;
+        } else if (this == d) {
+            return DirectionChange.NONE;
+        } else {
+            return DirectionChange.REVERSE;
+        }
+    }
+
+    /**
      * Checks if this Direction is perpendicular to Direction {@code d}.
      * @param d The other Direction that this Direction may be perpendicular to
      * @return Whether this Direction is perpendicular to Direction {@code d}
@@ -44,15 +85,25 @@ public enum Direction {
     }
 
     /**
+     * Checks if this Direction is the opposite of Direction {@code d}.
+     * @param d The other Direction that this Direction may be opposite of
+     * @return Whether this Direction is the opposite of Direction {@code d}
+     */
+    public boolean isOppositeOf(final Direction d) {
+        return -dx == d.dx && -dz == d.dz;
+    }
+
+    /**
      * Gets the Direction that, when applied to Point {@code a}, will yield Point {@code b}.
      * @param a The first Point
      * @param b The second Point
      * @return The determined Direction
      */
     public static Direction getDirectionTo(final Point a, final Point b) {
+        int dx = b.getBlockX() - a.getBlockX();
+        int dz = b.getBlockZ() - a.getBlockZ();
         for (Direction d : Direction.values()) {
-            Point cur = d.apply(a);
-            if (cur.getBlockX() == b.getBlockX() && cur.getBlockZ() == b.getBlockZ()) {
+            if (d.dx == dx && d.dz == dz) {
                 return d;
             }
         }

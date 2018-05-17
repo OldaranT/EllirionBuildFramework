@@ -1,6 +1,5 @@
 package com.ellirion.buildframework.pathfinder.model;
 
-import lombok.Getter;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.model.graph.IGraph;
 import com.ellirion.buildframework.model.graph.IVertex;
@@ -12,19 +11,14 @@ import java.util.Map;
 public class PathingGraph implements IGraph<Point> {
 
     private Map<Point, PathingVertex> vertices;
-    private ScoringList<PathingVertex, Double> list;
     private Heap<PathingVertex, Double> heap;
-    @Getter private boolean useHeap;
 
     /**
      * Construct a new empty PathingGraph.
-     * @param useHeap Whether to use a heap or scoringlist.
      */
-    public PathingGraph(final boolean useHeap) {
+    public PathingGraph() {
         vertices = new HashMap<>();
-        list = new ScoringList<>(PathingVertex::getFScore);
         heap = new Heap<>(PathingVertex::getFScore);
-        this.useHeap = useHeap;
     }
 
     /**
@@ -32,11 +26,7 @@ public class PathingGraph implements IGraph<Point> {
      * @return The lowest PathingVertex, or null if none remain
      */
     public PathingVertex next() {
-        if (useHeap) {
-            return heap.next();
-        } else {
-            return list.lowest();
-        }
+        return heap.next();
     }
 
     /**
@@ -44,11 +34,7 @@ public class PathingGraph implements IGraph<Point> {
      * @param v The vertex
      */
     public void removeVertex(final PathingVertex v) {
-        if (useHeap) {
-            heap.remove(v);
-        } else {
-            list.remove(v);
-        }
+        heap.remove(v);
     }
 
     /**
@@ -56,11 +42,7 @@ public class PathingGraph implements IGraph<Point> {
      * @param v The vertex
      */
     public void addVertex(final PathingVertex v) {
-        if (useHeap) {
-            heap.insert(v);
-        } else {
-            list.insert(v);
-        }
+        heap.insert(v);
     }
 
     @Override

@@ -17,5 +17,5 @@ after_success:
   - chmod +x success.sh
   - ./success.sh
 after_failure:
-  - chmod +x reject.sh
-  - ./reject.sh
+  - chmod +x fail.sh
+  - ./fail.sh

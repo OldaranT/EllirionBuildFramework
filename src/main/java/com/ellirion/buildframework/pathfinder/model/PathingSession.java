@@ -2,6 +2,7 @@ package com.ellirion.buildframework.pathfinder.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,6 +19,7 @@ public class PathingSession {
     @Getter @Setter private List<Point> visited;
     @Getter @Setter private Point point1;
     @Getter @Setter private Point point2;
+    @Getter @Setter private NBTTagCompound config;
 
     /**
      * Construct a new PathingSession for the Player {@code player}.
@@ -28,6 +30,18 @@ public class PathingSession {
         this.path = null;
         this.point1 = null;
         this.point2 = null;
+        this.config = new NBTTagCompound();
+
+        config.setDouble("v-step", 1);
+        config.setDouble("v-grounded", 0.5);
+        config.setDouble("v-flying", 2.5);
+        config.setDouble("v-exp", 1.3);
+        config.setDouble("f-goal-fac", 2);
+        config.setDouble("f-goal-exp", 1.1);
+        config.setDouble("f-line", 0);
+
+        config.setInt("turn-threshold", 1);
+        config.setInt("turn-length", 3);
     }
 
     /**

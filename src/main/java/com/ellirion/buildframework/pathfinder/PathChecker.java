@@ -1,12 +1,15 @@
 package com.ellirion.buildframework.pathfinder;
 
 import com.ellirion.buildframework.model.Direction;
+import com.ellirion.buildframework.model.DirectionChange;
 import lombok.Getter;
 import org.bukkit.World;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.model.PathingVertex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PathChecker {
@@ -46,7 +49,7 @@ public class PathChecker {
      */
     public boolean isClear(PathingVertex v) {
         Point p = v.getData();
-        PointInfo pi = getPointInfo(p);
+        PointInfo pi;
 
         // Check for air above the ground for 3 tiles
         for (int i = 0; i < 3; i++) {
@@ -57,6 +60,25 @@ public class PathChecker {
             }
         }
         return true;
+    }
+
+    /**
+     * Checks whether the given vertex is grounded.
+     * @param v The vertex
+     * @return Whether it is grounded
+     */
+    public boolean isGrounded(PathingVertex v) {
+        Point p1 = v.getData();
+        Point p2;
+        PointInfo pi;
+        for (Direction d : Direction.values()) {
+            p2 = d.apply(p1);
+            pi = getPointInfo(p2);
+            if (pi.solid) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -75,39 +97,66 @@ public class PathChecker {
     }
 
     /**
+     * Whether the area around this Vertex is clear enough for a path.
+     * @param va The Vertex to check
+     * @param vb The Vertex to check
+     * @param width The width of the path
+     * @return Whether the area is clear
+     */
+    public boolean isAreaClear(PathingVertex va, PathingVertex vb, int width) {
+        //List<PointInfo> area = getArea(va, vb);
+        return true;
+    }
+
+    private List<PointInfo> getArea(PathingVertex va, PathingVertex vb) {
+        List<PointInfo> points = new ArrayList<>();
+
+        return points;
+    }
+
+    /**
      * Checks if moving in the given direction is allowed based on our previous direction.
-     * @param vcur The Vertex we are currently at
-     * @param vnext The Vertex we want to go to
+     * @param vCur The Vertex we are currently at
+     * @param vNext The Vertex we want to go to
+     * @param threshold The amount of turns in one direction that may be made
+     * @param length The length during which we should check the threshold
      * @return Whether the turn radius is permitted or not.
      */
-    public boolean isTurnRadiusPermitted(PathingVertex vcur, PathingVertex vnext) {
-        // Get previous vertex
-        PathingVertex vprev = vcur.getCameFrom();
-        if (vprev == null) {
-            // If we don't have a previous direction, any turn is permitted.
-            return true;
+    public boolean isTurnRadiusPermitted(PathingVertex vCur, PathingVertex vNext,
+                                         final int threshold, final int length) {
+
+        // Get the direction we intend to go
+        Direction dCur = Direction.getDirectionTo(vCur.getData(), vNext.getData());
+        Direction dNext;
+        DirectionChange dChange;
+
+        int balance = 0;
+        for (int i = 0; i < length; i++) {
+
+            // Move back
+            vNext = vCur;
+            dNext = dCur;
+            vCur = vCur.getCameFrom();
+
+            // If the path is shorter than length, the turn is legal.
+            if (vCur == null) {
+                return true;
+            }
+
+            // Update the direction and change
+            dCur = Direction.getDirectionTo(vCur.getData(), vNext.getData());
+            dChange = dCur.getChangeTo(dNext);
+
+            // Update the balance
+            balance += dChange.getBalance();
+
+            // Check if the balance exceeded the threshold
+            if (Math.abs(balance) > threshold) {
+                return false;
+            }
         }
 
-        // Get the direction we moved previously and the direction we will move next
-        Direction dprev = Direction.getDirectionTo(vprev.getData(), vcur.getData());
-        Direction dnext = Direction.getDirectionTo(vcur.getData(), vnext.getData());
-
-        // No change in direction, this is allowed.
-        if (dprev == dnext) {
-            return true;
-        }
-
-        // Check if turning is allowed at all
-        if (!mayChangeDirection(vcur)) {
-            return false;
-        }
-
-        // If the turn is not perpendicular, the turn is not permitted.
-        if (!dprev.isPerpendicularTo(dnext)) {
-            return false;
-        }
-
-        // We're sure the turn is legal at this point.
+        // The path is within the threshold.
         return true;
     }
 

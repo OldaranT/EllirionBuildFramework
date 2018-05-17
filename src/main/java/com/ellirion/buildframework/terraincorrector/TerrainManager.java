@@ -8,5 +8,5 @@ import java.util.List;
 
 public class TerrainManager {
 
-    @Getter private static List<BoundingBox> BoundingBoxes = new ArrayList<>();
+    @Getter private static List<BoundingBox> BOUNDING_BOXES = new ArrayList<>();
 }
