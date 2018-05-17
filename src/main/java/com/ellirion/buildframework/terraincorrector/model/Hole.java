@@ -93,8 +93,11 @@ public class Hole {
      * @return the highest blocks
      */
     public List<Block> getTopBlocks() {
-        int highestY = blockList.stream().max(Comparator.comparing(Block::getY)).get().getY();
-        return blockList.stream().filter(block -> block.getY() == highestY).collect(Collectors.toList());
+        if (!blockList.isEmpty()) {
+            int highestY = blockList.stream().max(Comparator.comparing(Block::getY)).get().getY();
+            return blockList.stream().filter(block -> block.getY() == highestY).collect(Collectors.toList());
+        }
+        return null;
     }
 
     /**
@@ -103,10 +106,10 @@ public class Hole {
      */
     public boolean onlyBelowBoundingBox(BoundingBox boundingBox) {
         return blockList.stream()
-                .anyMatch(block -> block.getX() < boundingBox.getX1() ||
-                                   block.getX() > boundingBox.getX2() ||
-                                   block.getZ() < boundingBox.getZ1() ||
-                                   block.getZ() > boundingBox.getZ2());
+                .noneMatch(block -> block.getX() < boundingBox.getX1() ||
+                                    block.getX() > boundingBox.getX2() ||
+                                    block.getZ() < boundingBox.getZ1() ||
+                                    block.getZ() > boundingBox.getZ2());
     }
 
     /**
