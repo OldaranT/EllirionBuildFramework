@@ -13,7 +13,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 
-import static com.ellirion.buildframework.terraincorrector.util.TerrainTestUtil.*;
+import static com.ellirion.buildframework.terraincorrector.TerrainTestUtil.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
@@ -53,7 +53,7 @@ public class TerrainCorrectorTest {
     }
 
     @Test
-    public void correctTerrain_WhenDetectingRiver_ShouldReturnErrorString() {
+    public void correctTerrain_whenDetectingRiver_shouldReturnErrorString() {
         //Arrange
         final World mockWorld = createDefaultWorld();
         //        final TerrainCorrector corrector = new TerrainCorrector();

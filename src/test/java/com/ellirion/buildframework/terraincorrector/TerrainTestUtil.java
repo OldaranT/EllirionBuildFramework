@@ -1,4 +1,4 @@
-package com.ellirion.buildframework.terraincorrector.util;
+package com.ellirion.buildframework.terraincorrector;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -7,7 +7,7 @@ import static org.mockito.Mockito.*;
 
 public class TerrainTestUtil {
 
-    public static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
+    protected static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
         final Block mockBlock = mock(Block.class);
 
         when(mockBlock.isEmpty()).thenReturn(isEmpty);

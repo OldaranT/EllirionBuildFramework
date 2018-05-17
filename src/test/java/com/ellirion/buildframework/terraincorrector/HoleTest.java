@@ -13,7 +13,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 public class HoleTest {
 
     @Test
-    public void containsLiquid_WhenDoesNotContainALiquidBlock_ThenReturnFalse() {
+    public void containsLiquid_whenDoesNotContainALiquidBlock_shouldReturnFalse() {
         Hole h = new Hole();
 
         Block mockBlock1 = mock(Block.class);
@@ -28,7 +28,7 @@ public class HoleTest {
     }
 
     @Test
-    public void containsLiquid_WhenListContainsAnLiquidBlock_ThenReturnTrue() {
+    public void containsLiquid_whenListContainsAnLiquidBlock_shouldReturnTrue() {
         Hole h = new Hole();
 
         Block mockBlock1 = mock(Block.class);
@@ -45,7 +45,7 @@ public class HoleTest {
     }
 
     @Test
-    public void add_WhenGivenBlockNotInList_ThenAddBlockAndReturnTrue() {
+    public void add_whenGivenBlockNotInList_shouldAddBlockAndReturnTrue() {
         Hole h = new Hole();
 
         Block mockBlock1 = mock(Block.class);
@@ -60,7 +60,7 @@ public class HoleTest {
     }
 
     @Test
-    public void add_WhenGivenBlockIsInList_ThenReturnFalse() {
+    public void add_whenGivenBlockIsInList_shouldReturnFalse() {
         Hole h = new Hole();
 
         Block mockBlock1 = mock(Block.class);
@@ -73,7 +73,7 @@ public class HoleTest {
     }
 
     @Test
-    public void geTopBlocks_WhenOneTopBlockIsGiven_ThenReturnTheTopBlock() {
+    public void geTopBlocks_whenOneTopBlockIsGiven_shouldReturnTheTopBlock() {
         Hole h = new Hole();
         List<Block> expected = new ArrayList<>();
         Block mockBlock = mock(Block.class);
@@ -89,7 +89,7 @@ public class HoleTest {
     }
 
     @Test
-    public void geTopBlocks_WhenMoreTopBlockAreGiven_ThenReturnTheTopBlocks() {
+    public void geTopBlocks_whenMoreTopBlockAreGiven_shouldReturnTheTopBlocks() {
         List<Block> expected = new ArrayList<>();
         Hole h = new Hole();
 
@@ -109,7 +109,7 @@ public class HoleTest {
     }
 
     @Test
-    public void geTopBlocks_WhenMoreTopAndMoreBlocksBelowBlockAreGiven_ThenReturnTheTopBlocks() {
+    public void geTopBlocks_whenMoreTopAndMoreBlocksBelowBlockAreGiven_shouldReturnTheTopBlocks() {
         Hole h = new Hole();
         List<Block> expected = new ArrayList<>();
 

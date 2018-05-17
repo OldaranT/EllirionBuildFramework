@@ -16,7 +16,7 @@ import com.ellirion.buildframework.model.Point;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.ellirion.buildframework.terraincorrector.util.TerrainTestUtil.*;
+import static com.ellirion.buildframework.terraincorrector.TerrainTestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
