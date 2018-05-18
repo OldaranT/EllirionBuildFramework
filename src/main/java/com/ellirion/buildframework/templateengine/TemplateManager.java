@@ -9,8 +9,24 @@ import java.util.HashMap;
 
 public class TemplateManager {
 
-    @Getter private static final HashMap<Player, TemplateHologram> SELECTEDHOLOGRAMS = new HashMap<>();
-    @Getter private static final HashMap<Player, TemplateSession> TEMPLATESESSIONS = new HashMap<>();
+    private static final HashMap<Player, TemplateHologram> SELECTEDHOLOGRAMS = new HashMap<>();
+    private static final HashMap<Player, TemplateSession> TEMPLATESESSIONS = new HashMap<>();
+
+    /**
+     * list of selected hologram for each  player
+     * @return selected holograms.
+     */
+    public static HashMap<Player, TemplateHologram> getSelectedHolograms() {
+        return SELECTEDHOLOGRAMS;
+    }
+
+    /**
+     * List of template session for each player.
+     * @return template sessions.
+     */
+    public static HashMap<Player, TemplateSession> getTemplateSessions() {
+        return TEMPLATESESSIONS;
+    }
 
     /**
      * Remove all holograms and templates of a player.

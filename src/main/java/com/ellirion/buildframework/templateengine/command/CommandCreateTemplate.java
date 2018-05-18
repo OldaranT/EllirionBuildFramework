@@ -53,7 +53,7 @@ public class CommandCreateTemplate implements CommandExecutor {
         name = name.replaceAll("[^a-zA-Z0-9 ]", "");
 
         // Remove existing templates from map
-        TemplateManager.getTEMPLATESESSIONS().remove(player);
+        TemplateManager.getTemplateSessions().remove(player);
 
         Selection sel = WorldEditHelper.getSelection(player);
         if (!(sel instanceof CuboidSelection)) {
@@ -61,17 +61,16 @@ public class CommandCreateTemplate implements CommandExecutor {
             return true;
         }
 
-        Location min = sel.getMinimumPoint();
-        Location max = sel.getMaximumPoint();
-        BoundingBox box = new BoundingBox(min.getBlockX(), min.getBlockY(), min.getBlockZ(), max.getBlockX(),
-                                          max.getBlockY(), max.getBlockZ());
-        Template template = new Template(name, box, sel.getWorld());
-        Point p1 = new Point(sel.getMinimumPoint().getX(), sel.getMinimumPoint().getY(), sel.getMinimumPoint().getZ());
+        Point min = new Point(sel.getMinimumPoint());
+        Point max = new Point(sel.getMaximumPoint());
 
-        TemplateSession templateSession = new TemplateSession(template, p1);
+        BoundingBox box = new BoundingBox(min, max);
+        Template template = new Template(name, box, sel.getWorld());
+
+        TemplateSession templateSession = new TemplateSession(template, min);
 
         // Add player to template manager map so the template can be linked to the player
-        TemplateManager.getTEMPLATESESSIONS().put(player, templateSession);
+        TemplateManager.getTemplateSessions().put(player, templateSession);
 
         player.sendMessage("Template with name " + ChatColor.BOLD + name + ChatColor.RESET + " started");
         player.sendMessage("Add markers before saving your template");
