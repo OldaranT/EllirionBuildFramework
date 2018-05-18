@@ -21,6 +21,8 @@ import java.util.Set;
 public class TerrainCorrector {
 
     private static final FileConfiguration CONFIG = BuildFramework.getInstance().getConfig();
+    private static final String maxHoleDepthConfigPath = "TerrainCorrecter.MaxHoleDepth";
+    private static final String areaLimitOffsetConfigPath = "TerrainCorrecter.AreaLimitOffset";
 
     // These are all the faces of a block
     private static final BlockFace[] faces = {
@@ -32,49 +34,54 @@ public class TerrainCorrector {
             BlockFace.UP
     };
 
+    private BoundingBox boundingBox;
+    private World world;
+
     /**
      * @param boundingBox the BoundingBox that will be used for terrain smoothing.
      * @param world The world in which
      * @return whether the smoothing succeeded
      */
     public String correctTerrain(BoundingBox boundingBox, World world) {
-        List<Hole> holes = findHoles(boundingBox, world);
+        this.boundingBox = boundingBox;
+        this.world = world;
+        List<Hole> holes = findHoles();
 
         // checken op blockers (river eg.)
         for (Hole h : holes) {
-            if (h.containsLiquid() && checkForRiver(h.getBlockList(), boundingBox)) {
+            if (h.containsLiquid() && checkForRiver(h.getBlockList())) {
                 return "Could not correct the terrain because the selection is above a lake, pond or river";
             }
         }
 
         for (Hole h : holes) {
-            correctHole(h, world, boundingBox);
+            correctHole(h);
         }
 
-        List<Block> toRemove = getBlocksInBoundingBox(boundingBox, world);
+        List<Block> toRemove = getBlocksInBoundingBox();
         setListToAir(toRemove);
         return "Corrected Terrain";
     }
 
-    private boolean correctHole(Hole hole, World world, BoundingBox boundingbox) {
+    private boolean correctHole(Hole hole) {
 
-        if (!hole.onlyBelowBoundingBox(boundingbox) && hole.exceedsMaxDepth()) {
-            buildRavineSupports(hole, boundingbox);
+        if (!hole.onlyBelowBoundingBox(boundingBox) && hole.exceedsMaxDepth()) {
+            buildRavineSupports(hole);
             return true;
         }
-        if (hole.onlyBelowBoundingBox(boundingbox)) {
-            fillBasicHole(hole, world);
+        if (hole.onlyBelowBoundingBox(boundingBox)) {
+            fillBasicHole(hole);
             return true;
         }
         if (!hole.exceedsMaxDepth()) {
-            fillSmallHoleAtSide(hole, world, boundingbox);
+            fillSmallHoleAtSide(hole);
             return true;
         }
         return false;
     }
 
-    private void fillSmallHoleAtSide(Hole hole, World world, BoundingBox boundingBox) {
-        Material mat = getFloorMaterial(boundingBox, world);
+    private void fillSmallHoleAtSide(Hole hole) {
+        Material mat = getFloorMaterial();
 
         BuildFramework.getInstance().getLogger().info(mat + "");
         for (Block b : hole.getBlockList()) {
@@ -82,7 +89,7 @@ public class TerrainCorrector {
         }
     }
 
-    private void fillBasicHole(Hole hole, World world) {
+    private void fillBasicHole(Hole hole) {
         List<Block> topBlocks = hole.getTopBlocks();
 
         for (Block b : topBlocks) {
@@ -90,7 +97,7 @@ public class TerrainCorrector {
         }
     }
 
-    private List<Hole> findHoles(BoundingBox boundingBox, World world) {
+    private List<Hole> findHoles() {
         List<Hole> holes = new ArrayList<>();
         int y = boundingBox.getY1() - 1;
 
@@ -101,14 +108,14 @@ public class TerrainCorrector {
                      isBlockTypeNonSolid(block.getType())) && holes.stream().noneMatch(hole -> hole.contains(block))) {
 
                     // Add the hole to the list of holes once all blocks are found
-                    holes.add(getHole(block, boundingBox));
+                    holes.add(getHole(block));
                 }
             }
         }
         return holes;
     }
 
-    private boolean checkForRiver(final List<Block> blocks, BoundingBox boundingBox) {
+    private boolean checkForRiver(final List<Block> blocks) {
         final int minX = boundingBox.getX1();
         final int maxX = boundingBox.getX2();
         final int minZ = boundingBox.getZ1();
@@ -127,7 +134,7 @@ public class TerrainCorrector {
         return false;
     }
 
-    private Material getFloorMaterial(BoundingBox boundingBox, World world) {
+    private Material getFloorMaterial() {
         List<Material> materials = new ArrayList<>();
 
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
@@ -152,7 +159,7 @@ public class TerrainCorrector {
         return currKey;
     }
 
-    private Hole getHole(Block block, BoundingBox boundingBox) {
+    private Hole getHole(Block block) {
         Hole hole = new Hole(block);
         LinkedList<Block> todoBlocks = new LinkedList<>();
 
@@ -161,20 +168,22 @@ public class TerrainCorrector {
 
         //Execute this method for each block in the todoBlocks
         while ((block = todoBlocks.poll()) != null) {
-            exploreAdjacentNonSolidBlocks(block, hole, todoBlocks, boundingBox);
+            exploreAdjacentNonSolidBlocks(block, hole, todoBlocks);
         }
 
         return hole;
     }
 
-    private void exploreAdjacentNonSolidBlocks(Block block, Hole hole, List<Block> todo, BoundingBox boundingBox) {
+    private void exploreAdjacentNonSolidBlocks(Block block, Hole hole, List<Block> todo) {
 
-        final int minX = boundingBox.getX1() - 5;
-        final int maxX = boundingBox.getX2() + 5;
-        final int minZ = boundingBox.getZ1() - 5;
-        final int maxZ = boundingBox.getZ2() + 5;
+        final int offset = CONFIG.getInt(areaLimitOffsetConfigPath, 5);
+
+        final int minX = boundingBox.getX1() - offset;
+        final int maxX = boundingBox.getX2() + offset;
+        final int minZ = boundingBox.getZ1() - offset;
+        final int maxZ = boundingBox.getZ2() + offset;
         final int maxY = boundingBox.getY1() - 1;
-        final int minY = boundingBox.getY1() - CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
+        final int minY = boundingBox.getY1() - CONFIG.getInt(maxHoleDepthConfigPath, 5);
 
         for (BlockFace face : faces) {
             Block b = block.getRelative(face);
@@ -185,9 +194,6 @@ public class TerrainCorrector {
             }
             if (!(b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ)) {
                 hole.setExceedsAreaLimit(true);
-                if (b.getY() < minY) {
-                    hole.setExceedsMaxDepth(true);
-                }
                 continue;
             }
             if (b.getY() < minY) {
@@ -200,7 +206,7 @@ public class TerrainCorrector {
         }
     }
 
-    private List<Block> getBlocksInBoundingBox(BoundingBox boundingBox, World world) {
+    private List<Block> getBlocksInBoundingBox() {
         List<Block> blocks = new ArrayList<>();
 
         final int bottomBlockX = boundingBox.getX1();
@@ -243,7 +249,7 @@ public class TerrainCorrector {
                type == Material.DOUBLE_PLANT;
     }
 
-    private void buildSupports(Hole hole, BoundingBox boundingBox) {
+    private void buildSupports(Hole hole) {
         List<Block> topBlocks = hole.getTopBlocks();
         List<Block> toChange = new ArrayList<>();
 
@@ -256,7 +262,7 @@ public class TerrainCorrector {
             if (b.getX() < minX || b.getX() > maxX || b.getZ() < minZ || b.getZ() > maxZ || surroundingIsNotSolid(b)) {
                 continue;
             }
-            toChange.addAll(getLowerBlocks(b, boundingBox));
+            toChange.addAll(getLowerBlocks(b));
         }
 
         for (Block b : toChange) {
@@ -289,8 +295,8 @@ public class TerrainCorrector {
         return true;
     }
 
-    private List<Block> getLowerBlocks(Block b, BoundingBox boundingBox) {
-        int maxDepth = CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
+    private List<Block> getLowerBlocks(Block b) {
+        int maxDepth = CONFIG.getInt(maxHoleDepthConfigPath, 5);
         List<Block> temp = new ArrayList<>();
         Block current = b;
         for (int i = 0; i < maxDepth; i++) {
@@ -305,10 +311,10 @@ public class TerrainCorrector {
             }
             current = nextBlock;
         }
-        return getConeShape(temp, boundingBox);
+        return getConeShape(temp);
     }
 
-    private List<Block> getConeShape(List<Block> blocks, BoundingBox bb) {
+    private List<Block> getConeShape(List<Block> blocks) {
         if (blocks.isEmpty() || blocks.size() == 1) {
             return blocks;
         }
@@ -320,10 +326,10 @@ public class TerrainCorrector {
         int midX = topBlock.getX();
         int midZ = topBlock.getZ();
 
-        int minX = bb.getX1();
-        int maxX = bb.getX2();
-        int minZ = bb.getZ1();
-        int maxZ = bb.getZ2();
+        int minX = boundingBox.getX1();
+        int maxX = boundingBox.getX2();
+        int minZ = boundingBox.getZ1();
+        int maxZ = boundingBox.getZ2();
 
         World world = topBlock.getWorld();
 
@@ -348,7 +354,7 @@ public class TerrainCorrector {
         return blocks;
     }
 
-    private void buildRavineSupports(Hole hole, BoundingBox boundingBox) {
+    private void buildRavineSupports(Hole hole) {
         int minX = boundingBox.getX1();
         int maxX = boundingBox.getX2();
 
@@ -363,7 +369,7 @@ public class TerrainCorrector {
 
         List<Block> topBlocks = hole.getTopBlocks();
         List<Block> underBoundingBox = new ArrayList<>();
-        List<Block> toChange = new ArrayList<>();
+        List<Block> toChange;
 
         for (Block b : topBlocks) {
             int blockX = b.getX();
@@ -387,13 +393,13 @@ public class TerrainCorrector {
 
         if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ && maxHoleZ >= maxZ)) {
             // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-            toChange = getBridgeSupportOnZAxis(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            toChange = getBridgeSupportOnZAxis(underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else if (!(minHoleX <= minX && maxHoleX <= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
             // build bridge style supports for structure from point 1 to point 2 on the X axis.
-            toChange = getBridgeSupportOnXAxis(boundingBox, underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            toChange = getBridgeSupportOnXAxis(underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
         } else {
             // build building supports under the bounding box.
-            toChange = createSupportsLocationMap(topBlocks.get(0).getWorld(), boundingBox);
+            toChange = createSupportsLocationMap();
         }
 
         for (Block b : toChange) {
@@ -417,7 +423,7 @@ public class TerrainCorrector {
         return result;
     }
 
-    private List<Block> getBridgeSupportOnZAxis(BoundingBox boundingBox, List<Block> underBoundingBox,
+    private List<Block> getBridgeSupportOnZAxis(List<Block> underBoundingBox,
                                                 int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
 
         int holeCentreZ = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
@@ -431,14 +437,14 @@ public class TerrainCorrector {
 
         for (int x = minHoleX; x <= maxHoleX; x++) {
             for (int i = 0; i <= maxDepth; i++) {
-                toChange.addAll(blocksToReplace(world, x, y, holeCentreZ + i, i, underBoundingBox));
-                toChange.addAll(blocksToReplace(world, x, y, holeCentreZ - i, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(x, y, holeCentreZ + i, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(x, y, holeCentreZ - i, i, underBoundingBox));
             }
         }
         return toChange;
     }
 
-    private List<Block> getBridgeSupportOnXAxis(BoundingBox boundingBox, List<Block> underBoundingBox,
+    private List<Block> getBridgeSupportOnXAxis(List<Block> underBoundingBox,
                                                 int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
 
         int holeCentreX = maxHoleX - ((maxHoleX - minHoleX) / 2);
@@ -452,14 +458,14 @@ public class TerrainCorrector {
 
         for (int z = minHoleZ; z <= maxHoleZ; z++) {
             for (int i = 0; i <= maxDepth; i++) {
-                toChange.addAll(blocksToReplace(world, holeCentreX + i, y, z, i, underBoundingBox));
-                toChange.addAll(blocksToReplace(world, holeCentreX - i, y, z, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(holeCentreX + i, y, z, i, underBoundingBox));
+                toChange.addAll(blocksToReplace(holeCentreX - i, y, z, i, underBoundingBox));
             }
         }
         return toChange;
     }
 
-    private List<Block> blocksToReplace(World world, int x, int y, int z, int depth, List<Block> underBB) {
+    private List<Block> blocksToReplace(int x, int y, int z, int depth, List<Block> underBB) {
         List<Block> toChange = new ArrayList<>();
         Block b = world.getBlockAt(x, y, z);
         if (underBB.contains(b)) {
@@ -468,7 +474,7 @@ public class TerrainCorrector {
         return toChange;
     }
 
-    private List<Block> createSupportsLocationMap(World world, BoundingBox boundingBox) {
+    private List<Block> createSupportsLocationMap() {
         List<Block> toChange = new ArrayList<>();
         int x1 = boundingBox.getX1();
         int x2 = boundingBox.getX2();
