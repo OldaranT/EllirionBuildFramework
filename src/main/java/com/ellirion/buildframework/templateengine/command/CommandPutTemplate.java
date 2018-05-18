@@ -1,12 +1,12 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.templateengine.TemplateManager;
-import com.ellirion.buildframework.templateengine.model.TemplateSession;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
 
 public class CommandPutTemplate implements CommandExecutor {
 

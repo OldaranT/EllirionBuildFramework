@@ -1,31 +1,22 @@
 package com.ellirion.buildframework.templateengine;
 
+import org.bukkit.entity.Player;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
-import lombok.Getter;
-import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 
 public class TemplateManager {
 
-    private static final HashMap<Player, TemplateHologram> SELECTEDHOLOGRAMS = new HashMap<>();
-    private static final HashMap<Player, TemplateSession> TEMPLATESESSIONS = new HashMap<>();
+    private static final HashMap<Player, TemplateHologram> SELECTED_HOLOGRAMS = new HashMap<>();
+    private static final HashMap<Player, TemplateSession> TEMPLATE_SESSIONS = new HashMap<>();
 
-    /**
-     * list of selected hologram for each  player
-     * @return selected holograms.
-     */
     public static HashMap<Player, TemplateHologram> getSelectedHolograms() {
-        return SELECTEDHOLOGRAMS;
+        return SELECTED_HOLOGRAMS;
     }
 
-    /**
-     * List of template session for each player.
-     * @return template sessions.
-     */
     public static HashMap<Player, TemplateSession> getTemplateSessions() {
-        return TEMPLATESESSIONS;
+        return TEMPLATE_SESSIONS;
     }
 
     /**
@@ -33,7 +24,7 @@ public class TemplateManager {
      * @param player the player of which to remove all holograms and templates
      */
     public static void removeAll(Player player) {
-        SELECTEDHOLOGRAMS.remove(player);
-        TEMPLATESESSIONS.remove(player);
+        SELECTED_HOLOGRAMS.remove(player);
+        TEMPLATE_SESSIONS.remove(player);
     }
 }
