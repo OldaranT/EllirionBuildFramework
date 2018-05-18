@@ -292,46 +292,12 @@ public class Template {
             return false;
         }
 
-        // TemplateBlocks has to be null in both or the same in both
-        if (templateBlocks == null ^ other.templateBlocks == null) {
+        if (!Arrays.deepEquals(templateBlocks, other.templateBlocks)) {
             return false;
-        }
-        if (templateBlocks != null && other.templateBlocks != null) {
-            TemplateBlock[][][] otherblocks = other.getTemplateBlocks();
-            int x = 0, y = 0, z = 0;
-            try {
-                for (TemplateBlock[][] blockss : templateBlocks) {
-                    for (TemplateBlock[] blocks : blockss) {
-                        for (TemplateBlock block : blocks) {
-                            if (block.equals(otherblocks[x][y][z])) {
-                                z++;
-                            } else {
-                                return false;
-                            }
-                        }
-                        z = 0;
-                        y++;
-                    }
-                    y = 0;
-                    x++;
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return false;
-            }
         }
 
-        // Check markers
-        if (markers.size() != other.markers.size()) {
+        if (!markers.equals(other.markers)) {
             return false;
-        }
-        for (Map.Entry pair : markers.entrySet()) {
-            // Check if all markers have the same position
-            if (!other.markers.containsKey(pair.getKey())) {
-                return false;
-            }
-            if (!(other.markers.get(pair.getKey()).equals(pair.getValue()))) {
-                return false;
-            }
         }
 
         return true;
