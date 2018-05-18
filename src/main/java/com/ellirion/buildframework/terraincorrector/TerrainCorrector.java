@@ -122,7 +122,9 @@ public class TerrainCorrector {
         final int maxZ = boundingBox.getZ2();
 
         for (Block b : blocks) {
-            //
+            // check whether the block is liquid, is on the edge of the boundingBox and
+            // is adjacent to a liquid block outside the boundingbox.
+            // if this is true then you are on a "river".
             if (b.isLiquid() && ((b.getX() == minX && b.getRelative(BlockFace.WEST).isLiquid()) ||
                                  (b.getX() == maxX && b.getRelative(BlockFace.EAST).isLiquid()) ||
                                  (b.getZ() == minZ && b.getRelative(BlockFace.NORTH).isLiquid()) ||
@@ -247,111 +249,6 @@ public class TerrainCorrector {
                type == Material.RED_MUSHROOM || type == Material.SAPLING ||
                type == Material.CROPS || type == Material.DEAD_BUSH ||
                type == Material.DOUBLE_PLANT;
-    }
-
-    private void buildSupports(Hole hole) {
-        List<Block> topBlocks = hole.getTopBlocks();
-        List<Block> toChange = new ArrayList<>();
-
-        int minX = boundingBox.getX1();
-        int maxX = boundingBox.getX2();
-        int minZ = boundingBox.getZ1();
-        int maxZ = boundingBox.getZ2();
-
-        for (Block b : topBlocks) {
-            if (b.getX() < minX || b.getX() > maxX || b.getZ() < minZ || b.getZ() > maxZ || surroundingIsNotSolid(b)) {
-                continue;
-            }
-            toChange.addAll(getLowerBlocks(b));
-        }
-
-        for (Block b : toChange) {
-            b.setType(Material.FENCE);
-        }
-
-        List<Block> toBarrier = new ArrayList(topBlocks);
-        toBarrier.removeAll(toChange);
-
-        for (Block b : toBarrier) {
-            if (b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ) {
-                b.setType(Material.BARRIER);
-            }
-        }
-    }
-
-    private boolean surroundingIsNotSolid(Block b) {
-        BlockFace[] currentYPlaneFaces = {
-                BlockFace.NORTH,
-                BlockFace.EAST,
-                BlockFace.SOUTH,
-                BlockFace.WEST
-        };
-        for (BlockFace f : currentYPlaneFaces) {
-            Block relative = b.getRelative(f);
-            if (!(relative.isEmpty() || relative.isLiquid())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private List<Block> getLowerBlocks(Block b) {
-        int maxDepth = CONFIG.getInt(maxHoleDepthConfigPath, 5);
-        List<Block> temp = new ArrayList<>();
-        Block current = b;
-        for (int i = 0; i < maxDepth; i++) {
-            temp.add(current);
-            Block nextBlock = current.getRelative(BlockFace.DOWN);
-            if (i == maxDepth - 1 && (nextBlock.isEmpty() || nextBlock.isLiquid())) {
-                temp.clear();
-                break;
-            }
-            if (!nextBlock.isEmpty() && !nextBlock.isLiquid()) {
-                break;
-            }
-            current = nextBlock;
-        }
-        return getConeShape(temp);
-    }
-
-    private List<Block> getConeShape(List<Block> blocks) {
-        if (blocks.isEmpty() || blocks.size() == 1) {
-            return blocks;
-        }
-        Block topBlock = blocks.get(0);
-        Block bottomBlock = blocks.get(blocks.size() - 1);
-
-        int height = topBlock.getY() - bottomBlock.getY();
-        int bottomY = bottomBlock.getY();
-        int midX = topBlock.getX();
-        int midZ = topBlock.getZ();
-
-        int minX = boundingBox.getX1();
-        int maxX = boundingBox.getX2();
-        int minZ = boundingBox.getZ1();
-        int maxZ = boundingBox.getZ2();
-
-        World world = topBlock.getWorld();
-
-        for (int i = height; i >= 0; i--) {
-            for (int x = midX - i; x <= midX + i; x++) {
-                for (int z = midZ - i; z <= midZ + i; z++) {
-                    Block current = world.getBlockAt(x, bottomY + i, z);
-                    if (blocks.contains(current)) {
-                        continue;
-                    }
-                    if (!current.isLiquid() && !current.isEmpty()) {
-                        continue;
-                    }
-                    if (z < minZ || z > maxZ || x < minX || x > maxX) {
-                        continue;
-                    }
-                    blocks.add(current);
-                }
-            }
-        }
-
-        return blocks;
     }
 
     private void buildRavineSupports(Hole hole) {
