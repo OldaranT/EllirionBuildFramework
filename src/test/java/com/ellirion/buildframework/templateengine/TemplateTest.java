@@ -174,7 +174,7 @@ public class TemplateTest {
     @PowerMockIgnore("javax.management.*")
     public static class TemplatePutTests {
 
-        private final Block MOCK_BLOCK_AIR = createMockBlock(true, false, Material.AIR);
+        private final Block mockAirBlock = createMockBlock(true, false, Material.AIR);
         private List<String> markers = new ArrayList<>();
 
         @Before
@@ -213,7 +213,7 @@ public class TemplateTest {
             TemplateBlock[][][] blocks = t.getTemplateBlocks();
             int invocationCount = blocks.length * blocks[0].length * blocks[0][0].length;
 
-            verify(MOCK_BLOCK_AIR, times(invocationCount)).setType(any());
+            verify(mockAirBlock, times(invocationCount)).setType(any());
         }
 
         private Template createTemplate() {
@@ -240,7 +240,7 @@ public class TemplateTest {
             final World mockWorld = mock(CraftWorld.class);
             final WorldServer mockHandle = mock(WorldServer.class);
 
-            when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
+            when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockAirBlock);
             when(((CraftWorld) mockWorld).getHandle()).thenReturn(mockHandle);
 
             return mockWorld;
