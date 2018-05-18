@@ -268,6 +268,7 @@ public class TerrainCorrector {
         List<Block> underBoundingBox = new ArrayList<>();
         List<Block> toChange;
 
+        // find the dimensions under the boundingbox
         for (Block b : topBlocks) {
             int blockX = b.getX();
             int blockZ = b.getZ();
@@ -288,6 +289,7 @@ public class TerrainCorrector {
             }
         }
 
+        // use the correct support placing locations
         if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ && maxHoleZ >= maxZ)) {
             // build bridge style supports for structure from point 1 to point 2 on the Z axis.
             toChange = getBridgeSupportOnZAxis(underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
@@ -327,7 +329,6 @@ public class TerrainCorrector {
 
         int y = boundingBox.getY1() - 1;
 
-        World world = underBoundingBox.get(0).getWorld();
         List<Block> toChange = new ArrayList<>(underBoundingBox);
 
         int maxDepth = maxHoleZ - holeCentreZ;
@@ -348,11 +349,10 @@ public class TerrainCorrector {
 
         int y = boundingBox.getY1() - 1;
 
-        World world = underBoundingBox.get(0).getWorld();
         List<Block> toChange = new ArrayList<>(underBoundingBox);
 
         int maxDepth = maxHoleX - holeCentreX;
-
+        
         for (int z = minHoleZ; z <= maxHoleZ; z++) {
             for (int i = 0; i <= maxDepth; i++) {
                 toChange.addAll(blocksToReplace(holeCentreX + i, y, z, i, underBoundingBox));
