@@ -11,6 +11,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
 
 import java.io.File;
@@ -114,7 +115,7 @@ public class PathBuilder {
 
                 w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).setType(supportType);
                 y--;
-                groundFound = !w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).getType().isSolid();
+                groundFound = (w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).getType() != Material.AIR);
             }
 
             //eventually we'll want to find the closest anchor point and build supports towards that point
@@ -250,20 +251,23 @@ public class PathBuilder {
                               (byte) 0);
 
             if (!w.getBlockAt(curr.getBlockX(), curr.getBlockY(), curr.getBlockZ()).isEmpty()) {
-                return curr;
+                anchor = curr;
+                anchorFound = true;
             }
 
             Point[] points = new Point[] {
-                    curr.north(),
-                    curr.east(),
-                    curr.south(),
-                    curr.west(),
                     curr.down(),
-                    //                    curr.down().translate(new Point(0, 0, -1)),
-                    //                    curr.down().translate(new Point(-1, 0, 0)),
-                    //                    curr.down().translate(new Point(0, 0, 1)),
-                    //                    curr.down().translate(new Point(1, 0, 0))
-            };
+                    curr.down().translate(new Point().north()),
+                    curr.down().translate(new Point().east()),
+                    curr.down().translate(new Point().south()),
+                    curr.down().translate(new Point().west()),
+                    curr.down().translate((new Point().down())),
+
+                    curr.down().translate(new Point(2, 0, 0)),
+                    curr.down().translate(new Point(0, 0, 2)),
+                    curr.down().translate(new Point(0, 0, -2)),
+                    curr.down().translate(new Point(-2, 0, 0)),
+                    };
 
             for (int i = 0; i < points.length; i++) {
                 if (!pointsToCheck.contains(points[i])) {
@@ -278,6 +282,9 @@ public class PathBuilder {
                 break;
             }
         }
+
+        BuildFramework.getInstance().getLogger().info(
+                "Anchorpoint " + anchor.toString() + " found from " + point.toString() + " in " + steps + " steps");
 
         return anchor;
     }
@@ -306,7 +313,6 @@ public class PathBuilder {
     public static NBTTagCompound serialize(PathBuilder pb) {
         NBTTagCompound ntc = new NBTTagCompound();
 
-        //name, radius, weightedblocks
         ntc.setString("name", pb.name);
         ntc.setInt("radius", pb.radius);
 
@@ -357,9 +363,6 @@ public class PathBuilder {
      */
     public static boolean save(PathBuilder pb, String path) {
         try {
-            //create directory if not exists
-            //create file if not exists
-            //write to file
             NBTTagCompound ntc = PathBuilder.serialize(pb);
             OutputStream out = new FileOutputStream(new File(path));
             NBTCompressedStreamTools.a(ntc, out);
@@ -375,9 +378,6 @@ public class PathBuilder {
      * @return the PathBuilder
      */
     public static PathBuilder load(String path) {
-        //check if the file exists
-        //load the NBTTagCompound
-        //create path builder
         try {
             InputStream in = new FileInputStream(new File(path));
             NBTTagCompound ntc = NBTCompressedStreamTools.a(in);

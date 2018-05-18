@@ -1,6 +1,5 @@
 package com.ellirion.buildframework.pathbuilder;
 
-import lombok.Getter;
 import org.bukkit.entity.Player;
 
 import com.ellirion.buildframework.pathbuilder.model.PathBuilder;
@@ -9,5 +8,9 @@ import java.util.HashMap;
 
 public class BuilderManager {
 
-    @Getter private static HashMap<Player, PathBuilder> builderSessions = new HashMap<>();
+    private static final HashMap<Player, PathBuilder> BUILDER_SESSIONS = new HashMap<>();
+
+    public static HashMap<Player, PathBuilder> getBuilderSessions() {
+        return BUILDER_SESSIONS;
+    }
 }
