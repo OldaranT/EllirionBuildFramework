@@ -59,7 +59,7 @@ public class Template {
     };
 
     private static final String DATA = "data";
-    private static final List<String> MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+    private static final List<String> POSSIBLE_MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
             "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
@@ -117,8 +117,8 @@ public class Template {
      * List of all markers from the config.
      * @return final marker list.
      */
-    public static List<String> getFinalMarkerList() {
-        return MARKERS;
+    public static List<String> getPossibleMarkers() {
+        return POSSIBLE_MARKERS;
     }
 
     /**
@@ -430,7 +430,7 @@ public class Template {
         String markers = "";
         markers += ChatColor.RESET;
         markers += ChatColor.BOLD;
-        markers += String.join(", ", MARKERS);
+        markers += String.join(", ", POSSIBLE_MARKERS);
         markers += ChatColor.RESET;
         return markers;
     }
