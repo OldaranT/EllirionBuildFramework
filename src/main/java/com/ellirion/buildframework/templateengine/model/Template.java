@@ -25,8 +25,8 @@ import java.util.Map;
 
 public class Template {
 
-    private static String data = "data";
-    @Getter private static List<String> finalMarkerList = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+    private static final String DATA = "data";
+    @Getter private static final List<String> FINALMARKERLIST = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
             "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
@@ -238,12 +238,12 @@ public class Template {
                     // Metadata of the block
                     NBTTagCompound metadata = new NBTTagCompound();
                     metadata.setInt("type", tb.getMetadata().getItemTypeId());
-                    metadata.setByte(data, tb.getMetadata().getData());
+                    metadata.setByte(DATA, tb.getMetadata().getData());
                     block.set("metadata", metadata);
 
                     // NBT data of the block
                     if (tb.getData() != null) {
-                        block.set(data, tb.getData());
+                        block.set(DATA, tb.getData());
                     }
 
                     ntcArrayX.add(block);
@@ -298,12 +298,12 @@ public class Template {
 
                     // Get the metadata of the block
                     NBTTagCompound metadata = blockData.getCompound("metadata");
-                    MaterialData meta = new MaterialData(metadata.getInt("type"), metadata.getByte(data));
+                    MaterialData meta = new MaterialData(metadata.getInt("type"), metadata.getByte(DATA));
                     tb.setMetadata(meta);
                     tBlocks[x][y][z] = tb;
 
                     // Get the nbt data of the block
-                    NBTTagCompound nbtdata = blockData.getCompound(data);
+                    NBTTagCompound nbtdata = blockData.getCompound(DATA);
                     if (nbtdata != null) {
                         tb.setData(nbtdata);
                     }
@@ -323,7 +323,7 @@ public class Template {
         String markers = "";
         markers += ChatColor.RESET;
         markers += ChatColor.BOLD;
-        markers += String.join(", ", finalMarkerList);
+        markers += String.join(", ", FINALMARKERLIST);
         markers += ChatColor.RESET;
         return markers;
     }
