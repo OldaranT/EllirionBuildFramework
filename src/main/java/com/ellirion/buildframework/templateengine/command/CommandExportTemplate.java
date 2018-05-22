@@ -27,7 +27,7 @@ public class CommandExportTemplate implements CommandExecutor {
 
         Player player = (Player) commandSender;
 
-        TemplateSession ts = TemplateManager.getTEMPLATESESSIONS().get(player);
+        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
 
         if (ts == null) {
             player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");

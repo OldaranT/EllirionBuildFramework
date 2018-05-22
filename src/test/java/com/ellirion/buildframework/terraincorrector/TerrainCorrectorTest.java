@@ -28,6 +28,9 @@ public class TerrainCorrectorTest {
     private static final Block MOCK_BLOCK_LIQUID = createMockBlock(false, true, Material.WATER);
     private static final Block MOCK_BLOCK_STONE = createMockBlock(false, false, Material.STONE);
     private static final Block MOCK_LIQUID_FACING_BLOCK = createMockBlock(false, true, Material.WATER);
+    private static final Block MOCK_BLOCK_IN_BOUNDINGBOX = createMockBlock(false, false, Material.STONE);
+    private static final Block MOCK_BLOCK_LOWEST = createMockBlock(false, false, Material.STONE);
+    private static final Block MOCK_BLOCK_OUT_OF_BOUNDS = createMockBlock(false, false, Material.STONE);
     private static final BlockFace[] faces = {
             BlockFace.NORTH,
             BlockFace.EAST,
@@ -36,7 +39,7 @@ public class TerrainCorrectorTest {
             BlockFace.DOWN,
             BlockFace.UP
     };
-    private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 10, 10, 10);
+    private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 2, 2, 2);
 
     @Before
     public void setup() {
@@ -50,30 +53,38 @@ public class TerrainCorrectorTest {
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
 
         when(mockConfig.getInt("TerrainCorrecter.MaxHoleDepth", 5)).thenReturn(5);
+        when(mockConfig.getInt("TerrainCorrecter.AreaLimitOffset", 5)).thenReturn(1);
+        setCoordinates(MOCK_BLOCK_IN_BOUNDINGBOX, 2, 1, 2);
+        setCoordinates(MOCK_BLOCK_LOWEST, 2, -1, 2);
+        setCoordinates(MOCK_BLOCK_OUT_OF_BOUNDS, 2, 0, 3);
     }
 
     @Test
     public void correctTerrain_whenDetectingRiver_shouldReturnErrorString() {
         //Arrange
         final World mockWorld = createDefaultWorld();
-        //        final TerrainCorrector corrector = new TerrainCorrector();
-        when(mockWorld.getBlockAt(5, 0, 10)).thenReturn(MOCK_BLOCK_LIQUID);
+        final TerrainCorrector corrector = new TerrainCorrector();
 
-        setCoordinates(MOCK_BLOCK_LIQUID, 5, 0, 10);
+        when(mockWorld.getBlockAt(2, 0, 2)).thenReturn(MOCK_BLOCK_LIQUID);
+
+        setCoordinates(MOCK_BLOCK_LIQUID, 2, 0, 2);
+        setCoordinates(MOCK_BLOCK_STONE, 1, 0, 1);
+        setCoordinates(MOCK_LIQUID_FACING_BLOCK, 2, 0, 3);
         setFacingBlocks(MOCK_BLOCK_LIQUID, MOCK_BLOCK_STONE, MOCK_LIQUID_FACING_BLOCK, BlockFace.SOUTH);
+        when(MOCK_BLOCK_LIQUID.getRelative(BlockFace.UP)).thenReturn(MOCK_BLOCK_IN_BOUNDINGBOX);
+        when(MOCK_BLOCK_LIQUID.getRelative(BlockFace.DOWN)).thenReturn(MOCK_BLOCK_LOWEST);
 
-        //        for (BlockFace f : faces) {
-        //            when(MOCK_BLOCK_LIQUID.getRelative(f)).thenReturn(MOCK_BLOCK_STONE);
-        //        }
-        //        when(MOCK_BLOCK_LIQUID.getRelative(BlockFace.SOUTH)).thenReturn(facingLiquidBlock);
+        setFacingBlocks(MOCK_LIQUID_FACING_BLOCK, MOCK_BLOCK_OUT_OF_BOUNDS, MOCK_BLOCK_OUT_OF_BOUNDS,
+                        BlockFace.SOUTH);
+        when(MOCK_LIQUID_FACING_BLOCK.getRelative(BlockFace.UP)).thenReturn(MOCK_BLOCK_OUT_OF_BOUNDS);
+        when(MOCK_LIQUID_FACING_BLOCK.getRelative(BlockFace.DOWN)).thenReturn(MOCK_BLOCK_LOWEST);
 
         //Act
-        //        String result = corrector.correctTerrain(boundingBox, mockWorld);
+        String result = corrector.correctTerrain(boundingBox, mockWorld);
 
         //Assert
         //        assertFalse(result);
-        //        assertEquals("Could not correct the terrain because the selection is above a lake, pond or river", result);
-        assertTrue(true);
+        assertEquals("Could not correct the terrain because the selection is above a lake, pond or river", result);
     }
 
     private World createDefaultWorld() {
