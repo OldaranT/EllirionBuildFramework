@@ -19,6 +19,7 @@ public class PathingVertex implements IVertex<Point> {
     @Getter @Setter private PathingVertex cameFrom;
     @Getter @Setter private double gScore;
     @Getter private double fScore;
+    @Getter @Setter private double vScore;
     @Getter @Setter private boolean visited;
 
     // PathChecker variables
@@ -37,6 +38,7 @@ public class PathingVertex implements IVertex<Point> {
         this.cameFrom = null;
         this.gScore = Double.POSITIVE_INFINITY;
         this.fScore = Double.POSITIVE_INFINITY;
+        this.vScore = 0;
 
         this.solid = false;
     }
@@ -139,7 +141,7 @@ public class PathingVertex implements IVertex<Point> {
 
     @Override
     public int getEdgeCount() {
-        return 14;
+        return 12;
     }
 
     @Override

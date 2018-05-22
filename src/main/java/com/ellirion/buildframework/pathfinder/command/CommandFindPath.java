@@ -47,7 +47,7 @@ public class CommandFindPath implements CommandExecutor {
         // Calculate the path - twice.
 
         // Heap
-        AStar.searchAsync(player, start, goal, true).consumeSync((path) -> {
+        AStar.searchAsync(player, start, goal).consumeSync((path) -> {
             // Show the new path
             PathingManager.getSession(player).setPath(path);
         }).consumeFailSync((ex) -> {

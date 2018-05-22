@@ -1,6 +1,7 @@
 package com.ellirion.buildframework.pathfinder;
 
 import com.ellirion.buildframework.pathfinder.model.PathingSession;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -20,10 +21,9 @@ public class AStar {
      * @param player The player to keep updated on progress
      * @param start The start point
      * @param goal The goal point
-     * @param useHeap Using a heap or not
      * @return A Promise that is resolved or rejected depending on whether a path is found.
      */
-    public static Promise<List<Point>> searchAsync(Player player, Point start, Point goal, boolean useHeap) {
+    public static Promise<List<Point>> searchAsync(Player player, Point start, Point goal) {
 
         // - lijst met blokken die sinds altijd gevisit zijn (oranje)
         // - lijst met blokken die gevisit zijn deze tick (groen)
@@ -33,17 +33,28 @@ public class AStar {
             long before = System.currentTimeMillis();
 
             PathChecker checker = new PathChecker(player.getWorld());
-            PathingGraph graph = new PathingGraph(useHeap);
+            PathingGraph graph = new PathingGraph();
             PathingVertex startVert = graph.find(start);
             startVert.setGScore(0d);
             startVert.setFScore(start.distanceEuclidian(goal));
 
             PathingVertex cur;
 
+            // Load the config
+            PathingSession session = PathingManager.getSession(player);
+            NBTTagCompound config = session.getConfig();
+            double vStep = config.getDouble("v-step");
+            double vGrounded = config.getDouble("v-grounded");
+            double vFlying = config.getDouble("v-flying");
+            double vExp = config.getDouble("v-exp");
+            double fGoalFactor = config.getDouble("f-goal-fac");
+            double fGoalExp = config.getDouble("f-goal-exp");
+            double fLine = config.getDouble("f-line");
+            int turnThreshold = config.getInt("turn-threshold");
+            int turnLength = config.getInt("turn-length");
+
             // Async client-side updates
-            List<PathingVertex> everSeen = new ArrayList<>();
             List<PathingVertex> nowSeen = new ArrayList<>();
-            List<PathingVertex> nowVisited = new ArrayList<>();
 
             long startTime = System.currentTimeMillis();
             long wantVisited;
@@ -58,16 +69,16 @@ public class AStar {
                         path.add(cur.getData());
                         cur = cur.getCameFrom();
                     }
+                    sendUpdates(player, nowSeen);
                     finisher.resolve(path);
                     long after = System.currentTimeMillis() - before;
-                    player.sendMessage((useHeap ? "heap" : "scoringlist") + " finished in " + after + "ms");
+                    player.sendMessage("Finished in " + after + "ms");
                     return;
                 }
 
                 // Move from openSet to closedSet
                 cur.setVisited(true);
-                nowSeen.remove(cur);
-                nowVisited.add(cur);
+                nowSeen.add(cur);
 
                 // Ignore if it cannot realistically be walked over
                 if (!checker.isClear(cur)) {
@@ -88,37 +99,55 @@ public class AStar {
                     }
 
                     // If we can't make this turn, ignore
-                    if (!checker.isTurnRadiusPermitted(cur, adjacent)) {
+                    if (!checker.isTurnRadiusPermitted(cur, adjacent, turnThreshold, turnLength)) {
                         continue;
                     }
 
-                    // TODO Check if the current node doesn't go back under the previous node.
-                    // TODO This can be done by checking the horizontal (2d) direction the node moves in.
-                    // TODO Subtract? score if flying but adjacent to another block
-
                     // Determine the gScore
-                    double gScore = cur.getGScore() +
-                                    ((cur.getData().getBlockY() == adjacent.getData().getBlockY()) ? 0.0 : 0.6) +
-                                    (!checker.isWalkable(adjacent) ? 3.5 : 0);
+                    double gScore = cur.getGScore() + cur.getData().distanceEuclidian(adjacent.getData());
+
+                    // Determine the vScore component
+                    boolean solid = checker.isWalkable(adjacent);
+                    boolean grounded = checker.isGrounded(adjacent);
+                    double vScore = 0;
+                    if (!solid) {
+                        // Inherit previous vScore
+                        vScore = cur.getVScore() + vStep;
+
+                        // Increase vScore depending on groundedness
+                        vScore += grounded ? vGrounded : vFlying;
+
+                        // Apply the exponential vScore punishment
+                        gScore += Math.max(0, Math.pow(vScore, vExp) - Math.pow(cur.getVScore(), vExp));
+                    }
+
                     if (gScore >= adjacent.getGScore()) {
                         continue; // This is not a better path.
                     }
 
+                    // Determine the fScore, starting from the gScore
+                    double fScore = gScore;
+
+                    // Add pow(distance from goal, fGoalExp) * fGoalFactor
+                    fScore += Math.pow(adjacent.getData().distanceEuclidian(goal), fGoalExp) * fGoalFactor;
+
+                    // Add the distance from the "optimal" line
+                    fScore += adjacent.getData().distanceFromLine(start, goal) * fLine;
+
                     // This path is the current best. Record it!
+                    adjacent.setVScore(vScore);
                     adjacent.setCameFrom(cur);
                     adjacent.setGScore(gScore);
-                    adjacent.setFScore(gScore + adjacent.getData().distanceEuclidian(goal) * 2);
-                    nowSeen.add(adjacent);
+                    adjacent.setFScore(fScore);
                 }
 
                 // Send updates to client
                 haveVisited++;
                 if (haveVisited % 50 == 0) {
-                    final List<PathingVertex> sendNowSeen = nowSeen, sendNowVisited = nowVisited;
+                    final List<PathingVertex> sendNowSeen = nowSeen;
                     nowSeen = new ArrayList<>();
-                    nowVisited = new ArrayList<>();
 
-                    sendUpdates(player, sendNowSeen, sendNowVisited);
+                    sendUpdates(player, sendNowSeen);
                 }
 
                 // Update timing
@@ -138,7 +167,7 @@ public class AStar {
         }, true);
     }
 
-    private static void sendUpdates(Player player, List<PathingVertex> nowSeen, List<PathingVertex> nowVisited) {
+    private static void sendUpdates(Player player, List<PathingVertex> nowSeen) {
         // Send the update!
         new Promise<>((subfinisher) -> {
             World world = player.getWorld();
@@ -158,19 +187,7 @@ public class AStar {
                 if (block.getType().isSolid()) {
                     player.sendBlockChange(location, 251, (byte) 4); // yellow concrete
                 } else {
-                    player.sendBlockChange(location, 95, (byte) 4); // yellow glass
-                }
-                visited.add(v.getData());
-            }
-
-            // Display blocks that have now been visited
-            for (PathingVertex v : nowVisited) {
-                Location location = v.getData().toLocation(world);
-                Block block = world.getBlockAt(location);
-                if (block.getType().isSolid()) {
-                    player.sendBlockChange(location, 251, (byte) 11); // blue concrete
-                } else {
-                    player.sendBlockChange(location, 95, (byte) 11); // blue glass
+                    player.sendBlockChange(location, 20, (byte) 0); // glass
                 }
                 visited.add(v.getData());
             }

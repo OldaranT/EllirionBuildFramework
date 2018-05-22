@@ -52,3 +52,7 @@ commands:
     description: hides the current visisted blocks if it exists
     usage: /hidevisited, /hv
     aliases: [hidevisited, hv]
+  PathConfig:
+    description: changes the pathfinder config
+    usage: /pathconfig, /pc
+    aliases: [pathconfig, pc]
