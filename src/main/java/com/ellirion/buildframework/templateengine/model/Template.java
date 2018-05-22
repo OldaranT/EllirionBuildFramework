@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class Template {
 
-    private static final Material[] PLACELATE = new Material[] {
+    private static final Material[] PLACE_LATE = new Material[] {
             Material.WALL_SIGN,
             Material.WALL_BANNER,
             Material.BANNER,
@@ -59,7 +59,7 @@ public class Template {
     };
 
     private static final String DATA = "data";
-    private static final List<String> FINALMARKERLIST = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+    private static final List<String> MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
             "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
@@ -97,10 +97,9 @@ public class Template {
         for (int x = 0; x <= xDepth; x++) {
             for (int y = 0; y <= yDepth; y++) {
                 for (int z = 0; z <= zDepth; z++) {
-                    templateBlocks[x][y][z] = new TemplateBlock(
-                            world.getBlockAt(x + startX, y + startY, z + startZ).getType());
-
                     Block b = world.getBlockAt(x + startX, y + startY, z + startZ);
+                    templateBlocks[x][y][z] = new TemplateBlock(b.getType());
+
                     BlockState state = b.getState();
                     templateBlocks[x][y][z].setMetadata(
                             new MaterialData(state.getType(), state.getData().getData()));
@@ -119,7 +118,7 @@ public class Template {
      * @return final marker list.
      */
     public static List<String> getFinalMarkerList() {
-        return FINALMARKERLIST;
+        return MARKERS;
     }
 
     /**
@@ -139,7 +138,7 @@ public class Template {
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    if (Arrays.asList(PLACELATE).contains(templateBlocks[x][y][z].getMaterial())) {
+                    if (Arrays.asList(PLACE_LATE).contains(templateBlocks[x][y][z].getMaterial())) {
                         if (templateBlocks[x][y][z].getMaterial().toString().contains("DOOR") &&
                             !templateBlocks[x][y][z].getMaterial().toString().contains("TRAP")) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
@@ -182,7 +181,7 @@ public class Template {
             }
         }
 
-        //Place blocks that need other blocks to stay on their position.
+        // Place blocks that need other blocks to stay on their position.
         for (Map.Entry pair : toPlaceLast.entrySet()) {
             Point p = (Point) pair.getKey();
             TemplateBlock block = (TemplateBlock) pair.getValue();
@@ -210,7 +209,7 @@ public class Template {
             below.getState().update(false, false);
         }
 
-        //Place doors as last.
+        // Place doors last.
         for (DoorWrapper dw : doors) {
             Point p = dw.getPoint();
 
@@ -431,7 +430,7 @@ public class Template {
         String markers = "";
         markers += ChatColor.RESET;
         markers += ChatColor.BOLD;
-        markers += String.join(", ", FINALMARKERLIST);
+        markers += String.join(", ", MARKERS);
         markers += ChatColor.RESET;
         return markers;
     }
