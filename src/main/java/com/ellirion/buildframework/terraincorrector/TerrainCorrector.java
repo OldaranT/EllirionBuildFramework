@@ -345,5 +345,31 @@ public class TerrainCorrector {
 
         return blocks;
     }
+
+    private Block getRelativeBlock(int dir, Block block) {
+        World world = block.getWorld();
+        switch (dir) {
+            case 0:
+                // NORTH
+                return world.getBlockAt(block.getLocation().add(0, 0, -1));
+            case 1:
+                // EAST
+                return world.getBlockAt(block.getLocation().add(1, 0, 0));
+            case 2:
+                // SOUTH
+                return world.getBlockAt(block.getLocation().add(0, 0, 1));
+            case 3:
+                // WEST
+                return world.getBlockAt(block.getLocation().add(-1, 0, 0));
+            case 4:
+                // UP
+                return world.getBlockAt(block.getLocation().add(0, 1, 0));
+            case 5:
+                // DOWN
+                return world.getBlockAt(block.getLocation().add(0, -1, 0));
+            default:
+                throw new IndexOutOfBoundsException();
+        }
+    }
 }
 
