@@ -87,7 +87,8 @@ public class TemplateHologram {
                                         p.getY() + location.getY(),
                                         p.getZ() + location.getZ());
             player.sendBlockChange(loc, Material.WOOL,
-                                   (byte) BuildFramework.getInstance().getConfig().getInt((String) pair.getKey()));
+                                   (byte) BuildFramework.getInstance().getConfig().getInt(
+                                           ((String) pair.getKey()).toUpperCase()));
         }
 
         for (TemplateHologramBlock block : getHologramBlocks()) {

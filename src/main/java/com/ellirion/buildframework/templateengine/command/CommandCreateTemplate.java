@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.templateengine.command;
 
+import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.TemplateManager;
@@ -51,7 +52,7 @@ public class CommandCreateTemplate implements CommandExecutor {
         name = name.replaceAll("[^a-zA-Z0-9\\-]", "").toUpperCase();
 
         // Remove existing templates from map
-        TemplateManager.getTEMPLATESESSIONS().remove(player);
+        TemplateManager.getTemplateSessions().remove(player);
 
         Selection sel = WorldEditHelper.getSelection(player);
         if (!(sel instanceof CuboidSelection)) {
@@ -59,13 +60,16 @@ public class CommandCreateTemplate implements CommandExecutor {
             return true;
         }
 
-        Template template = new Template(name, sel);
-        Point p1 = new Point(sel.getMinimumPoint().getX(), sel.getMinimumPoint().getY(), sel.getMinimumPoint().getZ());
+        Point min = new Point(sel.getMinimumPoint());
+        Point max = new Point(sel.getMaximumPoint());
 
-        TemplateSession templateSession = new TemplateSession(template, p1);
+        BoundingBox box = new BoundingBox(min, max);
+        Template template = new Template(name, box, sel.getWorld());
+
+        TemplateSession templateSession = new TemplateSession(template, min);
 
         // Add player to template manager map so the template can be linked to the player
-        TemplateManager.getTEMPLATESESSIONS().put(player, templateSession);
+        TemplateManager.getTemplateSessions().put(player, templateSession);
 
         player.sendMessage(
                 ChatColor.GREEN + "Template with name " + ChatColor.WHITE + ChatColor.BOLD + name + ChatColor.RESET +

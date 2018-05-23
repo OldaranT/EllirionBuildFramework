@@ -48,7 +48,7 @@ public class CommandImportTemplate implements CommandExecutor {
         TemplateSession ts = new TemplateSession(Template.fromNBT(ntc), null);
 
         // Update templatemanager
-        TemplateManager.getTEMPLATESESSIONS().put(player, ts);
+        TemplateManager.getTemplateSessions().put(player, ts);
 
         //tell player what happened
         player.sendMessage(
