@@ -1,12 +1,14 @@
 package com.ellirion.buildframework.templateengine.model;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.PacketPlayOutBlockChange;
 import net.minecraft.server.v1_12_R1.PlayerConnection;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -21,7 +23,11 @@ import java.util.Map;
 
 public class TemplateHologram {
 
-    @Getter private Location location;
+    private static final BlockFace[] faces = {
+            BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN
+    };
+    private static final float lookAnlge = 45.0f;
+    @Setter @Getter private Location location;
     private Template template;
     @Getter private BoundingBox box;
     @Getter private List<TemplateHologramBlock> hologramBlocks;
@@ -38,6 +44,10 @@ public class TemplateHologram {
         hologramBlocks = new LinkedList<>();
 
         fillHologramBlocks();
+    }
+
+    public static BlockFace[] getFaces() {
+        return faces.clone();
     }
 
     private void fillHologramBlocks() {
@@ -119,5 +129,53 @@ public class TemplateHologram {
                 }
             }
         }
+    }
+
+    /**
+     * Update the hologram location.
+     * @param amount of how many blocks need to be moved.
+     * @param blockFace facing of the player.
+     */
+    public void moveHologram(int amount, BlockFace blockFace) {
+
+        switch (blockFace) {
+            case UP:
+                this.location.setY((double) (location.getBlockY() + amount));
+                break;
+            case DOWN:
+                this.location.setY((double) (location.getBlockY() - amount));
+                break;
+            case EAST:
+                this.location.setX((double) (location.getBlockX() + amount));
+                break;
+            case WEST:
+                this.location.setX((double) (location.getBlockX() - amount));
+                break;
+            case NORTH:
+                this.location.setZ((double) (location.getBlockZ() - amount));
+                break;
+            case SOUTH:
+                this.location.setZ((double) (location.getBlockZ() + amount));
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Check the facing of the player.
+     * @param yaw of the player.
+     * @param pitch of the player.
+     * @return direction of the player.
+     */
+    public BlockFace rotationToFace(float yaw, float pitch) {
+
+        if (pitch <= -lookAnlge) {
+            return faces[4];
+        } else if (pitch >= lookAnlge) {
+            return faces[5];
+        }
+
+        return faces[Math.round(yaw / 90f) & 0x3].getOppositeFace();
     }
 }

@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
 
 public class CommandPutTemplate implements CommandExecutor {
@@ -20,12 +21,14 @@ public class CommandPutTemplate implements CommandExecutor {
         Player player = (Player) commandSender;
 
         TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
-        if (ts == null || ts.getTemplate() == null) {
-            player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
+        TemplateHologram th = TemplateManager.getSelectedHolograms().get(player);
+        if (th == null) {
+            player.sendMessage(
+                    ChatColor.DARK_RED + "You need to create a hologram first before you can put the template.");
             return true;
         }
 
-        ts.getTemplate().putTemplateInWorld(player.getLocation());
+        ts.getTemplate().putTemplateInWorld(th.getLocation());
         return true;
     }
 }

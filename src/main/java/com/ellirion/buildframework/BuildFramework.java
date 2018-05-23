@@ -12,6 +12,7 @@ import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
+import com.ellirion.buildframework.templateengine.event.TemplateMovementListener;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
@@ -48,6 +49,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getServer().getPluginManager().registerEvents(new TemplateMovementListener(), this);
         createConfig();
         createBlockValueConfig();
         createTemplateFormatConfig();
