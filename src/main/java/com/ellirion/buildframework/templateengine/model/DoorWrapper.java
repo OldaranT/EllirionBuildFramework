@@ -13,7 +13,7 @@ public class DoorWrapper {
     @Getter @Setter private Point point;
 
     /**
-     * Constructer.
+     * Constructor.
      * @param materialData materialdata of a door.
      * @param top top part of a door.
      * @param bottom bottom part of a door.
