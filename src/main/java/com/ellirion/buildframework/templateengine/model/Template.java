@@ -1,8 +1,5 @@
 package com.ellirion.buildframework.templateengine.model;
 
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BoundingBox;
-import com.ellirion.buildframework.model.Point;
 import lombok.Getter;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
@@ -18,6 +15,9 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
+import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,9 +94,9 @@ public class Template {
 
         CraftWorld w = (CraftWorld) world;
 
-        for (int x = 0; x <= xDepth; x++) {
-            for (int y = 0; y <= yDepth; y++) {
-                for (int z = 0; z <= zDepth; z++) {
+        for (int x = 0; x < xDepth; x++) {
+            for (int y = 0; y < yDepth; y++) {
+                for (int z = 0; z < zDepth; z++) {
                     Block b = world.getBlockAt(x + startX, y + startY, z + startZ);
                     templateBlocks[x][y][z] = new TemplateBlock(b.getType());
 
