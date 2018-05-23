@@ -53,7 +53,7 @@ public class MinecraftHelper {
      * @param mat the material to check
      * @return whether the given material can be used as an anchor point
      */
-    public static boolean isItAnAnchorPoint(Material mat) {
+    public static boolean isAnchorPoint(Material mat) {
         return !Arrays.asList(NON_ANCHOR_POINTS).contains(mat);
     }
 }
