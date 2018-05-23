@@ -18,14 +18,14 @@ public class TabCompletionMarkerNameList implements TabCompleter {
         FileConfiguration templateFormatConfig = BuildFramework.getInstance().getTemplateFormatConfig();
 
         if (args.length == 1) {
-            List<String> races = templateFormatConfig.getStringList("Markers");
-            for (String s : races) {
+            List<String> markers = templateFormatConfig.getStringList("Markers");
+            for (String s : markers) {
                 if (s.startsWith(args[args.length - 1].toUpperCase())) {
                     completions.add(s);
                 }
             }
             if (completions.isEmpty()) {
-                completions = races;
+                completions = markers;
             }
             return completions;
         }

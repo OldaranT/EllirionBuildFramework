@@ -11,10 +11,10 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
+import com.ellirion.buildframework.templateengine.util.FileUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CommandImportTemplate implements CommandExecutor {
@@ -29,7 +29,7 @@ public class CommandImportTemplate implements CommandExecutor {
 
         String templateName = String.join(" ", strings);
 
-        List<String> fileNames = getListOfFileNames();
+        List<String> fileNames = FileUtil.getListOfNBTFileNames();
 
         if (!fileNames.contains(templateName.toUpperCase())) {
             player.sendMessage(ChatColor.DARK_RED + "This file does not exist.");
@@ -55,29 +55,5 @@ public class CommandImportTemplate implements CommandExecutor {
                 ChatColor.GREEN + "The template " + ChatColor.BOLD + templateName + ChatColor.RESET + ChatColor.GREEN +
                 " has been loaded");
         return true;
-    }
-
-    /**
-     * Get a list of all the template file names.
-     * @return list of file names.
-     */
-    public static List<String> getListOfFileNames() {
-
-        String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path");
-        File folder = new File(path);
-        File[] listOfFiles = folder.listFiles();
-
-        List<String> listOfFileNames = new ArrayList<>();
-        try {
-            for (File f : listOfFiles) {
-                if (f.isFile()) {
-                    listOfFileNames.add(f.getName().substring(0, f.getName().length() - 4).toUpperCase());
-                }
-            }
-        } catch (NullPointerException npe) {
-
-        }
-
-        return listOfFileNames;
     }
 }
