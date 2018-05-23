@@ -12,7 +12,9 @@ import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
+import com.ellirion.buildframework.terraincorrector.command.AddBoundingBoxCommand;
 import com.ellirion.buildframework.terraincorrector.command.CorrectCommand;
+import com.ellirion.buildframework.terraincorrector.command.GetBoundingBoxesCommand;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 
 import java.io.File;
@@ -50,6 +52,8 @@ public class BuildFramework extends JavaPlugin {
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
         getCommand("CorrectTerain").setExecutor(new CorrectCommand());
+        getCommand("GetBoundingboxes").setExecutor(new GetBoundingBoxesCommand());
+        getCommand("AddBoundingBox").setExecutor(new AddBoundingBoxCommand());
         createConfig();
         createBlockValueConfig();
         createTemplateFormatConfig();

@@ -9,10 +9,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
-import com.ellirion.buildframework.terraincorrector.TerrainCorrector;
+import com.ellirion.buildframework.terraincorrector.TerrainManager;
 import com.ellirion.buildframework.util.WorldEditHelper;
 
-public class CorrectCommand implements CommandExecutor {
+public class AddBoundingBoxCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
@@ -20,12 +20,12 @@ public class CorrectCommand implements CommandExecutor {
             return true;
         }
 
-        Player player = (Player) commandSender;
+        Player pl = (Player) commandSender;
 
-        Selection sel = WorldEditHelper.getSelection(player);
+        Selection sel = WorldEditHelper.getSelection(pl);
 
         if (!(sel instanceof CuboidSelection)) {
-            player.sendMessage(ChatColor.DARK_RED + "Invalid Selection!");
+            pl.sendMessage(ChatColor.DARK_RED + "Invalid Selection!");
             return true;
         }
 
@@ -34,11 +34,11 @@ public class CorrectCommand implements CommandExecutor {
         Point start = new Point(selection.getMinimumPoint());
         Point end = new Point(selection.getMaximumPoint());
 
-        BoundingBox bb = new BoundingBox(start, end);
+        final BoundingBox boundingBox = new BoundingBox(start, end);
 
-        TerrainCorrector corrector = new TerrainCorrector();
-        corrector.correctTerrain(bb, player.getWorld());
+        TerrainManager.getBoundingBoxes().add(boundingBox);
 
+        pl.sendMessage("Added BoundingBox");
         return true;
     }
 }
