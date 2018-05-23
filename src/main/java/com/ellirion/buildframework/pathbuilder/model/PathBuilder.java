@@ -107,7 +107,6 @@ public class PathBuilder {
                         break;
                     }
                 }
-                //
             }
             //if the path at this point isn't grounded, create supports
             if (count % (radius * 3) == 0 && !isGrounded(p, w)) {

@@ -19,6 +19,9 @@ import com.ellirion.buildframework.util.EventListener;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,12 +103,12 @@ public class BuildFramework extends JavaPlugin {
 
     //create filepaths if they don't exist yet
     private void createFilePaths() {
-        String path = config.getString("templatePath");
-        if (!(new File(path).mkdirs())) {
+        Path path = Paths.get(config.getString("templatePath"));
+        if (!Files.exists(path) && !(path.toFile().mkdirs())) {
             getLogger().warning("The path for templates could not be created");
         }
-        path = config.getString("PathBuilder.pathbuilderPath");
-        if (!(new File(path).mkdirs())) {
+        path = Paths.get(config.getString("PathBuilder.pathbuilderPath"));
+        if (!Files.exists(path) && !(path.toFile().mkdirs())) {
             getLogger().warning("The path for PathBuilders could not be created");
         }
     }
