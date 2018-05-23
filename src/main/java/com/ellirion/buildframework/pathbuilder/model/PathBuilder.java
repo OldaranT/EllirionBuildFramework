@@ -109,7 +109,8 @@ public class PathBuilder {
                 }
                 //
             }
-            if (count % (radius * 3) == 0) {
+            //if the path at this point isn't grounded, create supports
+            if (count % (radius * 3) == 0 && !isGrounded(p, w)) {
                 //get all points within certain radius, and build towards anchor point
                 //create multiple anchor points to build towards
                 List<Point> anchorPoints = getAnchorPoints(p.down(), w);
@@ -222,6 +223,11 @@ public class PathBuilder {
             closest = Math.min(closest, p.distanceEuclidian(point));
         }
         return closest;
+    }
+
+    private boolean isGrounded(Point p, World w) {
+        //get the location, check block below
+        return MinecraftHelper.isItAnAnchorPoint(w.getBlockAt(p.toLocation(w)).getRelative(0, -1, 0).getType());
     }
 
     /**
