@@ -23,12 +23,12 @@ import java.util.Map;
 
 public class TemplateHologram {
 
-    private static final BlockFace[] faces = {
+    private static final BlockFace[] FACES = {
             BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN
     };
-    private static final float lookAnlge = 45.0f;
+    private static final float lookAngle = 45.0f;
     @Setter @Getter private Location location;
-    private Template template;
+    @Setter @Getter private Template template;
     @Getter private BoundingBox box;
     @Getter private List<TemplateHologramBlock> hologramBlocks;
 
@@ -39,15 +39,14 @@ public class TemplateHologram {
      */
     public TemplateHologram(final Template t, final Location loc) {
         location = loc.clone();
+        location.setX(loc.getBlockX());
+        location.setY(loc.getBlockY());
+        location.setZ(loc.getBlockZ());
         template = t;
         box = template.getBoundingBox();
         hologramBlocks = new LinkedList<>();
 
         fillHologramBlocks();
-    }
-
-    public static BlockFace[] getFaces() {
-        return faces.clone();
     }
 
     private void fillHologramBlocks() {
@@ -71,8 +70,6 @@ public class TemplateHologram {
      * @param player the player for which to create the hologram
      */
     public void create(Player player) {
-        BoundingBox box = getBox();
-        Location location = getLocation();
         int[] coordinates = CommandHelper.getCoordinates(box, location);
         World w = getLocation().getWorld();
 
@@ -112,8 +109,7 @@ public class TemplateHologram {
     // To remove the hologram, we simply need to update all blocks where the hologram is
     public void remove(Player player) {
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
-        BoundingBox box = getBox();
-        Location location = getLocation();
+        BoundingBox box = template.getBoundingBox();
         World w = location.getWorld();
 
         int[] coordinates = CommandHelper.getCoordinates(box, location);
@@ -122,7 +118,6 @@ public class TemplateHologram {
             for (int y = coordinates[2]; y <= coordinates[3]; y++) {
                 for (int z = coordinates[4]; z <= coordinates[5]; z++) {
 
-                    // If the block is not air, change it to a barrier block
                     connection.sendPacket(new PacketPlayOutBlockChange(
                             ((CraftWorld) w).getHandle(),
                             new BlockPosition(x, y, z)));
@@ -170,12 +165,12 @@ public class TemplateHologram {
      */
     public BlockFace rotationToFace(float yaw, float pitch) {
 
-        if (pitch <= -lookAnlge) {
-            return faces[4];
-        } else if (pitch >= lookAnlge) {
-            return faces[5];
+        if (pitch <= -lookAngle) {
+            return FACES[4];
+        } else if (pitch >= lookAngle) {
+            return FACES[5];
         }
 
-        return faces[Math.round(yaw / 90f) & 0x3].getOppositeFace();
+        return FACES[Math.round(yaw / 90f) & 0x3].getOppositeFace();
     }
 }

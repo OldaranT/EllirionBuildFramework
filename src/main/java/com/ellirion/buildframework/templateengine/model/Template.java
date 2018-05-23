@@ -1,8 +1,5 @@
 package com.ellirion.buildframework.templateengine.model;
 
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BoundingBox;
-import com.ellirion.buildframework.model.Point;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +15,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
+import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.model.Point;
 
 import java.util.HashMap;
 import java.util.List;
@@ -313,6 +313,28 @@ public class Template {
         t.setTemplateBlocks(tBlocks);
 
         return t;
+    }
+
+    /**
+     * Rotate the template 90 degrees in a direction.
+     */
+    public void rotateTemplate() {
+        int xDepth = templateBlocks.length;
+        int yDepth = templateBlocks[0].length;
+        int zDepth = templateBlocks[0][0].length;
+
+        TemplateBlock[][][] rotatedTemplateBlock = new TemplateBlock[zDepth][yDepth][xDepth];
+
+        for (int y = 0; y < yDepth; y++) {
+            //foreach Y rotate x and z.
+            for (int x = 0; x < zDepth; x++) {
+                for (int z = 0; z < xDepth; z++) {
+                    rotatedTemplateBlock[x][y][z] = templateBlocks[z][y][zDepth - x - 1];
+                }
+            }
+        }
+
+        this.templateBlocks = rotatedTemplateBlock;
     }
 
     /**

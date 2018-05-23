@@ -10,13 +10,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
-import com.ellirion.buildframework.templateengine.model.TemplateSession;
 
 public class TemplateMovementListener implements Listener {
 
     /**
-     * @param event when the player interacts with a sword.
+     * Move or rotate the hologram while using player interaction events.
+     * @param event is used to get the tool that the player interacts with.
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -40,22 +41,26 @@ public class TemplateMovementListener implements Listener {
 
         BlockFace blockFace = prevHologram.rotationToFace(player.getLocation().getYaw(),
                                                           player.getLocation().getPitch());
-        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
+        Template t = prevHologram.getTemplate();
         prevHologram.remove(player);
 
         if (event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_AIR) {
             if (event.getItem().getType() == Material.DIAMOND_SPADE) {
-                prevHologram.setLocation(new Location(player.getWorld(), player.getLocation().getBlockX(),
+                prevHologram.setLocation(new Location(player.getWorld(),
+                                                      player.getLocation().getBlockX(),
                                                       player.getLocation().getBlockY(),
                                                       player.getLocation().getBlockZ()));
             } else {
                 prevHologram.moveHologram(1, blockFace);
             }
-
-            prevHologram = new TemplateHologram(ts.getTemplate(), prevHologram.getLocation());
+            prevHologram = new TemplateHologram(t, prevHologram.getLocation());
         } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
-            prevHologram.moveHologram(1, blockFace.getOppositeFace());
-            prevHologram = new TemplateHologram(ts.getTemplate(), prevHologram.getLocation());
+            if (event.getItem().getType() == Material.DIAMOND_SPADE) {
+                t.rotateTemplate();
+            } else {
+                prevHologram.moveHologram(1, blockFace.getOppositeFace());
+            }
+            prevHologram = new TemplateHologram(t, prevHologram.getLocation());
         }
         prevHologram.create(player);
     }
