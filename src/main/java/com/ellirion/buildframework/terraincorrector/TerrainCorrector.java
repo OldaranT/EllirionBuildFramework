@@ -303,44 +303,64 @@ public class TerrainCorrector {
             maxHoleZ = h.getMaxZ();
 
             // use the correct support placing locations
+            // check if the hole runs straight from oe side to the other.
             if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ || maxHoleZ >= maxZ)) {
                 // build bridge style supports for structure from point 1 to point 2 on the Z axis.
                 toChange = getBridgeSupportOnZAxis(top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+
+                // check if the hole runs straight from oe side to the other.
             } else if (!(minHoleX <= minX || maxHoleX >= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
                 // build bridge style supports for structure from point 1 to point 2 on the X axis.
                 toChange = getBridgeSupportOnXAxis(top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-            } else if ((minHoleZ <= minZ && maxHoleX >= maxX && minHoleX <= minX) ||
+
+                // check if hole is not a corner and faces north
+            } else if ((minHoleZ <= minZ && maxHoleX >= maxX && minHoleX <= minX && !(maxHoleZ >= maxZ)) ||
                        (minHoleZ <= minZ && !(maxHoleX >= maxX || minHoleX <= minX || maxHoleZ >= maxZ))) {
                 //NORTH TO SOUTH
                 toChange = oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-            } else if ((maxHoleX >= maxX && minHoleZ <= minZ && maxHoleZ >= maxZ) ||
+
+                // check if hole is not a corner and faces east
+            } else if ((maxHoleX >= maxX && minHoleZ <= minZ && maxHoleZ >= maxZ && !(minHoleX <= minX)) ||
                        (maxHoleX >= maxX && !(minHoleX <= minX || minHoleZ <= minZ || maxHoleZ >= maxZ))) {
                 //EAST TO WEST
                 toChange = oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-            } else if ((maxHoleZ >= maxZ && minHoleX <= minX && maxHoleX >= maxX) ||
+
+                // check if hole is not a corner and faces south
+            } else if ((maxHoleZ >= maxZ && minHoleX <= minX && maxHoleX >= maxX && !(minHoleZ <= minZ)) ||
                        (maxHoleZ >= maxZ && !(minHoleX <= minX || minHoleZ <= minZ || maxHoleX >= maxX))) {
                 // SOUTH TO NORTH
                 toChange = oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-            } else if ((minHoleX <= minX && minHoleZ <= minZ && maxHoleZ >= maxZ) ||
+
+                // check if hole is not a corner and faces west
+            } else if ((minHoleX <= minX && minHoleZ <= minZ && maxHoleZ >= maxZ && !(maxHoleX >= maxX)) ||
                        (minHoleX <= minX && !(maxHoleX >= maxX || minHoleZ <= minZ || maxHoleZ >= maxZ))) {
                 // WEST TO EAST
                 toChange = oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+
+                // check if the hole is a corner and faces north east
             } else if ((minHoleZ <= minZ && maxHoleX >= maxX) && !(minHoleX <= minX || maxHoleZ >= maxZ)) {
                 // NORTH EAST TO SOUTH WEST
                 toChange = cornerSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+
+                // check if the hole is a corner and faces south east
             } else if ((maxHoleZ >= maxZ && maxHoleX >= maxX) && !(minHoleX <= minX || minHoleZ <= minZ)) {
                 // SOUTH EAST TO NORTH WEST
                 toChange = cornerSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+
+                // check if the hole is a corner and faces south west
             } else if ((maxHoleZ >= maxZ && minHoleX <= minX) && !(maxHoleX >= maxX || maxHoleZ >= maxZ)) {
                 // SOUTH WEST TO NORTH EAST
                 toChange = cornerSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+
+                // check if the hole is a corner and faces north west
             } else if ((minHoleZ <= minZ && minHoleX <= minX) && !(maxHoleX >= maxX || maxHoleZ >= maxZ)) {
                 // NORTH WEST TO SOUTH EAST
                 toChange = cornerSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+
+                // if not of the above apply use the last resort of working from the outside to the center from all sides
             } else {
-                // build building supports under the bounding box.
+                // build building supports under the bounding box from all sides inwards.
                 toChange = createSupportsLocationMap();
-                //            toChange = new ArrayList<>(underBoundingBox);
             }
 
             for (Block b : toChange) {
