@@ -11,11 +11,16 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathbuilder.BuilderManager;
 import com.ellirion.buildframework.pathbuilder.model.PathBuilder;
+import com.ellirion.buildframework.pathbuilder.util.BresenhamLine3D;
 import com.ellirion.buildframework.util.StringHelper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class CommandPathBuilder implements CommandExecutor {
+
+    private List<Point> path = new ArrayList<>();
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
@@ -57,6 +62,15 @@ public class CommandPathBuilder implements CommandExecutor {
                 break;
             case "ANCHOR":
                 anchor(player);
+                break;
+            case "ADDPOINT":
+                addPoint(player);
+                break;
+            case "CREATEPATH":
+                createPath(player);
+                break;
+            case "CLEARPATH":
+                clearPath();
                 break;
             default:
                 player.sendMessage(ChatColor.DARK_RED +
@@ -213,9 +227,26 @@ public class CommandPathBuilder implements CommandExecutor {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         Location l = player.getLocation();
         Point start = new Point(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-        Point p = builder.getAnchorPoint(start, player.getWorld(), player);
+        List<Point> anchor = builder.getAnchorPoints(start, player.getWorld(), player);
         player.sendBlockChange(start.toLocation(player.getWorld()), Material.GLOWSTONE, (byte) 0);
-        player.sendBlockChange(p.toLocation(player.getWorld()), Material.GLOWSTONE, (byte) 0);
-        BuildFramework.getInstance().getLogger().info(p.toString());
+        player.sendBlockChange(anchor.remove(0).toLocation(player.getWorld()), Material.GLOWSTONE, (byte) 0);
+
+        for (Point p : anchor) {
+            BresenhamLine3D.drawLine(start, p, l.getWorld(), builder.getSupportType());
+        }
+    }
+
+    private void addPoint(Player player) {
+        path.add(new Point(player.getLocation()).floor());
+    }
+
+    private void createPath(Player player) {
+        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
+
+        builder.build(path, player.getWorld());
+    }
+
+    private void clearPath() {
+        path = new ArrayList<>();
     }
 }

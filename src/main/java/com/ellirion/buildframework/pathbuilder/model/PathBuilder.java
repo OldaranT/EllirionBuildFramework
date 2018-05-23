@@ -9,10 +9,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.pathbuilder.util.BresenhamLine3D;
+import com.ellirion.buildframework.util.MinecraftHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,6 +88,8 @@ public class PathBuilder {
      * @param w The world in which to place the path
      */
     public void build(List<Point> points, World w) {
+        int count = 0;
+
         for (Point p : points) {
             //Get all 'locations' around the point within radius r
             List<Point> nearbyPoints = getPoints(p);
@@ -105,20 +109,21 @@ public class PathBuilder {
                 }
                 //
             }
-            //for now, we'll put supports under just the center blocks
-            int y = p.getBlockY() - 1;
-            boolean groundFound = !w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).isEmpty();
-            while (!groundFound) {
-                //replace block with fence
-                //move 1 down
-                //update groundFound
-
-                w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).setType(supportType);
-                y--;
-                groundFound = (w.getBlockAt(p.getBlockX(), y, p.getBlockZ()).getType() != Material.AIR);
+            if (count % (radius * 3) == 0) {
+                //get all points within certain radius, and build towards anchor point
+                //create multiple anchor points to build towards
+                List<Point> anchorPoints = getAnchorPoints(p.down(), w);
+                if (anchorPoints == null) {
+                    continue;
+                }
+                for (Point supportPoint : getPoints(p.down())) {
+                    for (Point anchorPoint : anchorPoints) {
+                        BresenhamLine3D.drawLine(supportPoint, anchorPoint, w, supportType);
+                    }
+                }
             }
 
-            //eventually we'll want to find the closest anchor point and build supports towards that point
+            count++;
         }
     }
 
@@ -220,25 +225,93 @@ public class PathBuilder {
     }
 
     /**
+     * GetAnchorPoints without showing block searches.
+     * @param point point
+     * @param w world
+     * @return list of anchor points
+     */
+    public List<Point> getAnchorPoints(Point point, World w) {
+        return getAnchorPoints(point, w, null);
+    }
+
+    /**
      * Get anchor point.
      * @param point s
      * @param w s
-     * @param p s
+     * @param player player
      * @return s
      */
-    public Point getAnchorPoint(Point point, World w, Player p) {
-        Point anchor = new Point();
+    public List<Point> getAnchorPoints(Point point, World w, Player player) {
+        List<Point> anchorPoints = new ArrayList<>();
 
-        //flood fill until we find an anchor point
-        //can only go down, not up
-        //first block found (that isn't part of a path) will be the anchor point
+        Point[] fillPattern = new Point[] {
+                new Point().down(),
+                new Point().down().translate(new Point().north()),
+                new Point().down().translate(new Point().east()),
+                new Point().down().translate(new Point().south()),
+                new Point().down().translate(new Point().west()),
+                new Point().down().translate(new Point().down()),
 
+                new Point().down().translate(new Point(2, 0, 0)),
+                new Point().down().translate(new Point(0, 0, 2)),
+                new Point().down().translate(new Point(0, 0, -2)),
+                new Point().down().translate(new Point(-2, 0, 0)),
+                };
+        Point anchor = floodFill(point, w, fillPattern, player);
+
+        Point[] points = new Point[] {
+                anchor.up(),
+                anchor.north(),
+                anchor.south(),
+                anchor.east(),
+                anchor.west()
+        };
+
+        for (Point p : points) {
+            if (isBlockAnchored(p.toLocation(w))) {
+                anchor = p;
+                BuildFramework.getInstance().getLogger().info("Moved anchorpoint to " + anchor.toString());
+                break;
+            }
+        }
+
+        anchorPoints.add(anchor);
+
+        //get adjacent blocks
+        //get north east south west down and determine whether they are air and an anchorpoint
+        Point[] anchors = new Point[] {
+                anchor.north(),
+                anchor.south(),
+                anchor.east(),
+                anchor.west(),
+                anchor.down()
+        };
+
+        //we want multiple anchor points
+        //check 1 block in each cardinal direction, and get an anchorpoint within 2 blocks up/down
+        for (Point p : anchors) {
+            Point a = checkUpDown(p, w, 2);
+            if (a != null && isBlockAnchored(a.toLocation(w))) {
+                anchorPoints.add(a);
+            }
+        }
+
+        return anchorPoints;
+    }
+
+    //    private Point floodFill(Point p, World w, Point[] fillPattern) {
+    //        return floodFill(p, w, fillPattern, null);
+    //    }
+
+    private Point floodFill(Point p, World w, Point[] fillPattern, Player player) {
+        Point anchor = p;
         LinkedList<Point> pointsToCheck = new LinkedList<>();
-        pointsToCheck.add(point);
+        pointsToCheck.add(p);
+
+        HashMap<Point, Boolean> visited = new HashMap<>();
 
         boolean anchorFound = false;
         int steps = 0;
-        List<Point> visited = new ArrayList<>();
         while (!anchorFound) {
             //for each point,
             //check if it's an anchor point
@@ -247,46 +320,107 @@ public class PathBuilder {
 
             Point curr = pointsToCheck.removeFirst();
 
-            p.sendBlockChange(new Location(w, curr.getBlockX(), curr.getBlockY(), curr.getBlockZ()), Material.GLASS,
-                              (byte) 0);
+            if (player != null) {
+                player.sendBlockChange(curr.toLocation(w), Material.GLASS, (byte) 0);
+            }
 
-            if (!w.getBlockAt(curr.getBlockX(), curr.getBlockY(), curr.getBlockZ()).isEmpty()) {
+            Block b = w.getBlockAt(curr.toLocation(w));
+            if (MinecraftHelper.isItAnAnchorPoint(b.getType()) && b.getType() != supportType) {
                 anchor = curr;
                 anchorFound = true;
             }
 
-            Point[] points = new Point[] {
-                    curr.down(),
-                    curr.down().translate(new Point().north()),
-                    curr.down().translate(new Point().east()),
-                    curr.down().translate(new Point().south()),
-                    curr.down().translate(new Point().west()),
-                    curr.down().translate((new Point().down())),
-
-                    curr.down().translate(new Point(2, 0, 0)),
-                    curr.down().translate(new Point(0, 0, 2)),
-                    curr.down().translate(new Point(0, 0, -2)),
-                    curr.down().translate(new Point(-2, 0, 0)),
-                    };
+            Point[] points = new Point[fillPattern.length];
+            for (int i = 0; i < fillPattern.length; i++) {
+                points[i] = curr.translate(fillPattern[i]);
+            }
 
             for (int i = 0; i < points.length; i++) {
-                if (!pointsToCheck.contains(points[i])) {
+                if (!visited.containsKey(points[i])) {
                     pointsToCheck.addLast(points[i]);
+                    visited.put(points[i], false);
                 }
             }
 
-            visited.add(curr);
+            visited.put(curr, true);
 
             steps++;
-            if (steps >= 1000000) {
-                break;
+            if (steps % 1000000 == 0) {
+                BuildFramework.getInstance().getLogger().info(steps + " steps");
+            }
+            if (steps >= 5000000) {
+                BuildFramework.getInstance().getLogger().info("Could not find anchor point for " + p.toString());
+                anchorFound = true;
             }
         }
 
         BuildFramework.getInstance().getLogger().info(
-                "Anchorpoint " + anchor.toString() + " found from " + point.toString() + " in " + steps + " steps");
+                "Anchorpoint " + anchor.toString() + " found from " + p.toString() + " in " + steps + " steps");
 
         return anchor;
+    }
+
+    private Point checkUpDown(Point p, World w, int radius) {
+        for (int i = 0; i <= radius; i++) {
+            Point translated = p.translate(new Point(0, i, 0));
+            if (w.getBlockAt(translated.toLocation(w)).getType() == Material.AIR &&
+                isBlockAnchored(translated.toLocation(w))) {
+                return translated;
+            }
+            translated = p.translate(new Point(0, -i, 0));
+            if (w.getBlockAt(translated.toLocation(w)).getType() == Material.AIR &&
+                isBlockAnchored(translated.toLocation(w))) {
+                return translated;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isBlockAnchored(Location l) {
+        Block b = l.getWorld().getBlockAt(l);
+        if (b.getType() != Material.AIR) {
+            return false;
+        }
+
+        BlockFace[] faces = new BlockFace[] {
+                BlockFace.NORTH,
+                BlockFace.EAST,
+                BlockFace.SOUTH,
+                BlockFace.WEST,
+                BlockFace.DOWN
+        };
+
+        for (BlockFace face : faces) {
+            if (MinecraftHelper.isItAnAnchorPoint(b.getRelative(face).getType()) &&
+                b.getRelative(face).getType() != supportType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Point findGround(Location l) {
+        //start at this point
+        //if it's air, search down until no more air is found
+        //otherwise, search up until air is found
+        World w = l.getWorld();
+        Point p = new Point(l);
+
+        if (w.getBlockAt(l).getType() == Material.AIR) {
+            Point prev = p;
+            while (w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ()).getType() == Material.AIR) {
+                prev = new Point(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+                p = p.down();
+            }
+            return prev;
+        } else {
+            while (w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ()).getType() == Material.AIR) {
+                p = p.up();
+            }
+            return p;
+        }
     }
 
     @Override
