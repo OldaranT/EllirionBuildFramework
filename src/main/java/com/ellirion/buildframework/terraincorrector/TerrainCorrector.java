@@ -529,49 +529,67 @@ public class TerrainCorrector {
         List<Block> toChange = new ArrayList<>();
         int y = boundingBox.getY1() - 1;
         int maxDepth;
+        int centre;
+        int distance;
 
         switch (dir) {
             case 0:
                 //NORTH TO SOUTH
                 maxDepth = maxHoleZ - minHoleZ;
-                for (int x = minHoleX; x <= maxHoleX; x++) {
-                    if ((Math.abs(x) % 2) == 0) {
-                        for (int i = 0; i <= maxDepth; i++) {
-                            toChange.addAll(blocksToReplace(x, y, minHoleZ + i, i, underBoundingBox));
-                        }
+                centre = maxHoleX - ((maxHoleX - minHoleX) / 2);
+                distance = (maxHoleX - minHoleX) / 2;
+                if (Math.abs(distance) % 2 == 1) {
+                    distance++;
+                }
+                for (int dis = 0; dis <= distance; dis += 2) {
+                    for (int i = 0; i <= maxDepth; i++) {
+                        toChange.addAll(blocksToReplace(centre + dis, y, minHoleZ + i, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(centre - dis, y, minHoleZ + i, i, underBoundingBox));
                     }
                 }
                 return toChange;
             case 1:
                 //EAST TO WEST
                 maxDepth = maxHoleX - minHoleX;
-                for (int z = minHoleZ; z <= maxHoleZ; z++) {
-                    if ((Math.abs(z) % 2) == 0) {
-                        for (int i = 0; i <= maxDepth; i++) {
-                            toChange.addAll(blocksToReplace(maxHoleX - i, y, z, i, underBoundingBox));
-                        }
+                centre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
+                distance = (maxHoleZ - minHoleZ) / 2;
+                if (Math.abs(distance) % 2 == 1) {
+                    distance++;
+                }
+                for (int dis = 0; dis <= distance; dis += 2) {
+                    for (int i = 0; i <= maxDepth; i++) {
+                        toChange.addAll(blocksToReplace(maxHoleX - i, y, centre + dis, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(maxHoleX - i, y, centre - dis, i, underBoundingBox));
                     }
                 }
                 return toChange;
             case 2:
                 //SOUTH TO NORTH
                 maxDepth = maxHoleZ - minHoleZ;
-                for (int x = minHoleX; x <= maxHoleX; x++) {
-                    if ((Math.abs(x) % 2) == 0) {
-                        for (int i = 0; i <= maxDepth; i++) {
-                            toChange.addAll(blocksToReplace(x, y, maxHoleZ - i, i, underBoundingBox));
-                        }
+                centre = maxHoleX - ((maxHoleX - minHoleX) / 2);
+                distance = (maxHoleX - minHoleX) / 2;
+                if (Math.abs(distance) % 2 == 1) {
+                    distance++;
+                }
+                for (int dis = 0; dis <= distance; dis += 2) {
+                    for (int i = 0; i <= maxDepth; i++) {
+                        toChange.addAll(blocksToReplace(centre + dis, y, maxHoleZ - i, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(centre - dis, y, maxHoleZ - i, i, underBoundingBox));
                     }
                 }
                 return toChange;
             case 3:
                 //WEST TO EAST
                 maxDepth = maxHoleX - minHoleX;
-                for (int z = minHoleZ; z <= maxHoleZ; z++) {
-                    if ((Math.abs(z) % 2) == 0) {
-                        for (int i = 0; i <= maxDepth; i++) {
-                            toChange.addAll(blocksToReplace(minHoleX + i, y, z, i, underBoundingBox));
-                        }
+                centre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
+                distance = (maxHoleZ - minHoleZ) / 2;
+                if (Math.abs(distance) % 2 == 1) {
+                    distance++;
+                }
+                for (int dis = 0; dis <= distance; dis += 2) {
+                    for (int i = 0; i <= maxDepth; i++) {
+                        toChange.addAll(blocksToReplace(minHoleX + i, y, centre + dis, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(minHoleX + i, y, centre - dis, i, underBoundingBox));
                     }
                 }
                 return toChange;
