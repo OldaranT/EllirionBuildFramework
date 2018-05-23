@@ -38,12 +38,12 @@ public class CommandAddMarker implements CommandExecutor {
             return true;
         }
 
-        if (!Template.getFINALMARKERLIST().contains(strings[0].toUpperCase())) {
+        if (!Template.getPossibleMarkers().contains(strings[0].toUpperCase())) {
             player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
             return true;
         }
 
-        String marker = strings[0];
+        String marker = strings[0].toUpperCase();
 
         Point markerPoint = new Point(playerX, playerY - 1, playerZ);
         Point templateWorldPoint = TemplateManager.getTemplateSessions().get(player).getPoint();

@@ -1,6 +1,5 @@
 package com.ellirion.buildframework.templateengine.model;
 
-import com.sk89q.worldedit.bukkit.selections.Selection;
 import lombok.Getter;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
@@ -12,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
@@ -19,18 +19,50 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Template {
 
+    private static final Material[] PLACE_LATE = new Material[] {
+            Material.WALL_SIGN,
+            Material.WALL_BANNER,
+            Material.BANNER,
+            Material.LADDER,
+            Material.PAINTING,
+            Material.ITEM_FRAME,
+            Material.STONE_BUTTON,
+            Material.WOOD_BUTTON,
+            Material.LEVER,
+            Material.REDSTONE,
+            Material.REDSTONE_TORCH_OFF,
+            Material.REDSTONE_TORCH_ON,
+            Material.VINE,
+            Material.TRIPWIRE_HOOK,
+            Material.PAINTING,
+            Material.PISTON_BASE,
+            Material.PISTON_EXTENSION,
+            Material.PISTON_STICKY_BASE,
+            Material.TORCH,
+            Material.ACACIA_DOOR,
+            Material.BIRCH_DOOR,
+            Material.DARK_OAK_DOOR,
+            Material.IRON_DOOR,
+            Material.JUNGLE_DOOR,
+            Material.SPRUCE_DOOR,
+            Material.WOOD_DOOR,
+            Material.WOODEN_DOOR,
+            Material.IRON_DOOR_BLOCK
+    };
+
     private static final String DATA = "data";
-    @Getter private static final List<String> FINALMARKERLIST = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
+    private static final List<String> POSSIBLE_MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
             "Markers");
     @Getter @Setter private String templateName;
     @Getter @Setter private TemplateBlock[][][] templateBlocks;
-
     @Getter private HashMap<String, Point> markers;
 
     /**
@@ -43,57 +75,50 @@ public class Template {
     /**
      * @param name Name of the template
      * @param selection Selected area
+     * @param world the world the template is in
      */
-    public Template(final String name, final Selection selection) {
-        this.templateName = name;
-        this.markers = new HashMap<>();
+    public Template(final String name, final BoundingBox selection, final World world) {
+        templateName = name;
+        markers = new HashMap<>();
 
         // Get all blocks from the area
-        Location start = selection.getMinimumPoint();
-        Location end = selection.getMaximumPoint();
+        Point start = selection.getPoint1();
 
-        int startX = Math.min((int) start.getX(), (int) end.getX());
-        int startY = Math.min((int) start.getY(), (int) end.getY());
-        int startZ = Math.min((int) start.getZ(), (int) end.getZ());
+        int startX = start.getBlockX();
+        int startY = start.getBlockY();
+        int startZ = start.getBlockZ();
+        int xDepth = selection.getWidth();
+        int yDepth = selection.getHeight();
+        int zDepth = selection.getDepth();
+        templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
 
-        int endX = Math.max((int) start.getX(), (int) end.getX());
-        int endY = Math.max((int) start.getY(), (int) end.getY());
-        int endZ = Math.max((int) start.getZ(), (int) end.getZ());
-
-        int templateX = 0;
-        int templateY = 0;
-        int templateZ = 0;
-
-        int xDepth = endX - startX + 1;
-        int yDepth = endY - startY + 1;
-        int zDepth = endZ - startZ + 1;
-        this.templateBlocks = new TemplateBlock[xDepth][yDepth][zDepth];
-
-        World world = selection.getWorld();
         CraftWorld w = (CraftWorld) world;
 
-        for (int x = startX; x <= endX; x++) {
-            for (int y = startY; y <= endY; y++) {
-                for (int z = startZ; z <= endZ; z++) {
-                    this.templateBlocks[templateX][templateY][templateZ] = new TemplateBlock(
-                            world.getBlockAt(x, y, z).getType());
+        for (int x = 0; x < xDepth; x++) {
+            for (int y = 0; y < yDepth; y++) {
+                for (int z = 0; z < zDepth; z++) {
+                    Block b = world.getBlockAt(x + startX, y + startY, z + startZ);
+                    templateBlocks[x][y][z] = new TemplateBlock(b.getType());
 
-                    Block b = world.getBlockAt(x, y, z);
                     BlockState state = b.getState();
-                    this.templateBlocks[templateX][templateY][templateZ].setMetadata(state.getData());
+                    templateBlocks[x][y][z].setMetadata(
+                            new MaterialData(state.getType(), state.getData().getData()));
 
-                    TileEntity te = w.getTileEntityAt(x, y, z);
+                    TileEntity te = w.getTileEntityAt(x + startX, y + startY, z + startZ);
                     if (te != null) {
-                        this.templateBlocks[templateX][templateY][templateZ].setData(te.save(new NBTTagCompound()));
+                        templateBlocks[x][y][z].setData(te.save(new NBTTagCompound()));
                     }
-                    templateZ++;
                 }
-                templateZ = 0;
-                templateY++;
             }
-            templateY = 0;
-            templateX++;
         }
+    }
+
+    /**
+     * List of all markers from the config.
+     * @return final marker list.
+     */
+    public static List<String> getPossibleMarkers() {
+        return POSSIBLE_MARKERS;
     }
 
     /**
@@ -101,34 +126,52 @@ public class Template {
      * @param loc location to place the template.
      */
     public void putTemplateInWorld(Location loc) {
-        int xDepth = this.getTemplateBlocks().length;
-        int yDepth = this.getTemplateBlocks()[0].length;
-        int zDepth = this.getTemplateBlocks()[0][0].length;
+        int xDepth = templateBlocks.length;
+        int yDepth = templateBlocks[0].length;
+        int zDepth = templateBlocks[0][0].length;
 
         CraftWorld w = (CraftWorld) loc.getWorld();
+
+        HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
+        List<DoorWrapper> doors = new ArrayList<>();
 
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
+                    if (Arrays.asList(PLACE_LATE).contains(templateBlocks[x][y][z].getMaterial())) {
+                        if (templateBlocks[x][y][z].getMaterial().toString().contains("DOOR") &&
+                            !templateBlocks[x][y][z].getMaterial().toString().contains("TRAP")) {
+                            if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
+                                doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
+                                                          templateBlocks[x][y + 1][z].getMetadata().getData(),
+                                                          templateBlocks[x][y][z].getMetadata().getData(),
+                                                          new Point(loc.getBlockX() + x, loc.getBlockY() + y,
+                                                                    loc.getBlockZ() + z)));
+                            }
+                        } else {
+                            toPlaceLast.put(new Point(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z),
+                                            templateBlocks[x][y][z]);
+                        }
+                        continue;
+                    }
 
-                    int locX = (int) loc.getX() + x;
-                    int locY = (int) loc.getY() + y;
-                    int locZ = (int) loc.getZ() + z;
+                    int locX = loc.getBlockX() + x;
+                    int locY = loc.getBlockY() + y;
+                    int locZ = loc.getBlockZ() + z;
 
                     Block b = w.getBlockAt(locX, locY, locZ);
-
-                    b.setType(this.getTemplateBlocks()[x][y][z].getMaterial());
+                    b.setType(templateBlocks[x][y][z].getMaterial());
                     b.getState().update();
 
-                    MaterialData copiedState = this.getTemplateBlocks()[x][y][z].getMetadata();
+                    MaterialData copiedState = getTemplateBlocks()[x][y][z].getMetadata();
                     BlockState blockState = b.getState();
                     blockState.setData(copiedState);
-                    blockState.update();
+                    blockState.update(false, false);
 
                     TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
 
                     if (te != null) {
-                        NBTTagCompound ntc = this.getTemplateBlocks()[x][y][z].getData();
+                        NBTTagCompound ntc = getTemplateBlocks()[x][y][z].getData();
                         ntc.setInt("x", locX);
                         ntc.setInt("y", locY);
                         ntc.setInt("z", locZ);
@@ -136,6 +179,51 @@ public class Template {
                     }
                 }
             }
+        }
+
+        // Place blocks that need other blocks to stay on their position.
+        for (Map.Entry pair : toPlaceLast.entrySet()) {
+            Point p = (Point) pair.getKey();
+            TemplateBlock block = (TemplateBlock) pair.getValue();
+            Block b = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+
+            Block below = b.getRelative(BlockFace.DOWN);
+            Material belowMaterial = below.getType();
+            byte metadata = below.getState().getData().getData();
+            NBTTagCompound ntc = new NBTTagCompound();
+            TileEntity te = w.getHandle().getTileEntity(
+                    new BlockPosition(below.getX(), below.getY(), below.getZ()));
+            if (te != null) {
+                ntc.a(te.d());
+            }
+
+            below.setType(Material.STONE);
+
+            b.setType(block.getMaterial());
+            BlockState state = b.getState();
+            state.setData(block.getMetadata());
+            state.update();
+
+            below.setType(belowMaterial);
+            below.getState().setData(new MaterialData(belowMaterial, metadata));
+            below.getState().update(false, false);
+        }
+
+        // Place doors last.
+        for (DoorWrapper dw : doors) {
+            Point p = dw.getPoint();
+
+            Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+            Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
+
+            doorBottom.setType(dw.getMaterialData().getItemType());
+            doorTop.setType(dw.getMaterialData().getItemType());
+
+            doorBottom.setData(dw.getBottom());
+            doorTop.setData(dw.getTop());
+
+            doorBottom.getState().update();
+            doorTop.getState().update();
         }
     }
 
@@ -166,15 +254,6 @@ public class Template {
     }
 
     /**
-     * Get point of a marker.
-     * @param name name of the marker
-     * @return Point of the selected marker.
-     */
-    public Point findMarker(String name) {
-        return this.markers.get(name);
-    }
-
-    /**
      * Remove marker.
      * @param name name of the marker
      * @return Point of the selected marker.
@@ -187,11 +266,39 @@ public class Template {
      * @return boundingbox of the template.
      */
     public BoundingBox getBoundingBox() {
-        int xDepth = this.templateBlocks.length;
-        int yDepth = this.templateBlocks[0].length;
-        int zDepth = this.templateBlocks[0][0].length;
+        int xDepth = templateBlocks.length;
+        int yDepth = templateBlocks[0].length;
+        int zDepth = templateBlocks[0][0].length;
 
         return new BoundingBox(0, 0, 0, xDepth - 1, yDepth - 1, zDepth - 1);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Template)) {
+            return false;
+        }
+        Template other = (Template) obj;
+
+        // Template name has to be either null in both or the same in both
+        if (templateName == null ? other.templateName != null : !templateName.equals(other.templateName)) {
+            return false;
+        }
+
+        if (!Arrays.deepEquals(templateBlocks, other.templateBlocks)) {
+            return false;
+        }
+
+        if (!markers.equals(other.markers)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     /**
@@ -345,7 +452,7 @@ public class Template {
         String markers = "";
         markers += ChatColor.RESET;
         markers += ChatColor.BOLD;
-        markers += String.join(", ", FINALMARKERLIST);
+        markers += String.join(", ", POSSIBLE_MARKERS);
         markers += ChatColor.RESET;
         return markers;
     }
