@@ -115,6 +115,27 @@ public class Point {
     }
 
     /**
+     * Calculates the Euclidian distance between this Point and the line that passes through
+     * both Point {@code p1} and Point {@code p2}.
+     * @param p1 The first point
+     * @param p2 The second point
+     * @return The Euclidian distance between this Point and the line
+     */
+    public double distanceFromLine(Point p1, Point p2) {
+        // Heron's formula
+        double a = p1.distanceEuclidian(p2); // p1 => p2
+        double b = p2.distanceEuclidian(this); // p2 => p0
+        double c = this.distanceEuclidian(p1); // p0 => p1
+        double s = (a + b + c) / 2;
+        double t = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+
+        // Line defined by two points
+        // Denominator (rechts van /) = distance between p1 and p2
+        // Numerator = twice the area of the triangle with its vertices at the three points.
+        return 2 * t / a;
+    }
+
+    /**
      * @return A new Point exactly 1 unit towards positive X.
      */
     public Point east() {
