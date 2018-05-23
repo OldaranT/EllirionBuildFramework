@@ -170,22 +170,28 @@ public class TerrainCorrector {
 
         //Execute this method for each block in the todoBlocks
         while ((block = todoBlocks.poll()) != null) {
-            exploreAdjacentNonSolidBlocks(block, hole, todoBlocks);
+            exploreAdjacentNonSolidBlocks(block, hole, todoBlocks, false);
         }
 
         return hole;
     }
 
-    private void exploreAdjacentNonSolidBlocks(Block block, Hole hole, List<Block> todo) {
+    private void exploreAdjacentNonSolidBlocks(Block block, Hole hole, List<Block> todo, boolean onlyUnder) {
 
         final int offset = CONFIG.getInt(areaLimitOffsetConfigPath, 5);
 
-        final int minX = boundingBox.getX1() - offset;
-        final int maxX = boundingBox.getX2() + offset;
-        final int minZ = boundingBox.getZ1() - offset;
-        final int maxZ = boundingBox.getZ2() + offset;
+        int minX = boundingBox.getX1();
+        int maxX = boundingBox.getX2();
+        int minZ = boundingBox.getZ1();
+        int maxZ = boundingBox.getZ2();
         final int maxY = boundingBox.getY1() - 1;
         final int minY = boundingBox.getY1() - CONFIG.getInt(maxHoleDepthConfigPath, 5);
+        if (!onlyUnder) {
+            minX -= offset;
+            maxX += offset;
+            minZ -= offset;
+            maxZ += offset;
+        }
 
         for (BlockFace face : faces) {
             Block b = block.getRelative(face);
@@ -258,15 +264,17 @@ public class TerrainCorrector {
         int minZ = boundingBox.getZ1();
         int maxZ = boundingBox.getZ2();
 
-        int minHoleX = maxX - ((maxX - minX) / 2);
-        int maxHoleX = maxX - ((maxX - minX) / 2);
+        int minHoleX;
+        int maxHoleX;
 
-        int minHoleZ = maxZ - ((maxZ - minZ) / 2);
-        int maxHoleZ = maxZ - ((maxZ - minZ) / 2);
+        int minHoleZ;
+        int maxHoleZ;
 
         List<Block> topBlocks = hole.getTopBlocks();
         List<Block> underBoundingBox = new ArrayList<>();
         List<Block> toChange;
+
+        List<Hole> subHoles = new ArrayList<>();
 
         // find the dimensions under the boundingbox
         for (Block b : topBlocks) {
@@ -274,35 +282,73 @@ public class TerrainCorrector {
             int blockZ = b.getZ();
             if (!(blockX < minX || blockX > maxX || blockZ < minZ || blockZ > maxZ)) {
                 underBoundingBox.add(b);
-                if (blockX < minHoleX) {
-                    minHoleX = blockX;
-                }
-                if (blockX > maxHoleX) {
-                    maxHoleX = blockX;
-                }
-                if (blockZ < minHoleZ) {
-                    minHoleZ = blockZ;
-                }
-                if (blockZ > maxHoleZ) {
-                    maxHoleZ = blockZ;
+                if (subHoles.stream().noneMatch(subHole -> subHole.contains(b))) {
+                    Hole h = new Hole(b);
+                    LinkedList<Block> todo = new LinkedList<>();
+                    todo.add(b);
+                    Block current;
+                    while ((current = todo.poll()) != null) {
+                        exploreAdjacentNonSolidBlocks(current, h, todo, true);
+                    }
+                    subHoles.add(h);
                 }
             }
         }
 
-        // use the correct support placing locations
-        if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ && maxHoleZ >= maxZ)) {
-            // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-            toChange = getBridgeSupportOnZAxis(underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-        } else if (!(minHoleX <= minX && maxHoleX <= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
-            // build bridge style supports for structure from point 1 to point 2 on the X axis.
-            toChange = getBridgeSupportOnXAxis(underBoundingBox, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-        } else {
-            // build building supports under the bounding box.
-            toChange = createSupportsLocationMap();
-        }
+        for (Hole h : subHoles) {
+            List<Block> top = h.getTopBlocks();
+            minHoleX = h.getMinX();
+            maxHoleX = h.getMaxX();
+            minHoleZ = h.getMinZ();
+            maxHoleZ = h.getMaxZ();
 
-        for (Block b : toChange) {
-            b.setType(Material.FENCE);
+            // use the correct support placing locations
+            if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ || maxHoleZ >= maxZ)) {
+                // build bridge style supports for structure from point 1 to point 2 on the Z axis.
+                toChange = getBridgeSupportOnZAxis(top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            } else if (!(minHoleX <= minX || maxHoleX >= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
+                // build bridge style supports for structure from point 1 to point 2 on the X axis.
+                toChange = getBridgeSupportOnXAxis(top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            } else if ((minHoleZ <= minZ && maxHoleX >= maxX && minHoleX <= minX) ||
+                       (minHoleZ <= minZ && !(maxHoleX >= maxX || minHoleX <= minX || maxHoleZ >= maxZ))) {
+                //NORTH TO SOUTH
+                toChange = oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else if ((maxHoleX >= maxX && minHoleZ <= minZ && maxHoleZ >= maxZ) ||
+                       (maxHoleX >= maxX && !(minHoleX <= minX || minHoleZ <= minZ || maxHoleZ >= maxZ))) {
+                //EAST TO WEST
+                toChange = oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else if ((maxHoleZ >= maxZ && minHoleX <= minX && maxHoleX >= maxX) ||
+                       (maxHoleZ >= maxZ && !(minHoleX <= minX || minHoleZ <= minZ || maxHoleX >= maxX))) {
+                // SOUTH TO NORTH
+                toChange = oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else if ((minHoleX <= minX && minHoleZ <= minZ && maxHoleZ >= maxZ) ||
+                       (minHoleX <= minX && !(maxHoleX >= maxX || minHoleZ <= minZ || maxHoleZ >= maxZ))) {
+                // WEST TO EAST
+                toChange = oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else if ((minHoleZ <= minZ && maxHoleX >= maxX) && !(minHoleX <= minX || maxHoleZ >= maxZ)) {
+                // NORTH EAST TO SOUTH WEST
+                toChange = cornerSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else if ((maxHoleZ >= maxZ && maxHoleX >= maxX) && !(minHoleX <= minX || minHoleZ <= minZ)) {
+                // SOUTH EAST TO NORTH WEST
+                toChange = cornerSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else if ((maxHoleZ >= maxZ && minHoleX <= minX) && !(maxHoleX >= maxX || maxHoleZ >= maxZ)) {
+                // SOUTH WEST TO NORTH EAST
+                toChange = cornerSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else if ((minHoleZ <= minZ && minHoleX <= minX) && !(maxHoleX >= maxX || maxHoleZ >= maxZ)) {
+                // NORTH WEST TO SOUTH EAST
+                toChange = cornerSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+            } else {
+                // build building supports under the bounding box.
+                toChange = createSupportsLocationMap();
+                //            toChange = new ArrayList<>(underBoundingBox);
+            }
+
+            for (Block b : toChange) {
+                b.setType(Material.FENCE);
+            }
+            //            for (Block b : underBoundingBox) {
+            //                b.setType(Material.WOOD);
+            //            }
         }
     }
 
@@ -352,7 +398,7 @@ public class TerrainCorrector {
         List<Block> toChange = new ArrayList<>(underBoundingBox);
 
         int maxDepth = maxHoleX - holeCentreX;
-        
+
         for (int z = minHoleZ; z <= maxHoleZ; z++) {
             for (int i = 0; i <= maxDepth; i++) {
                 toChange.addAll(blocksToReplace(holeCentreX + i, y, z, i, underBoundingBox));
@@ -366,6 +412,9 @@ public class TerrainCorrector {
         List<Block> toChange = new ArrayList<>();
         Block b = world.getBlockAt(x, y, z);
         if (underBB.contains(b)) {
+            if (!toChange.contains(b)) {
+                toChange.add(b);
+            }
             toChange.addAll(getBlocksBelow(b, depth));
         }
         return toChange;
@@ -433,7 +482,6 @@ public class TerrainCorrector {
     }
 
     private Block getRelativeBlock(int dir, Block block) {
-        World world = block.getWorld();
         switch (dir) {
             case 0:
                 // NORTH
@@ -453,6 +501,131 @@ public class TerrainCorrector {
             case 5:
                 // DOWN
                 return world.getBlockAt(block.getLocation().add(0, -1, 0));
+            default:
+                throw new IndexOutOfBoundsException();
+        }
+    }
+
+    private List<Block> oneSidedSupportMap(int dir, int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ,
+                                           List<Block> underBoundingBox) {
+        List<Block> toChange = new ArrayList<>();
+        int y = boundingBox.getY1() - 1;
+        int maxDepth;
+
+        switch (dir) {
+            case 0:
+                //NORTH TO SOUTH
+                maxDepth = maxHoleZ - minHoleZ;
+                for (int x = minHoleX; x <= maxHoleX; x++) {
+                    if ((Math.abs(x) % 2) == 0) {
+                        for (int i = 0; i <= maxDepth; i++) {
+                            toChange.addAll(blocksToReplace(x, y, minHoleZ + i, i, underBoundingBox));
+                        }
+                    }
+                }
+                return toChange;
+            case 1:
+                //EAST TO WEST
+                maxDepth = maxHoleX - minHoleX;
+                for (int z = minHoleZ; z <= maxHoleZ; z++) {
+                    if ((Math.abs(z) % 2) == 0) {
+                        for (int i = 0; i <= maxDepth; i++) {
+                            toChange.addAll(blocksToReplace(maxHoleX - i, y, z, i, underBoundingBox));
+                        }
+                    }
+                }
+                return toChange;
+            case 2:
+                //SOUTH TO NORTH
+                maxDepth = maxHoleZ - minHoleZ;
+                for (int x = minHoleX; x <= maxHoleX; x++) {
+                    if ((Math.abs(x) % 2) == 0) {
+                        for (int i = 0; i <= maxDepth; i++) {
+                            toChange.addAll(blocksToReplace(x, y, maxHoleZ - i, i, underBoundingBox));
+                        }
+                    }
+                }
+                return toChange;
+            case 3:
+                //WEST TO EAST
+                maxDepth = maxHoleX - minHoleX;
+                for (int z = minHoleZ; z <= maxHoleZ; z++) {
+                    if ((Math.abs(z) % 2) == 0) {
+                        for (int i = 0; i <= maxDepth; i++) {
+                            toChange.addAll(blocksToReplace(minHoleX + i, y, z, i, underBoundingBox));
+                        }
+                    }
+                }
+                return toChange;
+            default:
+                throw new IndexOutOfBoundsException();
+        }
+    }
+
+    @SuppressWarnings("Duplicates")
+    private List<Block> cornerSupportMap(int dir, int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ,
+                                         List<Block> underBoundingBox) {
+        List<Block> toChange = new ArrayList<>();
+        int y = boundingBox.getY1() - 1;
+        int yOffset = 0;
+        int widthX = maxHoleX - minHoleX;
+        int widthZ = maxHoleZ - minHoleZ;
+        int maxDepth = widthX > widthZ ? widthX : widthZ;
+
+        switch (dir) {
+            case 0:
+                // NORTH EAST TO SOUTH WEST
+                for (int i = 0; i <= maxDepth; i++) {
+                    for (int x = maxHoleX - i; x >= minHoleX; x--) {
+                        for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
+                            Block b = world.getBlockAt(x, y - i, z);
+                            if ((!b.isEmpty() && !b.isLiquid())) {
+                                continue;
+                            }
+                            toChange.add(b);
+                        }
+                    }
+                }
+                return toChange;
+            case 1:
+                for (int i = 0; i <= maxDepth; i++) {
+                    for (int x = maxHoleX - i; x >= minHoleX; x--) {
+                        for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
+                            Block b = world.getBlockAt(x, y - i, z);
+                            if ((!b.isEmpty() && !b.isLiquid())) {
+                                continue;
+                            }
+                            toChange.add(b);
+                        }
+                    }
+                }
+                return toChange;
+            case 2:
+                for (int i = 0; i <= maxDepth; i++) {
+                    for (int x = minHoleX + i; x <= maxHoleX; x++) {
+                        for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
+                            Block b = world.getBlockAt(x, y - i, z);
+                            if ((!b.isEmpty() && !b.isLiquid())) {
+                                continue;
+                            }
+                            toChange.add(b);
+                        }
+                    }
+                }
+                return toChange;
+            case 3:
+                for (int i = 0; i <= maxDepth; i++) {
+                    for (int x = minHoleX + i; x <= maxHoleX; x++) {
+                        for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
+                            Block b = world.getBlockAt(x, y - i, z);
+                            if ((!b.isEmpty() && !b.isLiquid())) {
+                                continue;
+                            }
+                            toChange.add(b);
+                        }
+                    }
+                }
+                return toChange;
             default:
                 throw new IndexOutOfBoundsException();
         }
