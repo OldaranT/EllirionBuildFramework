@@ -1,20 +1,21 @@
 package com.ellirion.buildframework;
 
-import com.ellirion.buildframework.pathbuilder.command.CommandCreatePath;
-import com.ellirion.buildframework.pathbuilder.command.CommandPathBuilder;
-import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
-import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
-import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
-import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
-import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.pathbuilder.command.CommandCreatePath;
+import com.ellirion.buildframework.pathbuilder.command.CommandPathBuilder;
+import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
+import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
+import com.ellirion.buildframework.util.EventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +53,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
         getCommand("CreatePath").setExecutor(new CommandCreatePath());
         getCommand("PathBuilder").setExecutor(new CommandPathBuilder());
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createFilePaths();
         createBlockValueConfig();
