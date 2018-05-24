@@ -28,6 +28,9 @@ public class AStar {
     private double vFlying;
     private double vExp;
 
+    private double gHoriz;
+    private double gVert;
+
     private double fGoalFactor;
     private double fGoalExp;
     private double fLine;
@@ -58,20 +61,29 @@ public class AStar {
         // Load the config
         PathingSession session = PathingManager.getSession(player);
         NBTTagCompound config = session.getConfig();
+
         vStep = config.getDouble("v-step");
         vGrounded = config.getDouble("v-grounded");
         vFlying = config.getDouble("v-flying");
         vExp = config.getDouble("v-exp");
+
+        gHoriz = config.getDouble("g-horiz");
+        gVert = config.getDouble("g-vert");
+
         fGoalFactor = config.getDouble("f-goal-fac");
         fGoalExp = config.getDouble("f-goal-exp");
         fLine = config.getDouble("f-line");
+
         turnShortThreshold = config.getInt("turn-short-threshold");
         turnShortLength = config.getInt("turn-short-length");
+
         turnLongThreshold = config.getInt("turn-long-threshold");
         turnLongLength = config.getInt("turn-long-length");
+
         pathWidth = config.getInt("path-width");
         pathHeight = config.getInt("path-height");
         pathLength = config.getInt("path-length");
+
         visualEnable = config.getBoolean("visual-enable");
         visualThrottle = config.getInt("visual-throttle");
 
@@ -144,7 +156,8 @@ public class AStar {
                     }
 
                     // Determine the gScore
-                    double gScore = cur.getGScore() + cur.getData().distanceEuclidian(adjacent.getData());
+                    double gScore = cur.getGScore() + gHoriz +
+                                    ((cur.getData().getY() != adjacent.getData().getY()) ? gVert : 0);
 
                     // Determine the vScore component
                     double vScore = calculateVScore(cur, adjacent);
@@ -167,7 +180,7 @@ public class AStar {
 
                 // Send updates to client
                 haveVisited++;
-                if (visualEnable && haveVisited % 50 == 0) {
+                if (visualEnable) {
                     final List<PathingVertex> sendNowSeen = nowSeen;
                     nowSeen = new ArrayList<>();
 

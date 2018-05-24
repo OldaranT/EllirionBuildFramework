@@ -36,6 +36,10 @@ public class PathingSession {
         config.setDouble("v-grounded", 0.5);
         config.setDouble("v-flying", 2.5);
         config.setDouble("v-exp", 1.3);
+
+        config.setDouble("g-horiz", 1.0);
+        config.setDouble("g-vert", Math.sqrt(2) - 1);
+
         config.setDouble("f-goal-fac", 2);
         config.setDouble("f-goal-exp", 1.1);
         config.setDouble("f-line", 0);
