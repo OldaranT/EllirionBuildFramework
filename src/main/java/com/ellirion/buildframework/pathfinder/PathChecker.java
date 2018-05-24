@@ -105,7 +105,6 @@ public class PathChecker {
     public boolean isAreaClear(PathingVertex vCur, PathingVertex vNext) {
         Point pCur = vCur.getData();
         Point pNext = vNext.getData();
-        Direction dCur;
         Direction dNext = Direction.getDirectionTo(pCur, pNext);
 
         // We should check if the considered point is clear itself.
@@ -136,8 +135,7 @@ public class PathChecker {
                 remaining.add(new Tuple<>(dTuple.apply(pTuple), dTuple));
             } else {
                 // If we find a wall, the vNext is also grounded.
-                pi = getPointInfo(pNext);
-                pi.grounded = true;
+                getPointInfo(pNext).grounded = true;
             }
 
             // Stop checking if we have sufficient space
@@ -303,13 +301,15 @@ public class PathChecker {
     }
 
     private boolean checkClear(Point p) {
+        Block b;
         Material m;
 
         // Check for air above the ground
         for (int i = 0; i < height - 1; i++) {
             p = p.up();
-            m = world.getBlockAt(p.toLocation(world)).getType();
-            if (checkSolid(m)) {
+            b = world.getBlockAt(p.toLocation(world));
+            m = b.getType();
+            if (checkSolid(m) && !b.isLiquid()) {
                 return false;
             }
         }
