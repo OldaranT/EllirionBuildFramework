@@ -8,10 +8,14 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BlockChange;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathbuilder.BuilderManager;
 import com.ellirion.buildframework.pathbuilder.model.PathBuilder;
 import com.ellirion.buildframework.pathbuilder.util.BresenhamLine3D;
+import com.ellirion.buildframework.pathfinder.AStar;
+import com.ellirion.buildframework.pathfinder.PathingManager;
+import com.ellirion.buildframework.pathfinder.model.PathingSession;
 import com.ellirion.buildframework.util.StringHelper;
 
 import java.util.ArrayList;
@@ -71,6 +75,15 @@ public class CommandPathBuilder implements CommandExecutor {
                 break;
             case "CLEARPATH":
                 clearPath();
+                break;
+            case "CREATEFROMPATHFINDER":
+                createPathFromPathFinder(player, strings);
+                break;
+            case "UNDO":
+                BuilderManager.undo();
+                break;
+            case "REDO":
+                BuilderManager.redo();
                 break;
             default:
                 player.sendMessage(ChatColor.DARK_RED +
@@ -248,5 +261,40 @@ public class CommandPathBuilder implements CommandExecutor {
 
     private void clearPath() {
         path = new ArrayList<>();
+    }
+
+    private void createPathFromPathFinder(Player player, String[] args) {
+        // Get the intended start and goal
+        Point start, goal;
+
+        if (args.length > 1) {
+            int size = Integer.parseInt(args[1]) - 1;
+            start = new Point(player.getLocation()).floor();
+            goal = new Point(start.getX() + size, start.getY() + size, start.getZ() + size);
+        } else {
+            PathingSession session = PathingManager.getSession(player);
+            start = session.getPoint1();
+            goal = session.getPoint2();
+            if (start == null) {
+                player.sendMessage(ChatColor.RED + "No first point selected");
+                return;
+            }
+            if (goal == null) {
+                player.sendMessage(ChatColor.RED + "No second point selected");
+                return;
+            }
+        }
+
+        // Heap
+        AStar.searchAsync(player, start, goal).consumeSync((path) -> {
+            // Show the new path
+            PathingManager.getSession(player).setPath(path);
+
+            PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
+            List<BlockChange> pathh = builder.build(path, player.getWorld());
+            BuilderManager.placePath(pathh);
+        }).consumeFailSync((ex) ->
+                                   player.sendMessage("Heap failed: " + ex.getMessage())
+        );
     }
 }

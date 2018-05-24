@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class PathingManager {
 
-    private static HashMap<Player, PathingSession> sessions;
+    private static final HashMap<Player, PathingSession> SESSIONS;
 
     /**
      * Gets the path for the given player.
@@ -15,13 +15,13 @@ public class PathingManager {
      * @return The path
      */
     public static PathingSession getSession(Player p) {
-        if (!sessions.containsKey(p)) {
-            sessions.put(p, new PathingSession(p));
+        if (!SESSIONS.containsKey(p)) {
+            SESSIONS.put(p, new PathingSession(p));
         }
-        return sessions.get(p);
+        return SESSIONS.get(p);
     }
 
     static {
-        sessions = new HashMap<>();
+        SESSIONS = new HashMap<>();
     }
 }

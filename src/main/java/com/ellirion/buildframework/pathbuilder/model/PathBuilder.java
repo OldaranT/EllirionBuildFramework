@@ -12,6 +12,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.BlockChange;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathbuilder.util.BresenhamLine3D;
 import com.ellirion.buildframework.util.MinecraftHelper;
@@ -86,9 +87,12 @@ public class PathBuilder {
      * Build a path along the given list of points.
      * @param points The list of points to generate a path along
      * @param w The world in which to place the path
+     * @return the list of BlockChanges for the created path
      */
-    public void build(List<Point> points, World w) {
+    public List<BlockChange> build(List<Point> points, World w) {
         int count = 0;
+
+        List<BlockChange> blockChanges = new LinkedList<>();
 
         for (Point p : points) {
             //Get all 'locations' around the point within radius r
@@ -102,8 +106,10 @@ public class PathBuilder {
                 for (Map.Entry pair2 : weightedBlocks.entrySet()) {
                     if (random < ((double) pair2.getValue())) {
                         PathMaterial pm = (PathMaterial) pair2.getKey();
-                        b.setType(pm.getMat());
-                        b.setData(pm.getData());
+                        blockChanges.add(
+                                new BlockChange(b.getType(), b.getData(), pm.getMat(), pm.getData(), b.getLocation()));
+                        //                        b.setType(pm.getMat());
+                        //                        b.setData(pm.getData());
                         break;
                     }
                 }
@@ -117,14 +123,18 @@ public class PathBuilder {
                     continue;
                 }
                 for (Point supportPoint : getPoints(p.down())) {
-                    for (Point anchorPoint : anchorPoints) {
-                        BresenhamLine3D.drawLine(supportPoint, anchorPoint, w, supportType);
+                    if (w.getBlockAt(supportPoint.toLocation(w)).getType() == Material.AIR) {
+                        for (Point anchorPoint : anchorPoints) {
+                            blockChanges.addAll(BresenhamLine3D.drawLine(supportPoint, anchorPoint, w, supportType));
+                        }
                     }
                 }
             }
 
             count++;
         }
+
+        return blockChanges;
     }
 
     private List<Point> getPoints(Point p) {
@@ -296,7 +306,7 @@ public class PathBuilder {
         //check 1 block in each cardinal direction, and get an anchorpoint within 2 blocks up/down
         for (Point p : anchors) {
             Point a = checkUpDown(p, w, 2);
-            if (a != null && isBlockAnchored(a.toLocation(w))) {
+            if (a != null && isBlockAnchored(a.toLocation(w)) && a.getBlockY() < point.getBlockY()) {
                 anchorPoints.add(a);
             }
         }

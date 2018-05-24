@@ -2,7 +2,12 @@ package com.ellirion.buildframework.pathbuilder.util;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import com.ellirion.buildframework.model.BlockChange;
 import com.ellirion.buildframework.model.Point;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class BresenhamLine3D {
 
@@ -12,8 +17,9 @@ public class BresenhamLine3D {
      * @param end end point of the line
      * @param world the world to draw the line in
      * @param material material to draw the line out of
+     * @return list of block changes
      */
-    public static void drawLine(Point start, Point end, World world, Material material) {
+    public static List<BlockChange> drawLine(Point start, Point end, World world, Material material) {
         // Bresenham3D
         //
         // A slightly modified version of the source found at
@@ -33,6 +39,8 @@ public class BresenhamLine3D {
         //
         // line3d uses Bresenham's algorithm to generate the 3 dimensional points on a
         // line from (x1, y1, z1) to (x2, y2, z2)
+
+        List<BlockChange> blockChanges = new LinkedList<>();
 
         int i, dx, dy, dz, l, m, n, xInc, yInc, zInc, err1, err2, dx2, dy2, dz2;
         int[] point = new int[3];
@@ -57,7 +65,9 @@ public class BresenhamLine3D {
             err1 = dy2 - l;
             err2 = dz2 - l;
             for (i = 0; i < l; i++) {
-                world.getBlockAt(point[0], point[1], point[2]).setType(material);
+                Block b = world.getBlockAt(point[0], point[1], point[2]);
+                blockChanges.add(new BlockChange(b.getType(), b.getData(), material, (byte) 0, b.getLocation()));
+                //                world.getBlockAt(point[0], point[1], point[2]).setType(material);
                 if (err1 > 0) {
                     point[1] += yInc;
                     err1 -= dx2;
@@ -68,14 +78,18 @@ public class BresenhamLine3D {
                 }
                 err1 += dy2;
                 err2 += dz2;
-                world.getBlockAt(point[0], point[1], point[2]).setType(material);
+                b = world.getBlockAt(point[0], point[1], point[2]);
+                blockChanges.add(new BlockChange(b.getType(), b.getData(), material, (byte) 0, b.getLocation()));
+                //                world.getBlockAt(point[0], point[1], point[2]).setType(material);
                 point[0] += xInc;
             }
         } else if ((m >= l) && (m >= n)) {
             err1 = dx2 - m;
             err2 = dz2 - m;
             for (i = 0; i < m; i++) {
-                world.getBlockAt(point[0], point[1], point[2]).setType(material);
+                Block b = world.getBlockAt(point[0], point[1], point[2]);
+                blockChanges.add(new BlockChange(b.getType(), b.getData(), material, (byte) 0, b.getLocation()));
+                //                world.getBlockAt(point[0], point[1], point[2]).setType(material);
                 if (err1 > 0) {
                     point[0] += xInc;
                     err1 -= dy2;
@@ -86,14 +100,18 @@ public class BresenhamLine3D {
                 }
                 err1 += dx2;
                 err2 += dz2;
-                world.getBlockAt(point[0], point[1], point[2]).setType(material);
+                b = world.getBlockAt(point[0], point[1], point[2]);
+                blockChanges.add(new BlockChange(b.getType(), b.getData(), material, (byte) 0, b.getLocation()));
+                //                world.getBlockAt(point[0], point[1], point[2]).setType(material);
                 point[1] += yInc;
             }
         } else {
             err1 = dy2 - n;
             err2 = dx2 - n;
             for (i = 0; i < n; i++) {
-                world.getBlockAt(point[0], point[1], point[2]).setType(material);
+                Block b = world.getBlockAt(point[0], point[1], point[2]);
+                blockChanges.add(new BlockChange(b.getType(), b.getData(), material, (byte) 0, b.getLocation()));
+                //                world.getBlockAt(point[0], point[1], point[2]).setType(material);
                 if (err1 > 0) {
                     point[1] += yInc;
                     err1 -= dz2;
@@ -104,10 +122,16 @@ public class BresenhamLine3D {
                 }
                 err1 += dy2;
                 err2 += dx2;
-                world.getBlockAt(point[0], point[1], point[2]).setType(material);
+                b = world.getBlockAt(point[0], point[1], point[2]);
+                blockChanges.add(new BlockChange(b.getType(), b.getData(), material, (byte) 0, b.getLocation()));
+                //                world.getBlockAt(point[0], point[1], point[2]).setType(material);
                 point[2] += zInc;
             }
         }
-        world.getBlockAt(point[0], point[1], point[2]).setType(material);
+        Block b = world.getBlockAt(point[0], point[1], point[2]);
+        blockChanges.add(new BlockChange(b.getType(), b.getData(), material, (byte) 0, b.getLocation()));
+        //        world.getBlockAt(point[0], point[1], point[2]).setType(material);
+
+        return blockChanges;
     }
 }

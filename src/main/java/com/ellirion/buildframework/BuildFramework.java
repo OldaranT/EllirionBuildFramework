@@ -10,6 +10,7 @@ import com.ellirion.buildframework.pathfinder.command.CommandFindPath;
 import com.ellirion.buildframework.pathfinder.command.CommandHidePath;
 import com.ellirion.buildframework.pathfinder.command.CommandHideVisited;
 import com.ellirion.buildframework.pathfinder.command.CommandPathConfig;
+import com.ellirion.buildframework.pathfinder.event.PathingListener;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
@@ -65,6 +66,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("HideVisited").setExecutor(new CommandHideVisited());
         getCommand("PathConfig").setExecutor(new CommandPathConfig());
         getServer().getPluginManager().registerEvents(new EventListener(), this);
+        getServer().getPluginManager().registerEvents(new PathingListener(), this);
         createConfig();
         createFilePaths();
         createBlockValueConfig();
