@@ -40,8 +40,18 @@ public class PathingSession {
         config.setDouble("f-goal-exp", 1.1);
         config.setDouble("f-line", 0);
 
-        config.setInt("turn-threshold", 1);
-        config.setInt("turn-length", 3);
+        config.setInt("turn-short-threshold", 1);
+        config.setInt("turn-short-length", 3);
+
+        config.setInt("turn-long-threshold", 2);
+        config.setInt("turn-long-length", 7);
+
+        config.setInt("path-width", 3);
+        config.setInt("path-height", 4);
+        config.setInt("path-length", 2);
+
+        config.setBoolean("visual-enable", false);
+        config.setInt("visual-throttle", 1000);
     }
 
     /**
@@ -70,8 +80,7 @@ public class PathingSession {
         for (Point point : path) {
             Location l = point.toLocation(world);
             player.sendBlockChange(l, Material.CONCRETE,
-                    world.getBlockAt(l).getType().isSolid() ? (byte) 1 : (byte) 5);
+                                   world.getBlockAt(l).getType().isSolid() ? (byte) 1 : (byte) 5);
         }
     }
-
 }

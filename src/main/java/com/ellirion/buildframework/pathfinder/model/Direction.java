@@ -1,6 +1,7 @@
-package com.ellirion.buildframework.model;
+package com.ellirion.buildframework.pathfinder.model;
 
 import lombok.Getter;
+import com.ellirion.buildframework.model.Point;
 
 public enum Direction {
     NORTH(0, -1),
@@ -8,6 +9,7 @@ public enum Direction {
     SOUTH(0, 1),
     WEST(-1, 0),
     NONE(0, 0);
+
     static {
         NORTH.left = Direction.WEST;
         NORTH.right = Direction.EAST;
@@ -42,7 +44,6 @@ public enum Direction {
         this.dx = dx;
         this.dz = dz;
     }
-
 
     /**
      * Applies the Direction to the given point.

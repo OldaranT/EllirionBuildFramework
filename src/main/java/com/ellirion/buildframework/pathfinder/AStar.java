@@ -1,6 +1,5 @@
 package com.ellirion.buildframework.pathfinder;
 
-import com.ellirion.buildframework.pathfinder.model.PathingSession;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -8,6 +7,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.model.PathingGraph;
+import com.ellirion.buildframework.pathfinder.model.PathingSession;
 import com.ellirion.buildframework.pathfinder.model.PathingVertex;
 import com.ellirion.buildframework.util.Promise;
 
@@ -23,22 +23,13 @@ public class AStar {
      * @param goal The goal point
      * @return A Promise that is resolved or rejected depending on whether a path is found.
      */
+    // CHECKSTYLE.OFF: MethodLength
     public static Promise<List<Point>> searchAsync(Player player, Point start, Point goal) {
-
         // - lijst met blokken die sinds altijd gevisit zijn (oranje)
         // - lijst met blokken die gevisit zijn deze tick (groen)
-
         return new Promise<>((finisher) -> {
 
             long before = System.currentTimeMillis();
-
-            PathChecker checker = new PathChecker(player.getWorld());
-            PathingGraph graph = new PathingGraph();
-            PathingVertex startVert = graph.find(start);
-            startVert.setGScore(0d);
-            startVert.setFScore(start.distanceEuclidian(goal));
-
-            PathingVertex cur;
 
             // Load the config
             PathingSession session = PathingManager.getSession(player);
@@ -50,8 +41,27 @@ public class AStar {
             double fGoalFactor = config.getDouble("f-goal-fac");
             double fGoalExp = config.getDouble("f-goal-exp");
             double fLine = config.getDouble("f-line");
-            int turnThreshold = config.getInt("turn-threshold");
-            int turnLength = config.getInt("turn-length");
+            int turnShortThreshold = config.getInt("turn-short-threshold");
+            int turnShortLength = config.getInt("turn-short-length");
+            int turnLongThreshold = config.getInt("turn-long-threshold");
+            int turnLongLength = config.getInt("turn-long-length");
+            int pathWidth = config.getInt("path-width");
+            int pathHeight = config.getInt("path-height");
+            int pathLength = config.getInt("path-length");
+            boolean visualEnable = config.getBoolean("visual-enable");
+            int visualThrottle = config.getInt("visual-throttle");
+
+            // Initialize our instances
+            PathChecker checker = new PathChecker(player.getWorld(),
+                                                  pathWidth, pathHeight, pathLength,
+                                                  new int[] {turnShortThreshold, turnLongThreshold},
+                                                  new int[] {turnShortLength, turnLongLength});
+            PathingGraph graph = new PathingGraph();
+            PathingVertex startVert = graph.find(start);
+            startVert.setGScore(0d);
+            startVert.setFScore(start.distanceEuclidian(goal));
+
+            PathingVertex cur;
 
             // Async client-side updates
             List<PathingVertex> nowSeen = new ArrayList<>();
@@ -69,7 +79,9 @@ public class AStar {
                         path.add(cur.getData());
                         cur = cur.getCameFrom();
                     }
-                    sendUpdates(player, nowSeen);
+                    if (visualEnable) {
+                        sendUpdates(player, nowSeen);
+                    }
                     finisher.resolve(path);
                     long after = System.currentTimeMillis() - before;
                     player.sendMessage("Finished in " + after + "ms");
@@ -78,7 +90,9 @@ public class AStar {
 
                 // Move from openSet to closedSet
                 cur.setVisited(true);
-                nowSeen.add(cur);
+                if (visualEnable) {
+                    nowSeen.add(cur);
+                }
 
                 // Ignore if it cannot realistically be walked over
                 if (!checker.isClear(cur)) {
@@ -88,18 +102,25 @@ public class AStar {
                 // Check all adjacent vertices
                 for (PathingVertex adjacent : cur.getAdjacents()) {
 
-                    // Ignore this adjacent point if we've visited it before`
+                    // Ignore this adjacent point if we've visited it before
                     if (adjacent.isVisited()) {
                         continue;
                     }
 
-                    // If it is not visitable, ignore
+                    // If we are not allowed to change height from here, and the vertex
+                    // changes height at all, ignore.
                     if (!checker.isVisitable(cur, adjacent)) {
                         continue;
                     }
 
-                    // If we can't make this turn, ignore
-                    if (!checker.isTurnRadiusPermitted(cur, adjacent, turnThreshold, turnLength)) {
+                    // If we can't make this turn, ignore.
+                    if (!checker.isTurnRadiusPermitted(cur, adjacent)) {
+                        continue;
+                    }
+
+                    // Lastly, check if the area surrounding the adjacent
+                    // is clear of any obstacles for a path to be generated.
+                    if (!checker.isAreaClear(cur, adjacent)) {
                         continue;
                     }
 
@@ -125,7 +146,8 @@ public class AStar {
                         continue; // This is not a better path.
                     }
 
-                    // Determine the fScore, starting from the gScore
+                    // Determine the fScore, starting from the gScore.
+                    // The gScore is the actual determined score, and fScore is the heuristic.
                     double fScore = gScore;
 
                     // Add pow(distance from goal, fGoalExp) * fGoalFactor
@@ -143,7 +165,7 @@ public class AStar {
 
                 // Send updates to client
                 haveVisited++;
-                if (haveVisited % 50 == 0) {
+                if (visualEnable && haveVisited % 50 == 0) {
                     final List<PathingVertex> sendNowSeen = nowSeen;
                     nowSeen = new ArrayList<>();
 
@@ -151,21 +173,22 @@ public class AStar {
                 }
 
                 // Update timing
-                wantVisited = (System.currentTimeMillis() - startTime);
+                wantVisited = visualThrottle * (System.currentTimeMillis() - startTime) / 1000;
 
                 // Keep our pace correct (throttle)
-                while (wantVisited < haveVisited) {
+                while (visualEnable && wantVisited < haveVisited) {
                     try {
                         Thread.sleep(1);
                     } catch (Exception ex) {
                     }
-                    wantVisited = System.currentTimeMillis() - startTime;
+                    wantVisited = visualThrottle * (System.currentTimeMillis() - startTime) / 1000;
                 }
             }
 
             finisher.reject(new Exception("No path found"));
         }, true);
     }
+    // CHECKSTYLE.ON: MethodLength
 
     private static void sendUpdates(Player player, List<PathingVertex> nowSeen) {
         // Send the update!
@@ -195,5 +218,4 @@ public class AStar {
             subfinisher.resolve(null);
         }, false);
     }
-
 }

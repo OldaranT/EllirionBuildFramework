@@ -1,14 +1,18 @@
 package com.ellirion.buildframework.pathfinder;
 
-import com.ellirion.buildframework.model.Direction;
-import com.ellirion.buildframework.model.DirectionChange;
 import lombok.Getter;
+import net.minecraft.server.v1_12_R1.Tuple;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.pathfinder.model.Direction;
+import com.ellirion.buildframework.pathfinder.model.DirectionChange;
 import com.ellirion.buildframework.pathfinder.model.PathingVertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,13 +21,37 @@ public class PathChecker {
     private World world;
     private Map<Point, PointInfo> points;
 
+    private int width;
+    private int height;
+    private int length;
+
+    private int[] turnThresholds;
+    private int[] turnLengths;
+
     /**
      * Construct a new PathChecker that uses World {@code world}.
      * @param world The world to use for checking
+     * @param width The width of the path
+     * @param height The height of the path
+     * @param length The length of the path before permitting Y-changes
+     * @param turnThresholds The thresholds for the turn checker
+     * @param turnLengths The lenghts for the turn checker
      */
-    public PathChecker(final World world) {
+    public PathChecker(final World world, final int width, final int height, final int length,
+                       final int[] turnThresholds, final int[] turnLengths) {
         this.world = world;
         this.points = new HashMap<>();
+
+        this.width = width;
+        this.height = height;
+        this.length = length;
+
+        this.turnThresholds = turnThresholds;
+        this.turnLengths = turnLengths;
+
+        if (turnThresholds.length != turnLengths.length) {
+            throw new IllegalArgumentException("Array lengths don't match");
+        }
     }
 
     /**
@@ -32,53 +60,25 @@ public class PathChecker {
      * @return Whether it is walkable
      */
     public boolean isWalkable(PathingVertex v) {
-        Point p = v.getData();
-        PointInfo pi = getPointInfo(p);
-
-        // Check for ground presence
-        if (!pi.solid) {
-            return false;
-        }
-        return true;
+        return getPointInfo(v.getData()).solid;
     }
 
     /**
-     * Checks whether the given vertex is clear.
-     * @param v The vertex
-     * @return Whether it is clear or not
+     * Checks whether PathingVertex {@code v} has sufficient air above it.
+     * @param v The PathingVertex to check
+     * @return Whether it is clear
      */
     public boolean isClear(PathingVertex v) {
-        Point p = v.getData();
-        PointInfo pi;
-
-        // Check for air above the ground for 3 tiles
-        for (int i = 0; i < 3; i++) {
-            p = p.up();
-            pi = getPointInfo(p);
-            if (pi.solid) {
-                return false;
-            }
-        }
-        return true;
+        return getPointInfo(v.getData()).clear;
     }
 
     /**
-     * Checks whether the given vertex is grounded.
-     * @param v The vertex
-     * @return Whether it is grounded
+     * Checks whether PathingVertex {@code v} has any solid adjacents.
+     * @param v The PathingVertex to check
+     * @return Whether there are any solid adjacents
      */
     public boolean isGrounded(PathingVertex v) {
-        Point p1 = v.getData();
-        Point p2;
-        PointInfo pi;
-        for (Direction d : Direction.values()) {
-            p2 = d.apply(p1);
-            pi = getPointInfo(p2);
-            if (pi.solid) {
-                return true;
-            }
-        }
-        return false;
+        return getPointInfo(v.getData()).grounded;
     }
 
     /**
@@ -98,40 +98,150 @@ public class PathChecker {
 
     /**
      * Whether the area around this Vertex is clear enough for a path.
-     * @param va The Vertex to check
-     * @param vb The Vertex to check
-     * @param width The width of the path
+     * @param vCur The current Vertex
+     * @param vNext The next Vertex
      * @return Whether the area is clear
      */
-    public boolean isAreaClear(PathingVertex va, PathingVertex vb, int width) {
-        //List<PointInfo> area = getArea(va, vb);
-        return true;
+    public boolean isAreaClear(PathingVertex vCur, PathingVertex vNext) {
+        Point pCur = vCur.getData();
+        Point pNext = vNext.getData();
+        Direction dCur;
+        Direction dNext = Direction.getDirectionTo(pCur, pNext);
+
+        // We should check if the considered point is clear itself.
+        PointInfo pi = getPointInfo(pNext);
+        if (!pi.clear) {
+            return false;
+        }
+
+        // Seek left and right until a point is not clear or we have enough clear points.
+        List<Point> clear = new ArrayList<>(width);
+        clear.add(pNext); // We already checked this.
+
+        LinkedList<Tuple<Point, Direction>> remaining = new LinkedList<>();
+        remaining.add(new Tuple<>(dNext.getLeft().apply(pNext), dNext.getLeft()));
+        remaining.add(new Tuple<>(dNext.getRight().apply(pNext), dNext.getRight()));
+
+        Point pTuple;
+        Direction dTuple;
+        while (!remaining.isEmpty()) {
+            Tuple<Point, Direction> cur = remaining.removeFirst();
+            pTuple = cur.a();
+            dTuple = cur.b();
+            pi = getPointInfo(pTuple);
+
+            // If this tile is not clear, it can not be part of our 'tunnel'.
+            if (pi.clear) {
+                clear.add(pTuple);
+                remaining.add(new Tuple<>(dTuple.apply(pTuple), dTuple));
+            } else {
+                // If we find a wall, the vNext is also grounded.
+                pi = getPointInfo(pNext);
+                pi.grounded = true;
+            }
+
+            // Stop checking if we have sufficient space
+            if (clear.size() > width) {
+                break;
+            }
+        }
+
+        // If there are not enough clear blocks, we failed.
+        if (clear.size() < width) {
+            return false;
+        }
+
+        // If this is not a corner, no further testing is necessary. The area is clear.
+        PathingVertex vPrev = vCur.getCameFrom();
+        if (vPrev == null) {
+            return true;
+        }
+
+        // Check the corner area if applicable
+        return isCornerAreaClear(vPrev.getData(), pCur, pNext);
     }
 
-    private List<PointInfo> getArea(PathingVertex va, PathingVertex vb) {
-        List<PointInfo> points = new ArrayList<>();
+    private boolean isCornerAreaClear(Point pFrom, Point pCur, Point pNext) {
 
-        return points;
+        // If we didn't come from anywhere (start of path), then this isn't a corner.
+        if (pFrom == null) {
+            return true;
+        }
+
+        Direction dCur = Direction.getDirectionTo(pFrom, pCur);
+        Direction dNext = Direction.getDirectionTo(pCur, pNext);
+
+        // If there is no change in direction, this isn't even a corner.
+        DirectionChange dChange = dCur.getChangeTo(dNext);
+        if (dChange == DirectionChange.NONE) {
+            return true;
+        }
+
+        /* If the direction changed, we're certain there was a turn. Consider the following area:
+         *       OOO??
+         *       OOO??
+         *       OXXOO
+         *       OOXOO
+         *       OOOOO
+         *  Where O = visited (and therefore clear), X = our path and ? is unchecked
+         *  Given dNext (left), we go the *opposite* direction (right) in combination with dCur (forward).
+         *  We use a doubly nested for-loop with (width / 2) iterations to check the remaining area.
+         * */
+
+        // We reverse dNext to go towards the corner (right) instead of the path (left).
+        dNext = dNext.getReverse();
+        int width = this.width / 2;
+
+        // Now we check the corner area. We actually start at (0,0), but we apply the directions
+        // first so we effectively start at (1,1) as intended.
+        Point pRow = pCur, pCol;
+        PointInfo pi;
+        for (int i = 0; i < width; i++) {
+
+            // Move to next row
+            pRow = dCur.apply(pRow);
+
+            // Start the column at the begin of this row
+            pCol = pRow;
+
+            for (int j = 0; j < width; j++) {
+
+                // Move to the next column
+                pCol = dNext.apply(pCol);
+
+                // Check if this tile is clear
+                pi = getPointInfo(pCol);
+                if (!pi.clear) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
      * Checks if moving in the given direction is allowed based on our previous direction.
      * @param vCur The Vertex we are currently at
      * @param vNext The Vertex we want to go to
-     * @param threshold The amount of turns in one direction that may be made
-     * @param length The length during which we should check the threshold
      * @return Whether the turn radius is permitted or not.
      */
-    public boolean isTurnRadiusPermitted(PathingVertex vCur, PathingVertex vNext,
-                                         final int threshold, final int length) {
+    public boolean isTurnRadiusPermitted(PathingVertex vCur, PathingVertex vNext) {
 
         // Get the direction we intend to go
         Direction dCur = Direction.getDirectionTo(vCur.getData(), vNext.getData());
         Direction dNext;
         DirectionChange dChange;
 
+        // Get the maximum length to check for
+        int maxLength = 0;
+        for (int len : turnLengths) {
+            maxLength = Math.max(maxLength, len);
+        }
+
+        // Keep looping until we run out of length
         int balance = 0;
-        for (int i = 0; i < length; i++) {
+        for (int curLength = 0; curLength < maxLength; curLength++) {
 
             // Move back
             vNext = vCur;
@@ -150,9 +260,17 @@ public class PathChecker {
             // Update the balance
             balance += dChange.getBalance();
 
-            // Check if the balance exceeded the threshold
-            if (Math.abs(balance) > threshold) {
-                return false;
+            // Check all arrays
+            for (int j = 0; j < turnLengths.length; j++) {
+                int length = turnLengths[j];
+                int threshold = turnThresholds[j];
+
+                // If the current length is still relevant for this particular
+                // combination, and the balance exceeded the threshold, then
+                // we have failed.
+                if (curLength <= length && Math.abs(balance) > threshold) {
+                    return false;
+                }
             }
         }
 
@@ -165,7 +283,46 @@ public class PathChecker {
             return points.get(p);
         }
 
-        return new PointInfo(world.getBlockAt(p.toLocation(world)).getType().isSolid());
+        // Create a PointInfo object by checking surroundings
+        Block b = world.getBlockAt(p.toLocation(world));
+        Material m = b.getType();
+
+        boolean isSolid = checkSolid(m);
+        boolean isEmpty = !checkSolid(m);
+        boolean isClear = checkClear(p);
+        boolean isGrounded = checkGrounded(p);
+
+        PointInfo pi = new PointInfo(isSolid, isEmpty, isClear, isGrounded);
+        points.put(p, pi);
+
+        return pi;
+    }
+
+    private boolean checkSolid(Material m) {
+        return m.isSolid();
+    }
+
+    private boolean checkClear(Point p) {
+        Material m;
+
+        // Check for air above the ground
+        for (int i = 0; i < height - 1; i++) {
+            p = p.up();
+            m = world.getBlockAt(p.toLocation(world)).getType();
+            if (checkSolid(m)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkGrounded(Point p) {
+        for (Direction d : Direction.values()) {
+            if (world.getBlockAt(d.apply(p).toLocation(world)).getType().isSolid()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean mayChangeHeight(PathingVertex to) {
@@ -174,7 +331,7 @@ public class PathChecker {
 
         // Loop backwards along the known path to assert that a
         // vertical move is valid.
-        while (count < 2) {
+        while (count < length) {
             from = to.getCameFrom();
             if (from == null) {
                 break;
@@ -186,40 +343,21 @@ public class PathChecker {
             count++;
         }
 
-        return count >= 2;
-    }
-
-    private boolean mayChangeDirection(PathingVertex cur) {
-        PathingVertex prev = cur.getCameFrom();
-        Direction last = null, d;
-
-        for (int i = 0; i < 2; i++) {
-            if (prev == null) {
-                return true;
-            }
-
-            d = Direction.getDirectionTo(prev.getData(), cur.getData());
-            if (last != null) {
-                if (d != last) {
-                    return false;
-                }
-            } else {
-                last = d;
-            }
-
-            cur = prev;
-            prev = cur.getCameFrom();
-        }
-
-        return true;
+        return count >= length;
     }
 
     private static class PointInfo {
 
         @Getter private boolean solid;
+        @Getter private boolean empty;
+        @Getter private boolean clear;
+        @Getter private boolean grounded;
 
-        PointInfo(final boolean solid) {
+        PointInfo(final boolean solid, final boolean empty, final boolean clear, final boolean grounded) {
             this.solid = solid;
+            this.empty = empty;
+            this.clear = clear;
+            this.grounded = grounded;
         }
     }
 }
