@@ -7,6 +7,7 @@ import com.ellirion.buildframework.BuildFramework;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import static com.ellirion.buildframework.util.Promise.State.*;
@@ -23,6 +24,7 @@ public class Promise<TResult> {
     private IPromiseBody<TResult> runner;
     private IPromiseFinisher<TResult> finisher;
 
+    private CountDownLatch latch;
     private boolean async;
 
     /**
@@ -63,6 +65,7 @@ public class Promise<TResult> {
             }
         };
 
+        this.latch = new CountDownLatch(1);
         this.async = async;
 
         // Schedule (sync or async) the invocation of our runner if requested.
@@ -247,6 +250,18 @@ public class Promise<TResult> {
         return next;
     }
 
+    /**
+     * Waits for this Promise to resolve or reject.
+     * @return The State of this Promise after awaiting
+     */
+    public State await() {
+        try {
+            latch.await();
+        } catch (Exception ex) {
+        }
+        return state;
+    }
+
     private void runBody() {
         schedule(() -> runner.run(finisher));
     }
@@ -270,6 +285,7 @@ public class Promise<TResult> {
 
         state = RESOLVED;
         result = t;
+        latch.countDown();
 
         for (Consumer<TResult> next : onResolve) {
             next.accept(t);
@@ -283,6 +299,7 @@ public class Promise<TResult> {
 
         state = REJECTED;
         exception = ex;
+        latch.countDown();
 
         if (onReject.size() == 0 && ex != null) {
             throw new UnhandledException("Promise failed with unhandled exception", ex);
