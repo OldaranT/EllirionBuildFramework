@@ -55,7 +55,9 @@ public class Template {
             Material.SPRUCE_DOOR,
             Material.WOOD_DOOR,
             Material.WOODEN_DOOR,
-            Material.IRON_DOOR_BLOCK
+            Material.IRON_DOOR_BLOCK,
+            Material.MELON_STEM,
+            Material.PUMPKIN_STEM
     };
 
     private static final String DATA = "data";
@@ -433,7 +435,7 @@ public class Template {
         TemplateBlock[][][] rotatedTemplateBlock = new TemplateBlock[zDepth][yDepth][xDepth];
 
         for (int y = 0; y < yDepth; y++) {
-            //foreach Y rotate x and z.
+            //for each Y rotate x and z.
             for (int x = 0; x < zDepth; x++) {
                 for (int z = 0; z < xDepth; z++) {
                     rotatedTemplateBlock[x][y][z] = templateBlocks[z][y][zDepth - x - 1];
@@ -442,6 +444,17 @@ public class Template {
         }
 
         this.templateBlocks = rotatedTemplateBlock;
+        rotateMarkers();
+    }
+
+    private void rotateMarkers() {
+        int xDepth = templateBlocks.length;
+
+        for (Map.Entry pair : getMarkers().entrySet()) {
+            Point oldPoint = (Point) pair.getValue();
+            markers.put((String) pair.getKey(),
+                        new Point((xDepth - oldPoint.getBlockZ() - 1), oldPoint.getBlockY(), oldPoint.getBlockX()));
+        }
     }
 
     /**
