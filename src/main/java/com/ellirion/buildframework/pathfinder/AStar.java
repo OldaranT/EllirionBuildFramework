@@ -16,50 +16,86 @@ import java.util.List;
 
 public class AStar {
 
+    private Player player;
+    private Point start;
+    private Point goal;
+
+    private PathChecker checker;
+    private PathingGraph graph;
+
+    private double vStep;
+    private double vGrounded;
+    private double vFlying;
+    private double vExp;
+
+    private double fGoalFactor;
+    private double fGoalExp;
+    private double fLine;
+
+    private int turnShortThreshold;
+    private int turnShortLength;
+    private int turnLongThreshold;
+    private int turnLongLength;
+
+    private int pathWidth;
+    private int pathHeight;
+    private int pathLength;
+
+    private boolean visualEnable;
+    private int visualThrottle;
+
+    /**
+     * Construct a new AStar pathfinder.
+     * @param player The player for whom to find the path
+     * @param start The start point
+     * @param goal The end point
+     */
+    public AStar(final Player player, final Point start, final Point goal) {
+        this.player = player;
+        this.start = start;
+        this.goal = goal;
+
+        // Load the config
+        PathingSession session = PathingManager.getSession(player);
+        NBTTagCompound config = session.getConfig();
+        vStep = config.getDouble("v-step");
+        vGrounded = config.getDouble("v-grounded");
+        vFlying = config.getDouble("v-flying");
+        vExp = config.getDouble("v-exp");
+        fGoalFactor = config.getDouble("f-goal-fac");
+        fGoalExp = config.getDouble("f-goal-exp");
+        fLine = config.getDouble("f-line");
+        turnShortThreshold = config.getInt("turn-short-threshold");
+        turnShortLength = config.getInt("turn-short-length");
+        turnLongThreshold = config.getInt("turn-long-threshold");
+        turnLongLength = config.getInt("turn-long-length");
+        pathWidth = config.getInt("path-width");
+        pathHeight = config.getInt("path-height");
+        pathLength = config.getInt("path-length");
+        visualEnable = config.getBoolean("visual-enable");
+        visualThrottle = config.getInt("visual-throttle");
+
+        // Initialize objects
+        checker = new PathChecker(player.getWorld(),
+                                  pathWidth, pathHeight, pathLength,
+                                  new int[] {turnShortThreshold, turnLongThreshold},
+                                  new int[] {turnShortLength, turnLongLength});
+        graph = new PathingGraph();
+        PathingVertex startVert = graph.find(start);
+        startVert.setGScore(0);
+        startVert.setFScore(0);
+    }
+
     /**
      * Searches for a path asynchronously.
-     * @param player The player to keep updated on progress
-     * @param start The start point
-     * @param goal The goal point
      * @return A Promise that is resolved or rejected depending on whether a path is found.
      */
-    // CHECKSTYLE.OFF: MethodLength
-    public static Promise<List<Point>> searchAsync(Player player, Point start, Point goal) {
+    public Promise<List<Point>> searchAsync() {
         // - lijst met blokken die sinds altijd gevisit zijn (oranje)
         // - lijst met blokken die gevisit zijn deze tick (groen)
         return new Promise<>((finisher) -> {
 
             long before = System.currentTimeMillis();
-
-            // Load the config
-            PathingSession session = PathingManager.getSession(player);
-            NBTTagCompound config = session.getConfig();
-            double vStep = config.getDouble("v-step");
-            double vGrounded = config.getDouble("v-grounded");
-            double vFlying = config.getDouble("v-flying");
-            double vExp = config.getDouble("v-exp");
-            double fGoalFactor = config.getDouble("f-goal-fac");
-            double fGoalExp = config.getDouble("f-goal-exp");
-            double fLine = config.getDouble("f-line");
-            int turnShortThreshold = config.getInt("turn-short-threshold");
-            int turnShortLength = config.getInt("turn-short-length");
-            int turnLongThreshold = config.getInt("turn-long-threshold");
-            int turnLongLength = config.getInt("turn-long-length");
-            int pathWidth = config.getInt("path-width");
-            int pathHeight = config.getInt("path-height");
-            int pathLength = config.getInt("path-length");
-            boolean visualEnable = config.getBoolean("visual-enable");
-            int visualThrottle = config.getInt("visual-throttle");
-
-            // Initialize our instances
-            PathChecker checker = new PathChecker(player.getWorld(),
-                                                  pathWidth, pathHeight, pathLength,
-                                                  new int[] {turnShortThreshold, turnLongThreshold},
-                                                  new int[] {turnShortLength, turnLongLength});
-            PathingGraph graph = new PathingGraph();
-            PathingVertex startVert = graph.find(start);
-            startVert.setGScore(0d);
-            startVert.setFScore(start.distanceEuclidian(goal));
 
             PathingVertex cur;
 
@@ -103,24 +139,7 @@ public class AStar {
                 for (PathingVertex adjacent : cur.getAdjacents()) {
 
                     // Ignore this adjacent point if we've visited it before
-                    if (adjacent.isVisited()) {
-                        continue;
-                    }
-
-                    // If we are not allowed to change height from here, and the vertex
-                    // changes height at all, ignore.
-                    if (!checker.isVisitable(cur, adjacent)) {
-                        continue;
-                    }
-
-                    // If we can't make this turn, ignore.
-                    if (!checker.isTurnRadiusPermitted(cur, adjacent)) {
-                        continue;
-                    }
-
-                    // Lastly, check if the area surrounding the adjacent
-                    // is clear of any obstacles for a path to be generated.
-                    if (!checker.isAreaClear(cur, adjacent)) {
+                    if (!canVisitAdjacent(cur, adjacent)) {
                         continue;
                     }
 
@@ -128,19 +147,8 @@ public class AStar {
                     double gScore = cur.getGScore() + cur.getData().distanceEuclidian(adjacent.getData());
 
                     // Determine the vScore component
-                    boolean solid = checker.isWalkable(adjacent);
-                    boolean grounded = checker.isGrounded(adjacent);
-                    double vScore = 0;
-                    if (!solid) {
-                        // Inherit previous vScore
-                        vScore = cur.getVScore() + vStep;
-
-                        // Increase vScore depending on groundedness
-                        vScore += grounded ? vGrounded : vFlying;
-
-                        // Apply the exponential vScore punishment
-                        gScore += Math.max(0, Math.pow(vScore, vExp) - Math.pow(cur.getVScore(), vExp));
-                    }
+                    double vScore = calculateVScore(cur, adjacent);
+                    gScore += vScore;
 
                     if (gScore >= adjacent.getGScore()) {
                         continue; // This is not a better path.
@@ -148,13 +156,7 @@ public class AStar {
 
                     // Determine the fScore, starting from the gScore.
                     // The gScore is the actual determined score, and fScore is the heuristic.
-                    double fScore = gScore;
-
-                    // Add pow(distance from goal, fGoalExp) * fGoalFactor
-                    fScore += Math.pow(adjacent.getData().distanceEuclidian(goal), fGoalExp) * fGoalFactor;
-
-                    // Add the distance from the "optimal" line
-                    fScore += adjacent.getData().distanceFromLine(start, goal) * fLine;
+                    double fScore = gScore + calculateFScore(adjacent);
 
                     // This path is the current best. Record it!
                     adjacent.setVScore(vScore);
@@ -188,9 +190,59 @@ public class AStar {
             finisher.reject(new Exception("No path found"));
         }, true);
     }
-    // CHECKSTYLE.ON: MethodLength
 
-    private static void sendUpdates(Player player, List<PathingVertex> nowSeen) {
+    private boolean canVisitAdjacent(PathingVertex cur, PathingVertex adjacent) {
+        // Ignore this adjacent point if we've visited it before
+        if (adjacent.isVisited()) {
+            return false;
+        }
+
+        // If we are not allowed to change height from here, and the vertex
+        // changes height at all, ignore.
+        if (!checker.isVisitable(cur, adjacent)) {
+            return false;
+        }
+
+        // If we can't make this turn, ignore.
+        if (!checker.isTurnRadiusPermitted(cur, adjacent)) {
+            return false;
+        }
+
+        // Lastly, check if the area surrounding the adjacent
+        // is clear of any obstacles for a path to be generated.
+        if (!checker.isAreaClear(cur, adjacent)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private double calculateVScore(PathingVertex cur, PathingVertex adjacent) {
+        if (checker.isWalkable(adjacent)) {
+            return 0;
+        }
+
+        // Inherit previous vScore
+        double vScore = cur.getVScore() + vStep;
+
+        // Increase vScore depending on groundedness
+        vScore += checker.isGrounded(adjacent) ? vGrounded : vFlying;
+
+        // Apply the exponential vScore punishment
+        return Math.max(0, Math.pow(vScore, vExp) - Math.pow(cur.getVScore(), vExp));
+    }
+
+    private double calculateFScore(PathingVertex adjacent) {
+        // Add pow(distance from goal, fGoalExp) * fGoalFactor
+        double fScore = Math.pow(adjacent.getData().distanceEuclidian(goal), fGoalExp) * fGoalFactor;
+
+        // Add the distance from the "optimal" line
+        fScore += adjacent.getData().distanceFromLine(start, goal) * fLine;
+
+        return fScore;
+    }
+
+    private void sendUpdates(Player player, List<PathingVertex> nowSeen) {
         // Send the update!
         new Promise<>((subfinisher) -> {
             World world = player.getWorld();
