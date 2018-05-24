@@ -603,7 +603,6 @@ public class TerrainCorrector {
                                          List<Block> underBoundingBox) {
         List<Block> toChange = new ArrayList<>();
         int y = boundingBox.getY1() - 1;
-        int yOffset = 0;
         int widthX = maxHoleX - minHoleX;
         int widthZ = maxHoleZ - minHoleZ;
         int maxDepth = widthX > widthZ ? widthX : widthZ;
@@ -624,6 +623,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 1:
+                //SOUTH EAST TO NORTH WEST
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
@@ -637,6 +637,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 2:
+                // SOUTH WEST TO NORTH EAST
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
@@ -650,6 +651,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 3:
+                // NORTH WEST TO SOUTH EAST
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
