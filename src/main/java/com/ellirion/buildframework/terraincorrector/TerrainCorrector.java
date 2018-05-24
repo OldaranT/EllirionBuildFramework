@@ -1,5 +1,9 @@
 package com.ellirion.buildframework.terraincorrector;
 
+import com.deliveredtechnologies.rulebook.FactMap;
+import com.deliveredtechnologies.rulebook.Result;
+import com.deliveredtechnologies.rulebook.lang.RuleBookBuilder;
+import com.deliveredtechnologies.rulebook.model.RuleBook;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,6 +14,7 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
+import com.ellirion.buildframework.terraincorrector.rulebook.RavineSupportsRuleBook;
 import com.ellirion.buildframework.util.Promise;
 
 import java.util.ArrayList;
@@ -24,6 +29,20 @@ public class TerrainCorrector {
     private static final FileConfiguration CONFIG = BuildFramework.getInstance().getConfig();
     private static final String maxHoleDepthConfigPath = "TerrainCorrecter.MaxHoleDepth";
     private static final String areaLimitOffsetConfigPath = "TerrainCorrecter.AreaLimitOffset";
+    private static final String minHoleXFactKey = "minHoleX";
+    private static final String minXFactKey = "minX";
+    private static final String maxHoleXFactKey = "maxHoleX";
+    private static final String maxXFactKey = "maxX";
+    private static final String minHoleZFactKey = "minHoleZ";
+    private static final String minZFactKey = "minZ";
+    private static final String maxHoleZFactKey = "maxHoleZ";
+    private static final String maxZFactKey = "maxZ";
+
+    private static final RuleBook ravineSupportsRuleBook = RuleBookBuilder.create(RavineSupportsRuleBook.class)
+            .withResultType(Integer.class)
+            .withDefaultResult(Integer.MAX_VALUE)
+            .build();
+    private static final FactMap ravineSupportsFacts = new FactMap();
 
     private BoundingBox boundingBox;
     private World world;
@@ -338,6 +357,11 @@ public class TerrainCorrector {
         int minZ = boundingBox.getZ1();
         int maxZ = boundingBox.getZ2();
 
+        ravineSupportsFacts.setValue(minXFactKey, minX);
+        ravineSupportsFacts.setValue(maxXFactKey, maxX);
+        ravineSupportsFacts.setValue(minZFactKey, minZ);
+        ravineSupportsFacts.setValue(maxZFactKey, maxZ);
+
         int minHoleX;
         int maxHoleX;
 
@@ -376,65 +400,20 @@ public class TerrainCorrector {
             minHoleZ = h.getMinZ();
             maxHoleZ = h.getMaxZ();
 
-            // use the correct support placing locations
-            // check if the hole runs straight from oe side to the other.
-            if ((minHoleX <= minX && maxHoleX >= maxX) && !(minHoleZ <= minZ || maxHoleZ >= maxZ)) {
-                // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-                toChange = getBridgeSupport(0, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            ravineSupportsFacts.setValue(minHoleXFactKey, h.getMinX());
+            ravineSupportsFacts.setValue(maxHoleXFactKey, h.getMaxX());
+            ravineSupportsFacts.setValue(minHoleZFactKey, h.getMinZ());
+            ravineSupportsFacts.setValue(maxHoleZFactKey, h.getMaxZ());
 
-                // check if the hole runs straight from oe side to the other.
-            } else if (!(minHoleX <= minX || maxHoleX >= maxX) && (minHoleZ <= minZ && maxHoleZ >= maxZ)) {
-                // build bridge style supports for structure from point 1 to point 2 on the X axis.
-                toChange = getBridgeSupport(1, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-
-                // check if hole is not a corner and faces north
-            } else if ((minHoleZ <= minZ && maxHoleX >= maxX && minHoleX <= minX && !(maxHoleZ >= maxZ)) ||
-                       (minHoleZ <= minZ && !(maxHoleX >= maxX || minHoleX <= minX || maxHoleZ >= maxZ))) {
-                //NORTH TO SOUTH
-                toChange = oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // check if hole is not a corner and faces east
-            } else if ((maxHoleX >= maxX && minHoleZ <= minZ && maxHoleZ >= maxZ && !(minHoleX <= minX)) ||
-                       (maxHoleX >= maxX && !(minHoleX <= minX || minHoleZ <= minZ || maxHoleZ >= maxZ))) {
-                //EAST TO WEST
-                toChange = oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // check if hole is not a corner and faces south
-            } else if ((maxHoleZ >= maxZ && minHoleX <= minX && maxHoleX >= maxX && !(minHoleZ <= minZ)) ||
-                       (maxHoleZ >= maxZ && !(minHoleX <= minX || minHoleZ <= minZ || maxHoleX >= maxX))) {
-                // SOUTH TO NORTH
-                toChange = oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // check if hole is not a corner and faces west
-            } else if ((minHoleX <= minX && minHoleZ <= minZ && maxHoleZ >= maxZ && !(maxHoleX >= maxX)) ||
-                       (minHoleX <= minX && !(maxHoleX >= maxX || minHoleZ <= minZ || maxHoleZ >= maxZ))) {
-                // WEST TO EAST
-                toChange = oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // check if the hole is a corner and faces north east
-            } else if ((minHoleZ <= minZ && maxHoleX >= maxX) && !(minHoleX <= minX || maxHoleZ >= maxZ)) {
-                // NORTH EAST TO SOUTH WEST
-                toChange = cornerSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // check if the hole is a corner and faces south east
-            } else if ((maxHoleZ >= maxZ && maxHoleX >= maxX) && !(minHoleX <= minX || minHoleZ <= minZ)) {
-                // SOUTH EAST TO NORTH WEST
-                toChange = cornerSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // check if the hole is a corner and faces south west
-            } else if ((maxHoleZ >= maxZ && minHoleX <= minX) && !(maxHoleX >= maxX || maxHoleZ >= maxZ)) {
-                // SOUTH WEST TO NORTH EAST
-                toChange = cornerSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // check if the hole is a corner and faces north west
-            } else if ((minHoleZ <= minZ && minHoleX <= minX) && !(maxHoleX >= maxX || maxHoleZ >= maxZ)) {
-                // NORTH WEST TO SOUTH EAST
-                toChange = cornerSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-
-                // if not of the above apply use the last resort of working from the outside to the center from all sides
+            // run the values through the rules in the rulebook.
+            ravineSupportsRuleBook.run(ravineSupportsFacts);
+            // if the rulebook returns are result get the to change blocks
+            // else create an empty list to prevent a NPE
+            if (ravineSupportsRuleBook.getResult().isPresent()) {
+                Result result = (Result) ravineSupportsRuleBook.getResult().get();
+                toChange = supportSelector((int) result.getValue(), top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             } else {
-                // build building supports under the bounding box from all sides inwards.
-                toChange = createSupportsLocationMap();
+                toChange = new ArrayList<>();
             }
 
             for (Block b : toChange) {
@@ -766,6 +745,60 @@ public class TerrainCorrector {
 
     private void sendSyncBlockChanges(Block block, Material mat) {
         new Promise<>(subFinisher -> block.setType(mat), false);
+    }
+
+    private List<Block> supportSelector(int method, List<Block> top, int minHoleX, int maxHoleX,
+                                        int minHoleZ, int maxHoleZ) {
+        List<Block> toChange;
+        switch (method) {
+            case 0:
+                // build bridge style supports for structure from point 1 to point 2 on the Z axis.
+                toChange = getBridgeSupport(0, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                return toChange;
+            case 1:
+                // build bridge style supports for structure from point 1 to point 2 on the X axis.
+                toChange = getBridgeSupport(1, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                return toChange;
+            //START OF THE ONE SIDED SUPPORTS
+            case 2:
+                //NORTH TO SOUTH
+                toChange = oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            case 3:
+                //EAST TO WEST
+                toChange = oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            case 4:
+                // SOUTH TO NORTH
+                toChange = oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            case 5:
+                // WEST TO EAST
+                toChange = oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            // START OF THE CORNER SUPPORTS
+            case 6:
+                // NORTH EAST TO SOUTH WEST
+                toChange = cornerSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            case 7:
+                // SOUTH EAST TO NORTH WEST
+                toChange = cornerSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            case 8:
+                // SOUTH WEST TO NORTH EAST
+                toChange = cornerSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            case 9:
+                // NORTH WEST TO SOUTH EAST
+                toChange = cornerSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return toChange;
+            default:
+                // FOR UNEXPECTED SCENARIO'S JUST FILL FROM OUTSIDE IN ON ALL SIDES
+                // build building supports under the bounding box from all sides inwards.
+                toChange = createSupportsLocationMap();
+                return toChange;
+        }
     }
 }
 

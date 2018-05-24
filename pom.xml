@@ -33,7 +33,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -43,7 +43,14 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <finalName>final-${project.artifactId}-${project.version}</finalName>
+                    <minimizeJar>true</minimizeJar>
+                    <finalName>${project.artifactId}-${project.version}</finalName>
+                    <artifactSet>
+                        <includes>
+                            <include>com.deliveredtechnologies:rulebook-core</include>
+                            <include>org.slf4j:slf4j-api</include>
+                        </includes>
+                    </artifactSet>
                 </configuration>
             </plugin>
             <plugin>
@@ -170,6 +177,10 @@
                 </enabled> <!-- snapshots enabled: we declare a SNAPSHOT repository because we need to download a SNAPSHOT dependency -->
             </snapshots>
         </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -251,6 +262,11 @@
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-commons</artifactId>
             <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.deliveredtechnologies</groupId>
+            <artifactId>rulebook-core</artifactId>
+            <version>0.10-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
