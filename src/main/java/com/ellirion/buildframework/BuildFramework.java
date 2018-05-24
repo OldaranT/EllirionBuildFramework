@@ -15,7 +15,9 @@ import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 import com.ellirion.buildframework.templateengine.util.TabCompletionFileNameList;
 import com.ellirion.buildframework.templateengine.util.TabCompletionMarkerNameList;
 import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
+import com.ellirion.buildframework.terraincorrector.command.AddBoundingBoxCommand;
 import com.ellirion.buildframework.terraincorrector.command.CorrectCommand;
+import com.ellirion.buildframework.terraincorrector.command.GetBoundingBoxesCommand;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import com.ellirion.buildframework.util.EventListener;
 
@@ -58,6 +60,8 @@ public class BuildFramework extends JavaPlugin {
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
         getCommand("CorrectTerain").setExecutor(new CorrectCommand());
+        getCommand("GetBoundingboxes").setExecutor(new GetBoundingBoxesCommand());
+        getCommand("AddBoundingBox").setExecutor(new AddBoundingBoxCommand());
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createBlockValueConfig();

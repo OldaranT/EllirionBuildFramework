@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.terraincorrector;
 
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -10,13 +11,14 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
+import com.ellirion.buildframework.util.Promise;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class TerrainCorrector {
 
@@ -24,68 +26,148 @@ public class TerrainCorrector {
     private static final String maxHoleDepthConfigPath = "TerrainCorrecter.MaxHoleDepth";
     private static final String areaLimitOffsetConfigPath = "TerrainCorrecter.AreaLimitOffset";
 
-    // These are all the faces of a block
-    private static final BlockFace[] faces = {
-            BlockFace.NORTH,
-            BlockFace.EAST,
-            BlockFace.SOUTH,
-            BlockFace.WEST,
-            BlockFace.DOWN,
-            BlockFace.UP
-    };
-
     private BoundingBox boundingBox;
     private World world;
 
     /**
      * @param boundingBox the BoundingBox that will be used for terrain smoothing.
      * @param world The world in which
-     * @return whether the smoothing succeeded
      */
-    public String correctTerrain(BoundingBox boundingBox, World world) {
-        this.boundingBox = boundingBox;
-        this.world = world;
-        List<Hole> holes = findHoles();
 
-        // checken op blockers (river eg.)
-        for (Hole h : holes) {
-            if (h.containsLiquid() && checkForRiver(h.getBlockList())) {
-                return "Could not correct the terrain because the selection is above a lake, pond or river";
+    public void correctTerrain(BoundingBox boundingBox, World world) {
+        new Promise<>(finisher -> {
+            this.boundingBox = boundingBox;
+            this.world = world;
+            List<Hole> holes = findHoles();
+
+            for (Hole h : holes) {
+                correctHole(h);
             }
-        }
 
-        for (Hole h : holes) {
-            correctHole(h);
-        }
-
-        List<Block> toRemove = getBlocksInBoundingBox();
-        setListToAir(toRemove);
-        return "Corrected Terrain";
+            List<Block> toRemove = getBlocksInBoundingBox();
+            setListToAir(toRemove);
+        }, true);
     }
 
-    private boolean correctHole(Hole hole) {
+    private void correctHole(Hole hole) {
 
         if (!hole.onlyBelowBoundingBox(boundingBox) && hole.exceedsMaxDepth()) {
             buildRavineSupports(hole);
-            return true;
+            return;
         }
         if (hole.onlyBelowBoundingBox(boundingBox)) {
             fillBasicHole(hole);
-            return true;
+            return;
         }
-        if (!hole.exceedsMaxDepth()) {
-            fillSmallHoleAtSide(hole);
-            return true;
+        if (!hole.exceedsMaxDepth() && !hole.exceedsAreaLimit()) {
+            fillHoleAtSide(hole);
+            return;
         }
-        return false;
+
+        fillHoleAtSidePartially(hole);
     }
 
-    private void fillSmallHoleAtSide(Hole hole) {
+    private void fillHoleAtSidePartially(Hole hole) {
         Material mat = getFloorMaterial();
 
-        BuildFramework.getInstance().getLogger().info(mat + "");
+        List<Block> blocks = hole.getTopBlocks();
+
+        Map<Block, Integer> startingDepthMap = calculateStartingDepthMap(blocks);
+
+        placeBlocksAccordingToDepthMap(startingDepthMap, world, mat);
+    }
+
+    private Map<Block, Integer> calculateStartingDepthMap(List<Block> blocks) {
+        int minimalFillingWidth = 2;
+        int maxDepth = 5;
+        int percentage = 10;
+
+        Map<Block, Integer> result = new HashMap<>();
+        LinkedList<ToDoEntry> todo = new LinkedList<>();
+
+        Block block = blocks.stream().filter(x -> blocksBelowBoundingBoxOrWithinOffset(x, 0)).findAny().get();
+
+        ToDoEntry entry = new ToDoEntry(block, 0, percentage, 0);
+
+        todo.add(entry);
+
+        while ((entry = todo.poll()) != null) {
+            exploreDepthOfAdjacentBlocks(entry, result, todo, minimalFillingWidth, maxDepth, percentage);
+        }
+
+        return result;
+    }
+
+    private void exploreDepthOfAdjacentBlocks(ToDoEntry currentEntry, Map<Block, Integer> result,
+                                              LinkedList<ToDoEntry> todo,
+                                              int minWidth, int maxDepth, int initialPercentage) {
+
+        if ((result.containsKey(currentEntry.getBlock()) &&
+             result.get(currentEntry.getBlock()) <= currentEntry.getDepth()) ||
+            currentEntry.getDepth() >= maxDepth) {
+            return;
+        }
+
+        result.put(currentEntry.getBlock(), currentEntry.getDepth());
+
+        //Loop through the adjacent blocks
+        for (int dir = 0; dir < 4; dir++) {
+            Block nextBlock = getRelativeBlock(dir, currentEntry.getBlock());
+
+            int percentage = currentEntry.getPercentage();
+            int maxOffset = currentEntry.getMaxDepthOffset();
+            int depth = currentEntry.getDepth() + 1;
+
+            if (!blocksBelowBoundingBoxOrWithinOffset(nextBlock, minWidth)) {
+
+                //introduce randomization for blocks not below the bounding box
+                Double rand = ThreadLocalRandom.current().nextDouble(0, 100);
+
+                BuildFramework.getInstance().getLogger().info(
+                        String.format("rand: %f, percentage: %d", rand, currentEntry.getPercentage()));
+
+                if (rand < currentEntry.getPercentage()) {
+                    percentage -= 5;
+                    maxOffset += 1;
+                    depth -= 1;
+                }
+
+                todo.addLast(new ToDoEntry(nextBlock, depth, percentage, maxOffset));
+                continue;
+            }
+            todo.addLast(new ToDoEntry(nextBlock, 0, initialPercentage, maxOffset));
+        }
+    }
+
+    private void placeBlocksAccordingToDepthMap(Map<Block, Integer> map, World world,
+                                                Material mat) {
+        for (Map.Entry entry : map.entrySet()) {
+
+            fillDownwards((Block) entry.getKey(), world, mat, (int) entry.getValue());
+        }
+    }
+
+    private void fillDownwards(Block block, World world, Material mat, int startDepth) {
+        Block currentBlock = world.getBlockAt(block.getX(), block.getY() - startDepth, block.getZ());
+
+        while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
+            sendSyncBlockChanges(currentBlock, mat);
+            currentBlock = getRelativeBlock(5, currentBlock);
+        }
+    }
+
+    private boolean blocksBelowBoundingBoxOrWithinOffset(Block block, int offset) {
+        return (block.getX() >= boundingBox.getX1() - offset &&
+                block.getX() <= boundingBox.getX2() + offset &&
+                block.getZ() >= boundingBox.getZ1() - offset &&
+                block.getZ() <= boundingBox.getZ2() + offset);
+    }
+
+    private void fillHoleAtSide(Hole hole) {
+        Material mat = getFloorMaterial();
+
         for (Block b : hole.getBlockList()) {
-            b.setType(mat);
+            sendSyncBlockChanges(b, mat);
         }
     }
 
@@ -93,7 +175,7 @@ public class TerrainCorrector {
         List<Block> topBlocks = hole.getTopBlocks();
 
         for (Block b : topBlocks) {
-            b.setType(Material.BARRIER);
+            sendSyncBlockChanges(b, Material.BARRIER);
         }
     }
 
@@ -104,8 +186,8 @@ public class TerrainCorrector {
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
                 Block block = world.getBlockAt(x, y, z);
-                if ((block.isEmpty() || block.isLiquid() ||
-                     isBlockTypeNonSolid(block.getType())) && holes.stream().noneMatch(hole -> hole.contains(block))) {
+                if ((block.isEmpty() || block.isLiquid() || !block.getType().isSolid()) &&
+                    holes.stream().noneMatch(hole -> hole.contains(block))) {
 
                     // Add the hole to the list of holes once all blocks are found
                     holes.add(getHole(block));
@@ -122,13 +204,11 @@ public class TerrainCorrector {
         final int maxZ = boundingBox.getZ2();
 
         for (Block b : blocks) {
-            // check whether the block is liquid, is on the edge of the boundingBox and
-            // is adjacent to a liquid block outside the boundingbox.
-            // if this is true then you are on a "river".
-            if (b.isLiquid() && ((b.getX() == minX && b.getRelative(BlockFace.WEST).isLiquid()) ||
-                                 (b.getX() == maxX && b.getRelative(BlockFace.EAST).isLiquid()) ||
-                                 (b.getZ() == minZ && b.getRelative(BlockFace.NORTH).isLiquid()) ||
-                                 (b.getZ() == maxZ && b.getRelative(BlockFace.SOUTH).isLiquid()))) {
+            if (b.isLiquid() && blocksBelowBoundingBoxOrWithinOffset(b, 0) &&
+                ((b.getX() == minX && getRelativeBlock(1, b).isLiquid()) ||
+                 (b.getX() == maxX && getRelativeBlock(3, b).isLiquid()) ||
+                 (b.getZ() == minZ && getRelativeBlock(0, b).isLiquid()) ||
+                 (b.getZ() == maxZ && getRelativeBlock(2, b).isLiquid()))) {
                 return true;
             }
         }
@@ -137,28 +217,29 @@ public class TerrainCorrector {
     }
 
     private Material getFloorMaterial() {
-        List<Material> materials = new ArrayList<>();
+        Map<Material, Integer> materials = new HashMap<>();
 
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
-                materials.add(world.getBlockAt(x, boundingBox.getY1() - 1, z).getType());
+                Material mat = world.getBlockAt(x, boundingBox.getY1() - 1, z).getType();
+                if (materials.containsKey(mat)) {
+                    materials.replace(mat, materials.get(mat) + 1);
+                } else {
+                    materials.put(mat, 1);
+                }
             }
         }
 
         int max = 0;
-        int curr;
-        Material currKey = null;
-        Set<Material> unique = new HashSet<>(materials);
-
-        for (Material key : unique) {
-            curr = Collections.frequency(materials, key);
-
-            if (max < curr) {
-                max = curr;
-                currKey = key;
+        Material material = null;
+        for (Map.Entry<Material, Integer> entry : materials.entrySet()) {
+            if (entry.getValue() > max && entry.getKey().isSolid()) {
+                max = entry.getValue();
+                material = entry.getKey();
             }
         }
-        return currKey;
+
+        return material;
     }
 
     private Hole getHole(Block block) {
@@ -193,10 +274,10 @@ public class TerrainCorrector {
             maxZ += offset;
         }
 
-        for (BlockFace face : faces) {
-            Block b = block.getRelative(face);
+        for (int i = 0; i < 6; i++) {
+            Block b = getRelativeBlock(i, block);
 
-            if (!(b.getY() <= maxY && (b.isLiquid() || b.isEmpty() || isBlockTypeNonSolid(b.getType())) &&
+            if (!(b.getY() <= maxY && (b.isLiquid() || b.isEmpty() || !b.getType().isSolid()) &&
                   !hole.contains(b))) {
                 continue;
             }
@@ -246,18 +327,12 @@ public class TerrainCorrector {
 
     private void setListToAir(List<Block> blocks) {
         for (Block b : blocks) {
-            b.setType(Material.AIR, true);
+            sendSyncBlockChanges(b, Material.AIR);
         }
     }
 
-    private boolean isBlockTypeNonSolid(Material type) {
-        return type == Material.LONG_GRASS || type == Material.BROWN_MUSHROOM ||
-               type == Material.RED_MUSHROOM || type == Material.SAPLING ||
-               type == Material.CROPS || type == Material.DEAD_BUSH ||
-               type == Material.DOUBLE_PLANT;
-    }
-
     private void buildRavineSupports(Hole hole) {
+
         int minX = boundingBox.getX1();
         int maxX = boundingBox.getX2();
 
@@ -364,7 +439,7 @@ public class TerrainCorrector {
             }
 
             for (Block b : toChange) {
-                b.setType(Material.FENCE);
+                sendSyncBlockChanges(b, Material.FENCE);
             }
             //            for (Block b : underBoundingBox) {
             //                b.setType(Material.WOOD);
@@ -426,7 +501,8 @@ public class TerrainCorrector {
         }
     }
 
-    private List<Block> blocksToReplace(int x, int y, int z, int depth, List<Block> underBB) {
+    private List<Block> blocksToReplace(int x, int y, int z,
+                                        int depth, List<Block> underBB) {
         List<Block> toChange = new ArrayList<>();
         Block b = world.getBlockAt(x, y, z);
         if (underBB.contains(b)) {
@@ -476,7 +552,8 @@ public class TerrainCorrector {
                     }
 
                     // If it's a solid, this column is done
-                    Location loc = new Point(x1 + x, baseY - offsetY, z1 + z).toLocation(world);
+                    Location loc = new Point(x1 + x, baseY - offsetY,
+                                             z1 + z).toLocation(world);
                     Block block = world.getBlockAt(loc);
                     if (block.getType().isSolid()) {
                         //                        done[x][z] = true;
@@ -497,31 +574,6 @@ public class TerrainCorrector {
         }
 
         return toChange;
-    }
-
-    private Block getRelativeBlock(int dir, Block block) {
-        switch (dir) {
-            case 0:
-                // NORTH
-                return world.getBlockAt(block.getLocation().add(0, 0, -1));
-            case 1:
-                // EAST
-                return world.getBlockAt(block.getLocation().add(1, 0, 0));
-            case 2:
-                // SOUTH
-                return world.getBlockAt(block.getLocation().add(0, 0, 1));
-            case 3:
-                // WEST
-                return world.getBlockAt(block.getLocation().add(-1, 0, 0));
-            case 4:
-                // UP
-                return world.getBlockAt(block.getLocation().add(0, 1, 0));
-            case 5:
-                // DOWN
-                return world.getBlockAt(block.getLocation().add(0, -1, 0));
-            default:
-                throw new IndexOutOfBoundsException();
-        }
     }
 
     private List<Block> oneSidedSupportMap(int dir, int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ,
@@ -667,6 +719,70 @@ public class TerrainCorrector {
             default:
                 throw new IndexOutOfBoundsException();
         }
+    }
+
+    private Block getRelativeBlock(int dir, Block block) {
+        World world = block.getWorld();
+        BuildFramework.getInstance().getLogger().info("" + block);
+        switch (dir) {
+            case 0:
+                // NORTH
+                return world.getBlockAt(block.getX(), block.getY(), block.getZ() - 1);
+            case 1:
+                // EAST
+                return world.getBlockAt(block.getX() + 1, block.getY(), block.getZ());
+            case 2:
+                // SOUTH
+                return world.getBlockAt(block.getX(), block.getY(), block.getZ() + 1);
+            case 3:
+                // WEST
+                return world.getBlockAt(block.getX() - 1, block.getY(), block.getZ());
+            case 4:
+                // UP
+                return world.getBlockAt(block.getX(), block.getY() + 1, block.getZ());
+            case 5:
+                // DOWN
+                return world.getBlockAt(block.getX(), block.getY() - 1, block.getZ());
+
+            default:
+                throw new IndexOutOfBoundsException();
+        }
+    }
+
+    //    private Block syncGetBlockAt(World world, Location location) {
+    //        return syncGetBlockAt(world, location.getBlockX(), location.getBlockY(), location.getBlockZ());
+    //    }
+    //
+    //    private Block syncGetBlockAt(World world, int x, int y, int z) {
+    //        List<Block> result = new ArrayList<>();
+    //
+    //        Promise<Block> p = new Promise<>((finisher) -> {
+    //            BuildFramework.getInstance().getLogger().info("bla");
+    //            finisher.resolve(world.getBlockAt(x, y, z));
+    //        }, false);
+    //
+    //        p.consumeSync(result::add);
+    //
+    //        return result.get(0);
+    //    }
+
+    private void sendSyncBlockChanges(Block block, Material mat) {
+        new Promise<>(subFinisher -> block.setType(mat), false);
+    }
+}
+
+class ToDoEntry {
+
+    @Getter private Block block;
+    @Getter private int depth;
+    @Getter private int percentage;
+    @Getter private int maxDepthOffset;
+
+    ToDoEntry(final Block block, final int depth, final int percentage, final int maxDepthOffset) {
+        this.block = block;
+        this.depth = depth;
+        this.percentage = percentage;
+        this.maxDepthOffset = maxDepthOffset;
     }
 }
 
