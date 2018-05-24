@@ -212,4 +212,20 @@ public class PromiseTest {
 
         assertEquals(1, results.size());
     }
+
+    @Test
+    public void await_whenResolved_shouldReturnResolved() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1));
+
+        Promise.State s = p.await();
+        assertEquals(Promise.State.RESOLVED, s);
+    }
+
+    @Test
+    public void await_whenRejected_shouldReturnRejected() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null));
+
+        Promise.State s = p.await();
+        assertEquals(Promise.State.REJECTED, s);
+    }
 }
