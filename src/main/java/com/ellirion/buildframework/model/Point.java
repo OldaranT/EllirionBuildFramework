@@ -213,4 +213,21 @@ public class Point {
         x = (x >>> half) ^ x;
         return x;
     }
+
+    /**
+     * Invert a point.
+     * @return an inverted point.
+     */
+    public Point invert() {
+        return new Point(x * -1, y * -1, z * -1);
+    }
+
+    /**
+     * Translate a point.
+     * @param point point to translate with.
+     * @return an translated point.
+     */
+    public Point translate(Point point) {
+        return new Point(x + point.getX(), y + point.getY(), z + point.getZ());
+    }
 }

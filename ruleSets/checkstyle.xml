@@ -115,12 +115,23 @@
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
         <module name="MemberName"/>
-        <module name="MethodName"/>
+        <module name="MethodName">
+            <property name="id" value="MethodNameMain"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="MethodName">
+            <property name="id" value="MethodNameTest"/>
+            <property name="format"
+                      value="^(setup|[a-z][a-zA-Z0-9]*_when[A-Z0-9][a-zA-Z0-9]*_should[A-Z][a-zA-Z0-9]*)$"/>
+            <property name="applyToProtected" value="false"/>
+            <property name="applyToPackage" value="false"/>
+            <property name="applyToPrivate" value="false"/>
+        </module>
         <module name="MethodCount"/>
         <module name="PackageName"/>
         <module name="ParameterName"/>
         <module name="StaticVariableName">
-            <property name="format" value="^[a-zA-Z0-9]*$"/>
+            <property name="format" value="^[A-Z0-9_]*$"/>
         </module>
         <module name="TypeName"/>
 
@@ -174,6 +185,12 @@
         <module name="NoWhitespaceBefore"/>
         <module name="OperatorWrap">
             <property name="option" value="eol"/>
+            <property name="tokens"
+                      value="EQUAL, NOT_EQUAL, DIV, PLUS, MINUS, STAR, MOD, SR, BSR, GE, GT, SL, LE, LT, BXOR, BOR, LOR, BAND, LAND, TYPE_EXTENSION_AND, LITERAL_INSTANCEOF"/>
+        </module>
+        <module name="OperatorWrap">
+            <property name="option" value="nl"/>
+            <property name="tokens" value="QUESTION, COLON"/>
         </module>
         <module name="ParenPad"/>
         <module name="TypecastParenPad"/>

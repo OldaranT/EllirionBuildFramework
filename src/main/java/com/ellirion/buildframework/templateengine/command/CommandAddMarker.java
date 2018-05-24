@@ -1,64 +1,71 @@
 package com.ellirion.buildframework.templateengine.command;
 
-import com.ellirion.buildframework.model.Point;
-import com.ellirion.buildframework.templateengine.TemplateManager;
-import com.ellirion.buildframework.templateengine.model.Template;
-import lombok.Getter;
-import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.Template;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
 
 public class CommandAddMarker implements CommandExecutor {
 
-    /**
-     * Enum of markers.
-     */
-    @Getter @Setter private Template.Markers marker;
-
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (commandSender instanceof Player) {
-            Player player = (Player) commandSender;
-
-            double playerX = player.getLocation().getX();
-            double blockUnderPlayer = player.getLocation().getY() - 1;
-            double playerZ = player.getLocation().getZ();
-
-            Template t = TemplateManager.getSelectedTemplates().get(player);
-            String markers = Template.markersToString();
-
-            if (t == null) {
-                player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
-                return false;
-            }
-
-            if (strings.length == 0) {
-                player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
-                return false;
-            }
-
-            try {
-                this.marker = Template.Markers.valueOf(strings[0].toUpperCase());
-            } catch (IllegalArgumentException ex) {
-                player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
-                return false;
-            }
-
-            Point markerPoint = new Point(playerX, blockUnderPlayer, playerZ);
-            Point templateWorldPoint = TemplateManager.getPointOfTemplate().get(player).getPoint();
-
-            if (!t.addMarker(marker.toString(), markerPoint, templateWorldPoint)) {
-                player.sendMessage(ChatColor.DARK_RED + "This position is not within the template selection");
-                return false;
-            }
-
-            player.sendMessage(
-                    ChatColor.GREEN + "The following marker has been added: " + marker.toString());
+        if (!(commandSender instanceof Player)) {
+            commandSender.sendMessage("You need to be a player to use this command.");
             return true;
         }
-        return false;
+
+        Player player = (Player) commandSender;
+
+        double playerX = player.getLocation().getX();
+        double playerY = player.getLocation().getY();
+        double playerZ = player.getLocation().getZ();
+
+        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
+        String markers = Template.markersToString();
+
+        if (ts == null) {
+            player.sendMessage(ChatColor.DARK_RED + "You have no template currently selected");
+            return true;
+        }
+
+        if (strings.length == 0 || strings.length > 1) {
+            player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
+            return true;
+        }
+
+        if (!Template.getPossibleMarkers().contains(strings[0].toUpperCase())) {
+            player.sendMessage(ChatColor.DARK_RED + "Select one of the following markers: " + markers);
+            return true;
+        }
+
+        String marker = strings[0].toUpperCase();
+
+        Point markerPoint = new Point(playerX, playerY - 1, playerZ);
+        Point templateWorldPoint = TemplateManager.getTemplateSessions().get(player).getPoint();
+
+        if (templateWorldPoint == null) {
+            player.sendMessage(ChatColor.DARK_RED + "You can only add markers on creations of a template");
+            return true;
+        }
+
+        ts.removeMarkerHolograms(player);
+
+        if (!ts.getTemplate().addMarker(marker, markerPoint, templateWorldPoint)) {
+            player.sendMessage(ChatColor.DARK_RED + "This position is not within the template selection");
+            ts.placeMarkerHolograms(player);
+            return true;
+        }
+
+        ts.placeMarkerHolograms(player);
+
+        player.sendMessage(
+                ChatColor.GREEN + "The following marker has been added: " + marker);
+        return true;
     }
 }
+
