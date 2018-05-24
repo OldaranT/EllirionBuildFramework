@@ -5,7 +5,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
@@ -449,15 +448,14 @@ public class TerrainCorrector {
 
     private List<Block> getBlocksBelow(Block b, int depth) {
         List<Block> result = new ArrayList<>();
-        BlockFace down = BlockFace.DOWN;
-        Block current = b.getRelative(down);
+        Block current = world.getBlockAt(b.getX(), b.getY() - 1, b.getZ());
 
         for (int i = 0; i < depth; i++) {
             if (!current.isEmpty() && !current.isLiquid()) {
                 break;
             }
             result.add(current);
-            current = current.getRelative(down);
+            current = world.getBlockAt(current.getX(), current.getY() - 1, current.getZ());
         }
 
         return result;
