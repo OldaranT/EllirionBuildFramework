@@ -252,6 +252,7 @@ public class Promise<TResult> {
 
     /**
      * Waits for this Promise to resolve or reject.
+     * @return The State of this Promise after awaiting
      */
     public State await() {
         try {
