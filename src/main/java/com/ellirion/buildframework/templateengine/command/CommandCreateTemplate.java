@@ -1,5 +1,12 @@
 package com.ellirion.buildframework.templateengine.command;
 
+import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.Template;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
+import com.ellirion.buildframework.util.WorldEditHelper;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import net.md_5.bungee.api.ChatColor;
@@ -8,12 +15,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.Point;
-import com.ellirion.buildframework.templateengine.TemplateManager;
-import com.ellirion.buildframework.templateengine.model.Template;
-import com.ellirion.buildframework.templateengine.model.TemplateSession;
-import com.ellirion.buildframework.util.WorldEditHelper;
 
 import java.util.List;
 
@@ -28,9 +29,9 @@ public class CommandCreateTemplate implements CommandExecutor {
         Player player = (Player) commandSender;
 
         // Check if a name was entered
-        if (strings.length < 3 || strings.length > 3) {
+        if (strings.length < 4 || strings.length > 4) {
             player.sendMessage(ChatColor.DARK_RED +
-                               "Please give the template a name with the following arguments: <RACE> <TYPE> <LEVEL>");
+                               "Please give the template a name with the following arguments: <RACE> <TYPE> <LEVEL> <NAME>");
             return true;
         }
 
@@ -46,9 +47,9 @@ public class CommandCreateTemplate implements CommandExecutor {
             return true;
         }
 
-        String name = String.join(" ", strings);
+        String name = String.join("-", strings);
 
-        name = name.replaceAll("[^a-zA-Z0-9 ]", "");
+        name = name.replaceAll("[^a-zA-Z0-9\\-]", "").toUpperCase();
 
         // Remove existing templates from map
         TemplateManager.getTemplateSessions().remove(player);
@@ -59,16 +60,21 @@ public class CommandCreateTemplate implements CommandExecutor {
             return true;
         }
 
-        Template template = new Template(name, sel);
-        Point p1 = new Point(sel.getMinimumPoint().getX(), sel.getMinimumPoint().getY(), sel.getMinimumPoint().getZ());
+        Point min = new Point(sel.getMinimumPoint());
+        Point max = new Point(sel.getMaximumPoint());
 
-        TemplateSession templateSession = new TemplateSession(template, p1);
+        BoundingBox box = new BoundingBox(min, max);
+        Template template = new Template(name, box, sel.getWorld());
+
+        TemplateSession templateSession = new TemplateSession(template, min);
 
         // Add player to template manager map so the template can be linked to the player
         TemplateManager.getTemplateSessions().put(player, templateSession);
 
-        player.sendMessage("Template with name " + ChatColor.BOLD + name + ChatColor.RESET + " started");
-        player.sendMessage("Add markers before saving your template");
+        player.sendMessage(
+                ChatColor.GREEN + "Template with name " + ChatColor.WHITE + ChatColor.BOLD + name + ChatColor.RESET +
+                ChatColor.GREEN + " started");
+        player.sendMessage(ChatColor.WHITE + "Add markers before saving your template");
 
         // Put all Marker values in a string
         String markers = Template.markersToString();

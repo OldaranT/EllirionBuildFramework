@@ -18,4 +18,13 @@ public class TemplateManager {
     public static HashMap<Player, TemplateSession> getTemplateSessions() {
         return TEMPLATE_SESSIONS;
     }
+
+    /**
+     * Remove all holograms and templates of a player.
+     * @param player the player of which to remove all holograms and templates
+     */
+    public static void removeAll(Player player) {
+        SELECTED_HOLOGRAMS.remove(player);
+        TEMPLATE_SESSIONS.remove(player);
+    }
 }
