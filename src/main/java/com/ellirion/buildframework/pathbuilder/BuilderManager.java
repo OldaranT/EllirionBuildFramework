@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.pathbuilder;
 
+import net.minecraft.server.v1_12_R1.Tuple;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,8 +14,8 @@ import java.util.Stack;
 public class BuilderManager {
 
     private static final HashMap<Player, PathBuilder> BUILDER_SESSIONS = new HashMap<>();
-    private static final Stack<List<BlockChange>> PATH_UNDO_STACK = new Stack<>();
-    private static final Stack<List<BlockChange>> PATH_REDO_STACK = new Stack<>();
+    private static final Stack<Tuple<List<BlockChange>, PathBuilder>> PATH_UNDO_STACK = new Stack<>();
+    private static final Stack<Tuple<List<BlockChange>, PathBuilder>> PATH_REDO_STACK = new Stack<>();
 
     public static HashMap<Player, PathBuilder> getBuilderSessions() {
         return BUILDER_SESSIONS;
@@ -30,26 +31,31 @@ public class BuilderManager {
 
     /**
      * Place a path and record the block changes.
-     * @param blockChanges the blockchanges og the path
+     * @param blockChanges the blockchanges of the path
+     * @param pathbuilder the pathbuilder that made this path
      */
-    public static void placePath(List<BlockChange> blockChanges) {
-        PATH_UNDO_STACK.push(blockChanges);
+    public static void placePath(List<BlockChange> blockChanges, PathBuilder pathbuilder) {
+        //Sort the list and put the supportType blockChanges first so that these will be overridden by the path
 
-        for (BlockChange change : blockChanges) {
-            Location loc = change.getLocation();
-            Material mat = change.getMatAfter();
-            byte data = change.getMetadataAfter();
-            loc.getWorld().getBlockAt(loc).setType(mat);
-            loc.getWorld().getBlockAt(loc).setData(data);
-        }
+        PATH_REDO_STACK.push(new Tuple<>(blockChanges, pathbuilder));
+
+        redo();
+        //        for (BlockChange change : blockChanges) {
+        //            Location loc = change.getLocation();
+        //            Material mat = change.getMatAfter();
+        //            byte data = change.getMetadataAfter();
+        //            loc.getWorld().getBlockAt(loc).setType(mat);
+        //            loc.getWorld().getBlockAt(loc).setData(data);
+        //        }
     }
 
     /**
      * Undo a path placement.
      */
     public static void undo() {
-        List<BlockChange> changes = PATH_UNDO_STACK.pop();
-        PATH_REDO_STACK.push(changes);
+        Tuple<List<BlockChange>, PathBuilder> tuple = PATH_UNDO_STACK.pop();
+        List<BlockChange> changes = tuple.a();
+        PATH_REDO_STACK.push(tuple);
 
         for (BlockChange change : changes) {
             Location loc = change.getLocation();
@@ -64,8 +70,9 @@ public class BuilderManager {
      * Redo an undone path placement.
      */
     public static void redo() {
-        List<BlockChange> changes = PATH_REDO_STACK.pop();
-        PATH_UNDO_STACK.push(changes);
+        Tuple<List<BlockChange>, PathBuilder> tuple = PATH_REDO_STACK.pop();
+        List<BlockChange> changes = tuple.a();
+        PATH_UNDO_STACK.push(tuple);
 
         for (BlockChange change : changes) {
             Location loc = change.getLocation();

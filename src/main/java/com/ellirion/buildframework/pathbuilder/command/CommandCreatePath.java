@@ -50,7 +50,7 @@ public class CommandCreatePath implements CommandExecutor {
             points.add(new Point(x, y, z));
         }
 
-        BuilderManager.placePath(builder.build(points, player.getWorld()));
+        BuilderManager.placePath(builder.build(points, player.getWorld()), builder);
 
         return true;
     }

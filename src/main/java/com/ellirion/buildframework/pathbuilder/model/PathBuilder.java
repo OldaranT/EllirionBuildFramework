@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -134,6 +136,33 @@ public class PathBuilder {
             count++;
         }
 
+        return postProcessing(blockChanges);
+    }
+
+    private List<BlockChange> postProcessing(List<BlockChange> blockChanges) {
+        //add all to hashmap
+        HashMap<Point, BlockChange> map = new HashMap<>();
+        for (BlockChange change : blockChanges) {
+            map.put(new Point(change.getLocation()), change);
+        }
+
+        //before reorganizing the list, we want to remove unnecessary blocks.
+        //this means at some points we need to remove
+
+        Collections.sort(blockChanges, new Comparator<BlockChange>() {
+            @Override
+            public int compare(BlockChange lhs, BlockChange rhs) {
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                if (lhs.getMatAfter() == supportType && rhs.getMatAfter() != supportType) {
+                    return -1;
+                }
+                if (rhs.getMatAfter() == supportType && lhs.getMatAfter() != supportType) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+
         return blockChanges;
     }
 
@@ -235,8 +264,15 @@ public class PathBuilder {
     }
 
     private boolean isGrounded(Point p, World w) {
-        //get the location, check block below
-        return MinecraftHelper.isAnchorPoint(w.getBlockAt(p.toLocation(w)).getRelative(0, -1, 0).getType());
+        //returns true if half or more of the path is on the ground
+        List<Point> points = getPoints(p);
+        int countGrounded = 0;
+        for (Point point : points) {
+            if (MinecraftHelper.isAnchorPoint(w.getBlockAt(point.toLocation(w)).getRelative(0, -1, 0).getType())) {
+                countGrounded++;
+            }
+        }
+        return (double) countGrounded / (double) points.size() >= 0.66;
     }
 
     /**

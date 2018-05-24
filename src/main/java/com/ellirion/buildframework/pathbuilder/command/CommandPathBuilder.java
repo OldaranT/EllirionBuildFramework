@@ -292,7 +292,7 @@ public class CommandPathBuilder implements CommandExecutor {
 
             PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
             List<BlockChange> pathh = builder.build(path, player.getWorld());
-            BuilderManager.placePath(pathh);
+            BuilderManager.placePath(pathh, builder);
         }).consumeFailSync((ex) ->
                                    player.sendMessage("Heap failed: " + ex.getMessage())
         );
