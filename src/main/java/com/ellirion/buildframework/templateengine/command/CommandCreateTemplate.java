@@ -29,9 +29,9 @@ public class CommandCreateTemplate implements CommandExecutor {
         Player player = (Player) commandSender;
 
         // Check if a name was entered
-        if (strings.length < 3 || strings.length > 3) {
+        if (strings.length < 4 || strings.length > 4) {
             player.sendMessage(ChatColor.DARK_RED +
-                               "Please give the template a name with the following arguments: <RACE> <TYPE> <LEVEL>");
+                               "Please give the template a name with the following arguments: <RACE> <TYPE> <LEVEL> <NAME>");
             return true;
         }
 
@@ -47,9 +47,9 @@ public class CommandCreateTemplate implements CommandExecutor {
             return true;
         }
 
-        String name = String.join(" ", strings);
+        String name = String.join("-", strings);
 
-        name = name.replaceAll("[^a-zA-Z0-9 ]", "");
+        name = name.replaceAll("[^a-zA-Z0-9\\-]", "").toUpperCase();
 
         // Remove existing templates from map
         TemplateManager.getTemplateSessions().remove(player);
@@ -71,8 +71,10 @@ public class CommandCreateTemplate implements CommandExecutor {
         // Add player to template manager map so the template can be linked to the player
         TemplateManager.getTemplateSessions().put(player, templateSession);
 
-        player.sendMessage("Template with name " + ChatColor.BOLD + name + ChatColor.RESET + " started");
-        player.sendMessage("Add markers before saving your template");
+        player.sendMessage(
+                ChatColor.GREEN + "Template with name " + ChatColor.WHITE + ChatColor.BOLD + name + ChatColor.RESET +
+                ChatColor.GREEN + " started");
+        player.sendMessage(ChatColor.WHITE + "Add markers before saving your template");
 
         // Put all Marker values in a string
         String markers = Template.markersToString();

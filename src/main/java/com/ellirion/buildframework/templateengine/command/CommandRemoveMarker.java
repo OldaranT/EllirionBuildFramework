@@ -34,7 +34,7 @@ public class CommandRemoveMarker implements CommandExecutor {
             return true;
         }
 
-        String marker = strings[0];
+        String marker = strings[0].toUpperCase();
 
         Point templateWorldPoint = TemplateManager.getTemplateSessions().get(player).getPoint();
 

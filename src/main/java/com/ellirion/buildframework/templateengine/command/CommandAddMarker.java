@@ -43,7 +43,7 @@ public class CommandAddMarker implements CommandExecutor {
             return true;
         }
 
-        String marker = strings[0];
+        String marker = strings[0].toUpperCase();
 
         Point markerPoint = new Point(playerX, playerY - 1, playerZ);
         Point templateWorldPoint = TemplateManager.getTemplateSessions().get(player).getPoint();

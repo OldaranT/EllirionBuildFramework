@@ -236,7 +236,7 @@ public class PathBuilder {
 
     private boolean isGrounded(Point p, World w) {
         //get the location, check block below
-        return MinecraftHelper.isItAnAnchorPoint(w.getBlockAt(p.toLocation(w)).getRelative(0, -1, 0).getType());
+        return MinecraftHelper.isAnchorPoint(w.getBlockAt(p.toLocation(w)).getRelative(0, -1, 0).getType());
     }
 
     /**
@@ -340,7 +340,7 @@ public class PathBuilder {
             }
 
             Block b = w.getBlockAt(curr.toLocation(w));
-            if (MinecraftHelper.isItAnAnchorPoint(b.getType()) && b.getType() != supportType) {
+            if (MinecraftHelper.isAnchorPoint(b.getType()) && b.getType() != supportType) {
                 anchor = curr;
                 anchorFound = true;
             }
@@ -407,7 +407,7 @@ public class PathBuilder {
         };
 
         for (BlockFace face : faces) {
-            if (MinecraftHelper.isItAnAnchorPoint(b.getRelative(face).getType()) &&
+            if (MinecraftHelper.isAnchorPoint(b.getRelative(face).getType()) &&
                 b.getRelative(face).getType() != supportType) {
                 return true;
             }
