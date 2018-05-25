@@ -3,6 +3,7 @@ package com.ellirion.buildframework.templateengine.event;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -63,5 +64,46 @@ public class TemplateMovementListener implements Listener {
             prevHologram = new TemplateHologram(t, prevHologram.getLocation());
         }
         prevHologram.create(player);
+        event.setCancelled(true);
+    }
+
+    /**
+     * Move or rotate the hologram while using player interaction events.
+     * @param event is used to get the tool that the player interacts with.
+     */
+    @EventHandler
+    public void onPlayerInteractWithBlock(PlayerInteractEvent event) {
+        if (event.getItem() == null) {
+            return;
+        }
+
+        if (event.getItem().getType() != Material.DIAMOND_AXE) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        Block block = event.getClickedBlock();
+
+        if (block == null) {
+            return;
+        }
+        Byte b = block.getData();
+
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
+            player.sendMessage(
+                    ChatColor.BOLD + "Location: " + ChatColor.RESET + block.getX() + " " + block.getY() + " " +
+                    block.getZ());
+            player.sendMessage(ChatColor.BOLD + "Data: " + ChatColor.RESET + b.toString());
+            player.sendMessage(ChatColor.BOLD + "Type: " + ChatColor.RESET + block.getType().toString());
+        } else if (event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_AIR) {
+            try {
+                b = (byte) (b + 1);
+                block.setData(b);
+            } catch (Exception e) {
+                b = 0;
+                block.setData(b);
+            }
+        }
+        event.setCancelled(true);
     }
 }

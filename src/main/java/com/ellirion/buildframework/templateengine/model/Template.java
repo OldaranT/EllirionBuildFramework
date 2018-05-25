@@ -18,6 +18,7 @@ import org.bukkit.material.MaterialData;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.util.MinecraftHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,77 @@ public class Template {
             Material.IRON_DOOR_BLOCK,
             Material.MELON_STEM,
             Material.PUMPKIN_STEM
+    };
+
+    private static final Material[] TO_ROTATE = new Material[] {
+            Material.ACACIA_DOOR,
+            Material.ACTIVATOR_RAIL,
+            Material.ANVIL,
+            Material.BED,
+            Material.BIRCH_DOOR,
+            Material.BONE_BLOCK,
+            Material.CHEST,
+            Material.DARK_OAK_DOOR,
+            Material.DETECTOR_RAIL,
+            Material.DIODE_BLOCK_OFF,
+            Material.DIODE_BLOCK_ON,
+            Material.DISPENSER,
+            Material.DROPPER,
+            Material.END_ROD,
+            Material.ENDER_CHEST,
+            Material.FENCE_GATE,
+            Material.FURNACE,
+            Material.HAY_BLOCK,
+            Material.HOPPER,
+            Material.IRON_DOOR,
+            Material.IRON_TRAPDOOR,
+            Material.JACK_O_LANTERN,
+            Material.JUNGLE_DOOR,
+            Material.LADDER,
+            Material.LEVER,
+            Material.GRAY_GLAZED_TERRACOTTA,
+            Material.GREEN_GLAZED_TERRACOTTA,
+            Material.CYAN_GLAZED_TERRACOTTA,
+            Material.BROWN_GLAZED_TERRACOTTA,
+            Material.BLACK_GLAZED_TERRACOTTA,
+            Material.BLUE_GLAZED_TERRACOTTA,
+            Material.RED_GLAZED_TERRACOTTA,
+            Material.MAGENTA_GLAZED_TERRACOTTA,
+            Material.PINK_GLAZED_TERRACOTTA,
+            Material.LIGHT_BLUE_GLAZED_TERRACOTTA,
+            Material.ORANGE_GLAZED_TERRACOTTA,
+            Material.PURPLE_GLAZED_TERRACOTTA,
+            Material.SILVER_GLAZED_TERRACOTTA,
+            Material.WHITE_GLAZED_TERRACOTTA,
+            Material.YELLOW_GLAZED_TERRACOTTA,
+            Material.LIME_GLAZED_TERRACOTTA,
+            Material.LOG_2,
+            Material.LOG,
+            Material.OBSERVER,
+            Material.PISTON_BASE,
+            Material.PISTON_EXTENSION,
+            Material.PISTON_MOVING_PIECE,
+            Material.PISTON_STICKY_BASE,
+            Material.POWERED_RAIL,
+            Material.PUMPKIN,
+            Material.QUARTZ_BLOCK,
+            Material.RAILS,
+            Material.REDSTONE_TORCH_OFF,
+            Material.REDSTONE_TORCH_ON,
+            Material.SKULL,
+            Material.SPRUCE_DOOR,
+            Material.STANDING_BANNER,
+            Material.STONE_BUTTON,
+            Material.TORCH,
+            Material.TRAP_DOOR,
+            Material.TRAPPED_CHEST,
+            Material.VINE,
+            Material.WALL_BANNER,
+            Material.WALL_SIGN,
+            Material.WOOD_BUTTON,
+            Material.WOOD_DOOR,
+            Material.WOODEN_DOOR,
+            Material.SIGN_POST
     };
 
     private static final String DATA = "data";
@@ -141,8 +213,7 @@ public class Template {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
                     if (Arrays.asList(PLACE_LATE).contains(templateBlocks[x][y][z].getMaterial())) {
-                        if (templateBlocks[x][y][z].getMaterial().toString().contains("DOOR") &&
-                            !templateBlocks[x][y][z].getMaterial().toString().contains("TRAP")) {
+                        if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
                                 doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
                                                           templateBlocks[x][y + 1][z].getMetadata().getData(),
@@ -162,7 +233,7 @@ public class Template {
                     int locZ = loc.getBlockZ() + z;
 
                     Block b = w.getBlockAt(locX, locY, locZ);
-                    b.setType(templateBlocks[x][y][z].getMaterial());
+                    b.setType(templateBlocks[x][y][z].getMaterial(), false);
                     b.getState().update();
 
                     MaterialData copiedState = getTemplateBlocks()[x][y][z].getMetadata();
@@ -199,14 +270,14 @@ public class Template {
                 ntc.a(te.d());
             }
 
-            below.setType(Material.STONE);
+            below.setType(Material.STONE, false);
 
-            b.setType(block.getMaterial());
+            b.setType(block.getMaterial(), false);
             BlockState state = b.getState();
             state.setData(block.getMetadata());
             state.update();
 
-            below.setType(belowMaterial);
+            below.setType(belowMaterial, false);
             below.getState().setData(new MaterialData(belowMaterial, metadata));
             below.getState().update(false, false);
         }
@@ -218,8 +289,8 @@ public class Template {
             Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
             Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
 
-            doorBottom.setType(dw.getMaterialData().getItemType());
-            doorTop.setType(dw.getMaterialData().getItemType());
+            doorBottom.setType(dw.getMaterialData().getItemType(), false);
+            doorTop.setType(dw.getMaterialData().getItemType(), false);
 
             doorBottom.setData(dw.getBottom());
             doorTop.setData(dw.getTop());
@@ -438,7 +509,22 @@ public class Template {
             //for each Y rotate x and z.
             for (int x = 0; x < zDepth; x++) {
                 for (int z = 0; z < xDepth; z++) {
-                    rotatedTemplateBlock[x][y][z] = templateBlocks[z][y][zDepth - x - 1];
+                    TemplateBlock block = templateBlocks[z][y][zDepth - x - 1];
+                    if (Arrays.asList(TO_ROTATE).contains(block.getMaterial())) {
+                        Material currentMaterial = block.getMaterial();
+                        int currentMetaData = (int) block.getMetadata().getData();
+                        if (currentMaterial.toString().contains("GLAZED_TERRACOTTA")) {
+                            currentMaterial = Material.BLACK_GLAZED_TERRACOTTA;
+                        }
+                        if (MinecraftHelper.isDoor(currentMaterial)) {
+                            currentMaterial = Material.ACACIA_DOOR;
+                        }
+
+                        int newMetaData = MinecraftHelper.getMaterialRotationData(currentMaterial, currentMetaData,
+                                                                                  true);
+                        block.getMetadata().setData((byte) newMetaData);
+                    }
+                    rotatedTemplateBlock[x][y][z] = block;
                 }
             }
         }
