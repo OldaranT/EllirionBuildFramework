@@ -7,9 +7,9 @@ import org.bukkit.World;
 
 public class Point {
 
-    @Getter private double x;
-    @Getter private double y;
-    @Getter private double z;
+    @Getter private final double x;
+    @Getter private final double y;
+    @Getter private final double z;
 
     /**
      * Constructs a Point at (0,0,0).
