@@ -3,20 +3,24 @@ package com.ellirion.buildframework.util;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BlockChange;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class WorldHelper {
 
     @SuppressWarnings("PMD.SuspiciousConstantFieldName")
     private static boolean STARTED = false;
-    private static final int MAX_SIZE = 1000;
-    private static final LinkedList<ArrayList<BlockChange>> QUEUE = new LinkedList<>();
+    private static final Object LOCK = new Object();
+    private static final int THROTTLE = BuildFramework.getInstance().getConfig().getInt(
+            "WorldHelper.MaximumAmountOfBlocks", 100);
+    private static final BlockingQueue<BlockChange> QUEUE = new LinkedBlockingQueue<>();
 
     /**
-     * get the blocks in the world using coordinates in using the current thread and if that cant be done us a promise.
+     * get the block at the given coordinates and load the chunk using a synchronous promise if necessary.
      * @param world the world
      * @param x the x coordinate
      * @param y the y coordinate
@@ -29,7 +33,7 @@ public class WorldHelper {
     }
 
     /**
-     * get the blocks in the world using a location in using the current thread and if that cant be done us a promise.
+     * get the block at the given location and load the chunk using a synchronous promise if necessary.
      * @param location the location of the block
      * @return the block at the given location
      */
@@ -57,8 +61,7 @@ public class WorldHelper {
      */
 
     public static void queueBlockChange(BlockChange change) {
-        ArrayList<BlockChange> list = findFirstNotFullArray();
-        list.add(change);
+        QUEUE.add(change);
         startExecutingIfNotStarted();
     }
 
@@ -67,65 +70,53 @@ public class WorldHelper {
      * @param changes the list of block changes that need to be executed
      */
     public static void queueBlockChange(ArrayList<BlockChange> changes) {
-        ArrayList<BlockChange> list = findFirstNotFullArray();
-
-        if (list.size() + changes.size() <= MAX_SIZE) {
-            list.addAll(changes);
-            startExecutingIfNotStarted();
-            return;
-        }
-
-        QUEUE.addLast((ArrayList<BlockChange>) changes.subList(0, MAX_SIZE - 1));
-        ArrayList<BlockChange> iteratingList = (ArrayList<BlockChange>) changes.subList(MAX_SIZE - 1,
-                                                                                        changes.size() - 1);
-
-        while (iteratingList.size() > MAX_SIZE) {
-            QUEUE.add((ArrayList<BlockChange>) iteratingList.subList(0, MAX_SIZE - 1));
-            iteratingList = (ArrayList<BlockChange>) iteratingList.subList(MAX_SIZE - 1, iteratingList.size() - 1);
-        }
-
+        QUEUE.addAll(changes);
         startExecutingIfNotStarted();
-        QUEUE.add((ArrayList<BlockChange>) iteratingList.subList(0, MAX_SIZE - 1));
-    }
-
-    private static ArrayList<BlockChange> findFirstNotFullArray() {
-        for (ArrayList<BlockChange> blockChanges : QUEUE) {
-            if (blockChanges.size() < MAX_SIZE) {
-                return blockChanges;
-            }
-        }
-        QUEUE.addLast(new ArrayList<>());
-        return QUEUE.getLast();
     }
 
     private static void startExecutingIfNotStarted() {
-        if (!STARTED) {
-            executeChanges();
-            STARTED = true;
+        synchronized (LOCK) {
+            if (!STARTED) {
+                executeChanges();
+                STARTED = true;
+            }
         }
     }
 
     private static void executeChanges() {
         new Promise<>(finisher -> {
-            ArrayList<BlockChange> changes = QUEUE.pollFirst();
-            if (changes == null) {
-                finisher.resolve(null);
-                return;
-            }
+            long startTime = System.currentTimeMillis();
+            long wantVisited;
+            long haveVisited = 0;
 
-            for (BlockChange blockChange : changes) {
-                Block toChange = blockChange.getLocation().getWorld().getBlockAt(blockChange.getLocation());
-                toChange.setType(blockChange.getMatAfter());
-                toChange.setData(blockChange.getMetadataAfter());
+            while (!QUEUE.isEmpty()) {
+
+                wantVisited = THROTTLE * (System.currentTimeMillis() - startTime) / 1000;
+                sendUpdates(QUEUE.poll());
+                haveVisited++;
+
+                long deltaVisited = haveVisited - wantVisited;
+
+                // Keep our pace correct (throttle)
+                try {
+                    Thread.sleep((deltaVisited / THROTTLE) * 1000);
+                } catch (Exception ex) {
+                }
             }
             finisher.resolve(null);
-        }, false).consumeAsync(next -> {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ex) {
-                //
+        }, true).consumeSync(next -> {
+            synchronized (LOCK) {
+                STARTED = false;
             }
-            executeChanges();
         });
+    }
+
+    private static void sendUpdates(BlockChange change) {
+        new Promise<>(finisher -> {
+            Block block = change.getLocation().getWorld().getBlockAt(change.getLocation());
+            block.setType(change.getMatAfter());
+            block.setData(change.getMetadataAfter());
+            finisher.resolve(null);
+        }, false);
     }
 }
