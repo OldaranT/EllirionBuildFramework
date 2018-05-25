@@ -204,9 +204,7 @@ public class Template {
             state.setData(block.getMetadata());
             state.update();
 
-            below.setType(belowMaterial);
-            below.getState().setData(new MaterialData(belowMaterial, metadata));
-            below.getState().update(false, false);
+            below.setTypeIdAndData(belowMaterial.ordinal(), metadata, false);
         }
 
         // Place doors last.
