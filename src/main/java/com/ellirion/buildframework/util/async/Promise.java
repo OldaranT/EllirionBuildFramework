@@ -1,0 +1,434 @@
+package com.ellirion.buildframework.util.async;
+
+import lombok.Getter;
+import org.apache.commons.lang.UnhandledException;
+import org.bukkit.Bukkit;
+import com.ellirion.buildframework.BuildFramework;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+
+import static com.ellirion.buildframework.util.async.PromiseState.*;
+
+public class Promise<TResult> {
+
+    private PromiseState state;
+    private boolean scheduled;
+    @Getter private TResult result;
+    @Getter private Exception exception;
+
+    private List<Consumer<TResult>> onResolve;
+    private List<Consumer<Exception>> onReject;
+
+    private final IPromiseBody<TResult> runner;
+    private final IPromiseFinisher<TResult> finisher;
+
+    private final CountDownLatch latch;
+    private final boolean async;
+
+    /**
+     * Construct a Promise with the given runner as function body.
+     * @param runner The runner to run
+     */
+    public Promise(final IPromiseBody<TResult> runner) {
+        this(runner, false);
+    }
+
+    /**
+     * Construct a Promise with the given runner as function body.
+     * @param runner The runner to run
+     * @param async Whether to run asynchronously or not
+     */
+    public Promise(final IPromiseBody<TResult> runner, final boolean async) {
+        this(runner, async, true);
+    }
+
+    /**
+     * Construct a Promise with the given runner as function body.
+     * @param runner The runner to run
+     * @param async Whether to run asynchronously or not
+     * @param immediate Whether to immediately schedule this Promise or not
+     */
+    public Promise(final IPromiseBody<TResult> runner, final boolean async, final boolean immediate) {
+        this.state = PENDING;
+        this.scheduled = false;
+        this.result = null;
+        this.exception = null;
+
+        this.onResolve = new ArrayList<>();
+        this.onReject = new ArrayList<>();
+
+        this.runner = runner;
+        this.finisher = new IPromiseFinisher<TResult>() {
+            @Override
+            public void resolve(TResult t) {
+                handleResolve(t);
+            }
+
+            @Override
+            public void reject(Exception ex) {
+                handleReject(ex);
+            }
+        };
+
+        this.latch = new CountDownLatch(1);
+        this.async = async;
+
+        // Schedule (sync or async) the invocation of our runner if requested.
+        if (immediate) {
+            this.schedule();
+        }
+    }
+
+    /**
+     * When this Promise is resolved, the {@code continuer} is invoked with the result.
+     * @param continuer The function body that is invoked upon resolving
+     * @param async Whether to run the {@code continuer} asynchronously or not
+     * @param <TNext> The return type the {@code continuer}
+     * @return The resulting Promise with type {@code TNext}.
+     */
+    public synchronized <TNext> Promise<TNext> then(
+            IPromiseContinuer<TResult, TNext> continuer, boolean async) {
+        // Create a follow-up promise that does not schedule itself immediately.
+        Promise<TNext> next = new Promise<>(finisher -> {
+            try {
+                finisher.resolve(continuer.run(result));
+            } catch (Exception ex) {
+                finisher.reject(ex);
+            }
+        }, async, false);
+
+        // If we have already been resolved, schedule the next Promise for execution.
+        if (state == RESOLVED) {
+            next.runBody();
+            return next;
+        }
+
+        // If we have been rejected, schedule the next Promise for failure.
+        if (state == REJECTED) {
+            next.runFailure(exception);
+            return next;
+        }
+
+        // If we are still pending, don't schedule it yet!
+        // We put the handlers in the follow-up queue(s).
+        onResolve.add(result -> next.runBody());
+        onReject.add(next::runFailure);
+        return next;
+    }
+
+    /**
+     * When this Promise is resolved, the {@code continuer} is invoked with the result.
+     * The {@code continuer} is ran with the same synchronicity as this Promise.
+     * @param continuer The function body that is invoked upon resolving
+     * @param <TNext> The return type the {@code continuer}
+     * @return The resulting Promise with type {@code TNext}.
+     */
+    public <TNext> Promise<TNext> then(IPromiseContinuer<TResult, TNext> continuer) {
+        return then(continuer, async);
+    }
+
+    /**
+     * When this Promise is resolved, the {@code consumer} is invoked with the result.
+     * @param consumer The function body that is invoked upon resolving
+     * @param async Whether to run the {@code consumer} asynchronously or not
+     */
+    public void then(Consumer<TResult> consumer, boolean async) {
+        then(result -> {
+            consumer.accept(result);
+            return null;
+        }, async);
+    }
+
+    /**
+     * When this Promise is resolved, the {@code consumer} is invoked with the result.
+     * The {@code consumer} is ran with the same synchronicity as this Promise.
+     * @param consumer The function body that is invoked upon resolving
+     */
+    public void then(Consumer<TResult> consumer) {
+        then(result -> {
+            consumer.accept(result);
+            return null;
+        }, async);
+    }
+
+    /**
+     * When this Promise is rejected, the {@code continuer} is invoked with the exception.
+     * @param continuer The function body that is invoked upon rejection
+     * @param async Whether to run the {@code continuer} asynchronously or not
+     * @param <TNext> The return type the {@code continuer}
+     * @return The resulting Promise with type {@code TNext}.
+     */
+    public synchronized <TNext> Promise<TNext> except(
+            IPromiseContinuer<Exception, TNext> continuer, boolean async) {
+        // Create a follow-up promise that does not schedule itself immediately.
+        Promise<TNext> next = new Promise<>(finisher -> {
+            try {
+                finisher.resolve(continuer.run(exception));
+            } catch (Exception ex) {
+                finisher.reject(ex);
+            }
+        }, async, false);
+
+        // If we have already been resolved, just return the
+        // next Promise. It will never be executed.
+        if (state == RESOLVED) {
+            return next;
+        }
+
+        // If we have been rejected, schedule the next Promise for execution.
+        if (state == REJECTED) {
+            next.runBody();
+            return next;
+        }
+
+        // If we are still pending, don't schedule it yet!
+        // We put the handlers in the follow-up queue(s).
+        onReject.add(result -> next.runBody());
+        return next;
+    }
+
+    /**
+     * When this Promise is rejected, the {@code continuer} is invoked with the exception.
+     * The {@code continuer} is ran with the same synchronicity as this Promise.
+     * @param continuer The function body that is invoked upon rejection
+     * @param <TNext> The return type the {@code continuer}
+     * @return The resulting Promise with type {@code TNext}.
+     */
+    public <TNext> Promise<TNext> except(IPromiseContinuer<Exception, TNext> continuer) {
+        return except(continuer, async);
+    }
+
+    /**
+     * When this Promise is rejected, the {@code consumer} is invoked with the exception.
+     * @param consumer The function body that is invoked upon rejection
+     * @param async Whether to run the {@code consumer} asynchronously or not
+     */
+    public void except(Consumer<Exception> consumer, boolean async) {
+        except(ex -> {
+            consumer.accept(ex);
+            return null;
+        }, async);
+    }
+
+    /**
+     * When this Promise is rejected, the {@code consumer} is invoked with the exception.
+     * The {@code consumer} is ran with the same synchronicity as this Promise.
+     * @param consumer The function body that is invoked upon rejection
+     */
+    public void except(Consumer<Exception> consumer) {
+        except(result -> {
+            consumer.accept(result);
+            return null;
+        }, async);
+    }
+
+    /**
+     * Waits for this Promise to resolve or reject.
+     * @return The PromiseState of this Promise after awaiting
+     */
+    public PromiseState await() {
+        try {
+            latch.await();
+        } catch (Exception ex) {
+        }
+        return state;
+    }
+
+    /**
+     * Schedule this Promise for execution manually.
+     * Does nothing if this Promise has already been scheduled.
+     * @return This Promise
+     */
+    public synchronized Promise<TResult> schedule() {
+        // Only schedule if we haven't been scheduled yet!
+        if (scheduled) {
+            return this;
+        }
+
+        // Schedule the runBody method depending on our synchronicity.
+        scheduled = true;
+        runBody();
+        return this;
+    }
+
+    private synchronized void schedule(Runnable r) {
+        scheduled = true;
+        if (async) {
+            Bukkit.getScheduler().runTaskAsynchronously(BuildFramework.getInstance(), r);
+        } else {
+            Bukkit.getScheduler().runTask(BuildFramework.getInstance(), r);
+        }
+    }
+
+    private synchronized void runBody() {
+        schedule(() -> {
+            // If the runner throws an exception, catch it and reject this Promise.
+            try {
+                runner.run(finisher);
+            } catch (Exception ex) {
+                finisher.reject(ex);
+            }
+        });
+    }
+
+    private synchronized void runFailure(Exception ex) {
+        schedule(() -> handleReject(ex));
+    }
+
+    private synchronized void handleResolve(TResult t) {
+        if (state != PENDING) {
+            return;
+        }
+
+        // Store the result and mark ourselves as resolved.
+        // We also notify any threads waiting for this Promise to finish.
+        state = RESOLVED;
+        result = t;
+        latch.countDown();
+
+        // Invoke all functions waiting on this Promise being resolved.
+        for (Consumer<TResult> next : onResolve) {
+            next.accept(t);
+        }
+    }
+
+    private synchronized void handleReject(Exception ex) {
+        if (state != PENDING) {
+            return;
+        }
+
+        // Store the exception and mark ourselves as rejected.
+        // We also notify any threads waiting for this Promise to finish.
+        state = REJECTED;
+        exception = ex;
+        latch.countDown();
+
+        // If there are no exception handlers registered on this Promise, throw the exception.
+        if (onReject.size() == 0 && ex != null) {
+            throw new UnhandledException("Promise failed with unhandled exception", ex);
+        }
+
+        // Invoke all functions waiting on this Promise being rejected.
+        for (Consumer<Exception> next : onReject) {
+            next.accept(ex);
+        }
+    }
+
+    /**
+     * Schedule the given Promises in sequence. This means that any given Promise
+     * is only scheduled when all Promises before it have been resolved.
+     * If any Promise is rejected, the result Promise is also rejected and any
+     * following Promises are not executed.
+     * @param promises The Promises to schedule in sequence
+     * @return A map from input Promise to result
+     */
+    public static Promise<Map<Promise, Object>> sequence(Promise<?>... promises) {
+        return sequence(true, promises);
+    }
+
+    /**
+     * Schedule the given Promises in sequence. This means that any given Promise
+     * is only scheduled when all Promises before it have been resolved.
+     * If any Promise is rejected, the result Promise is also rejected and any
+     * following Promises are not executed.
+     * @param immediate Whether this Promise should run immediately
+     * @param promises The Promises to schedule in sequence
+     * @return A map from input Promise to result
+     */
+    public static Promise<Map<Promise, Object>> sequence(boolean immediate, Promise<?>... promises) {
+        return new Promise<>(finisher -> {
+            Map<Promise, Object> results = new HashMap<>();
+            for (Promise<?> p : promises) {
+                p.schedule();
+                PromiseState s = p.await();
+                if (s == REJECTED) {
+                    finisher.reject(p.exception);
+                } else if (s == PENDING) {
+                    finisher.reject(new IllegalStateException(
+                            "Promise await() yielded but Promise is still pending"));
+                }
+                results.put(p, p.result);
+            }
+            finisher.resolve(results);
+        }, true, immediate);
+    }
+
+    /**
+     * Schedule all given Promises, returning a Promise which is resolved as soon as
+     * any one of the given Promises has been resolved. If any Promise is rejected,
+     * the result Promise is also rejected.
+     * @param promises The Promises to schedule
+     * @return The first returned result by any of the given Promises
+     */
+    public static Promise<Object> any(Promise<?>... promises) {
+        return any(true, promises);
+    }
+
+    /**
+     * Schedule all given Promises, returning a Promise which is resolved as soon as
+     * any one of the given Promises has been resolved. If any Promise is rejected,
+     * the result Promise is also rejected.
+     * @param immediate Whether this Promise should run immediately
+     * @param promises The Promises to schedule
+     * @return The first returned result by any of the given Promises
+     */
+    public static Promise<Object> any(boolean immediate, Promise<?>... promises) {
+        return new Promise<>(finisher -> {
+            for (Promise<?> p : promises) {
+                p.then(finisher::resolve);
+                p.except(finisher::reject);
+                p.schedule();
+            }
+        }, true, immediate);
+    }
+
+    /**
+     * Schedule all given Promises, returning a Promise which is resolved as soon as
+     * all of the given Promises have been resolved. If any Promise is rejected,
+     * the resulting Promise is also rejected.
+     * @param promises The Promises to schedule
+     * @return A map from input Promise to result
+     */
+    public static Promise<Map<Promise, Object>> all(Promise<?>... promises) {
+        return all(true, promises);
+    }
+
+    /**
+     * Schedule all given Promises, returning a Promise which is resolved as soon as
+     * all of the given Promises have been resolved. If any Promise is rejected,
+     * the resulting Promise is also rejected.
+     * @param immediate Whether this Promise should run immediately
+     * @param promises The Promises to schedule
+     * @return A map from input Promise to result
+     */
+    public static Promise<Map<Promise, Object>> all(boolean immediate, Promise<?>... promises) {
+        return new Promise<>(finisher -> {
+            Map<Promise, Object> results = new HashMap<>();
+            CountDownLatch latch = new CountDownLatch(promises.length);
+            for (Promise<?> p : promises) {
+
+                // Register success and failure handlers on the promise
+                p.then(result -> {
+                    results.put(p, result);
+                    synchronized (latch) {
+                        latch.countDown();
+                        if (latch.getCount() == 0) {
+                            finisher.resolve(results);
+                        }
+                    }
+                });
+                p.except(ex -> {
+                    finisher.reject(ex);
+                });
+
+                // Schedule it for execution
+                p.schedule();
+            }
+        }, true, immediate);
+    }
+}

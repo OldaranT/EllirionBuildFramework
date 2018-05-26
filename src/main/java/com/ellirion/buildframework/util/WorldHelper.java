@@ -5,6 +5,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BlockChange;
+import com.ellirion.buildframework.util.async.Promise;
 
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -104,11 +105,11 @@ public class WorldHelper {
                 }
             }
             finisher.resolve(null);
-        }, true).consumeSync(next -> {
+        }, true).then(next -> {
             synchronized (LOCK) {
                 STARTED = false;
             }
-        });
+        }, false);
     }
 
     private static void sendUpdates(BlockChange change) {

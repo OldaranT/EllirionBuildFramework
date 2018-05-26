@@ -8,9 +8,10 @@ import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
+import com.ellirion.buildframework.util.async.Promise;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -47,185 +48,418 @@ public class PromiseTest {
     }
 
     @Test
-    public void consumeSync_whenResolved_shouldInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p = new Promise<>((finisher) -> finisher.resolve(0));
+    public void thenConsumeSync_whenResolved_shouldInvokeResolveHandler() {
+        CountDownLatch latch = new CountDownLatch(1);
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(0), false);
 
-        p.consumeSync((i) -> results.add(1));
+        p.then(i -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
 
-        assertEquals(1, results.size());
+        assertEquals(0, latch.getCount());
     }
 
     @Test
-    public void consumeSync_whenRejected_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p = new Promise<>((finisher) -> finisher.reject(null));
+    public void thenConsumeSync_whenRejected_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false);
 
-        p.consumeSync((i) -> results.add(1));
-
-        assertEquals(0, results.size());
+        p.then(i -> {
+            fail();
+        });
     }
 
     @Test
-    public void consumeAsync_whenResolved_shouldInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p = new Promise<>((finisher) -> finisher.resolve(0));
-        p.consumeAsync((i) -> results.add(1));
+    public void thenConsumeAsync_whenResolved_shouldInvokeHandler() {
+        CountDownLatch latch = new CountDownLatch(1);
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(0), true);
 
-        assertEquals(1, results.size());
+        p.then(i -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
+
+        assertEquals(0, latch.getCount());
     }
 
     @Test
-    public void consumeAsync_whenRejected_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p = new Promise<>((finisher) -> finisher.reject(null));
+    public void thenConsumeAsync_whenRejected_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), true);
 
-        p.consumeAsync((i) -> results.add(1));
-
-        assertEquals(0, results.size());
+        p.then(i -> {
+            fail();
+        });
     }
 
     @Test
-    public void resumeSync_whenResolved_shouldInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.resolve(1));
+    public void thenResumeSync_whenResolved_shouldInvokeHandler() {
+        CountDownLatch latch = new CountDownLatch(2);
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false);
 
-        Promise<Integer> p2 = p1.resumeSync((i) -> {
-            results.add(i);
+        Promise<Integer> p2 = p1.then(i -> {
+            assertEquals(1, (int) i);
+            assertEquals(2, latch.getCount());
+            latch.countDown();
             return i * 2;
         });
-        p2.consumeSync(results::add);
+        p2.then(i -> {
+            assertEquals(2, (int) i);
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
 
-        assertEquals(2, results.size());
-        assertEquals(1, (int) results.get(0));
-        assertEquals(2, (int) results.get(1));
+        assertEquals(0, latch.getCount());
     }
 
     @Test
-    public void resumeSync_whenRejected_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.reject(null));
-        Promise<Integer> p2 = p1.resumeSync((i) -> {
-            results.add(i);
+    public void thenResumeSync_whenRejected_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false);
+
+        p.then(i -> {
+            fail();
+            return 0;
+        });
+    }
+
+    @Test
+    public void thenResumeAsync_whenResolved_shouldInvokeHandler() {
+        CountDownLatch latch = new CountDownLatch(2);
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), true);
+
+        Promise<Integer> p2 = p1.then(i -> {
+            assertEquals(1, (int) i);
+            assertEquals(2, latch.getCount());
+            latch.countDown();
             return i * 2;
         });
-        p2.consumeSync(results::add);
-
-        assertEquals(0, results.size());
-    }
-
-    @Test
-    public void resumeAsync_whenResolved_shouldInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.resolve(1));
-        Promise<Integer> p2 = p1.resumeAsync((i) -> {
-            results.add(i);
-            return i * 2;
+        p2.then(i -> {
+            assertEquals(2, (int) i);
+            assertEquals(1, latch.getCount());
+            latch.countDown();
         });
-        p2.consumeAsync(results::add);
 
-        assertEquals(2, results.size());
-        assertEquals(1, (int) results.get(0));
-        assertEquals(2, (int) results.get(1));
+        assertEquals(0, latch.getCount());
     }
 
     @Test
-    public void resumeAsync_whenRejected_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.reject(null));
-        Promise<Integer> p2 = p1.resumeAsync((i) -> {
-            results.add(i);
-            return i * 2;
+    public void thenResumeAsync_whenRejected_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), true);
+
+        p.then(i -> {
+            fail();
+            return 0;
         });
-        p2.consumeAsync(results::add);
-
-        assertEquals(0, results.size());
     }
 
     @Test
-    public void consumeFailSync_whenResolved_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p = new Promise<>((finisher) -> finisher.resolve(0));
-        p.consumeFailSync((ex) -> results.add(1));
+    public void exceptConsumeSync_whenResolved_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(0), false);
 
-        assertEquals(0, results.size());
+        p.except(ex -> {
+            fail();
+        });
     }
 
     @Test
-    public void consumeFailSync_whenRejected_shouldInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p = new Promise<>((finisher) -> finisher.reject(null));
-        p.consumeFailSync((ex) -> results.add(1));
+    public void exceptConsumeSync_whenRejected_shouldInvokeHandler() {
+        CountDownLatch latch = new CountDownLatch(1);
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false);
 
-        assertEquals(1, results.size());
+        p.except(ex -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
+
+        assertEquals(0, latch.getCount());
     }
 
     @Test
-    public void consumeFailAsync_whenResolved_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p = new Promise<>((finisher) -> finisher.resolve(0));
-        p.consumeFailAsync((ex) -> results.add(1));
+    public void exceptConsumeAsync_whenResolved_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(0), true);
 
-        assertEquals(0, results.size());
+        p.except(ex -> {
+            fail();
+        });
     }
 
     @Test
-    public void resumeFailSync_whenResolved_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.resolve(1));
+    public void exceptResumeSync_whenResolved_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1), false);
 
-        Promise<Integer> p2 = p1.resumeFailSync((ex) -> 0);
-        p2.consumeSync(results::add);
-
-        assertEquals(0, results.size());
+        p.except(ex -> {
+            fail();
+            return 0;
+        });
     }
 
     @Test
-    public void resumeFailSync_whenRejected_shouldInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.reject(null));
+    public void exceptResumeSync_whenRejected_shouldInvokeHandler() {
+        CountDownLatch latch = new CountDownLatch(1);
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false);
 
-        Promise<Integer> p2 = p1.resumeFailSync((ex) -> 0);
-        p2.consumeSync(results::add);
+        p.except(ex -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+            return 0;
+        });
 
-        assertEquals(1, results.size());
+        assertEquals(0, latch.getCount());
     }
 
     @Test
-    public void resumeFailAsync_whenResolved_shouldNotInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.resolve(1));
+    public void exceptResumeAsync_whenResolved_shouldNotInvokeHandler() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1), true);
 
-        Promise<Integer> p2 = p1.resumeFailSync((ex) -> 0);
-        p2.consumeSync(results::add);
-
-        assertEquals(0, results.size());
+        p.except(ex -> {
+            fail();
+            return 0;
+        });
     }
 
     @Test
-    public void resumeFailAsync_whenRejected_shouldInvokeHandler() {
-        List<Integer> results = new ArrayList<>();
-        Promise<Integer> p1 = new Promise<>((finisher) -> finisher.reject(null));
+    public void exceptResumeAsync_whenRejected_shouldInvokeHandler() {
+        CountDownLatch latch = new CountDownLatch(1);
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), true);
 
-        Promise<Integer> p2 = p1.resumeFailAsync((ex) -> 0);
-        p2.consumeSync(results::add);
+        p.except(i -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
 
-        assertEquals(1, results.size());
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void resolve_whenInvokedAndPending_shouldInvokeOnlyResolveHandlers() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        p.then(i -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
+        p.except(ex -> {
+            fail();
+        });
+
+        p.schedule();
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void resolve_whenInvokedAndFinished_shouldInvokeOnlyResolveHandlers() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1));
+        CountDownLatch latch = new CountDownLatch(1);
+
+        p.then(i -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
+        p.except(ex -> {
+            fail();
+        });
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void reject_whenInvokedAndPending_shouldInvokeOnlyRejectionHandlers() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        p.then(i -> {
+            fail();
+        });
+        p.except(ex -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
+
+        p.schedule();
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void reject_whenInvokedAndFinished_shouldInvokeOnlyRejectionHandlers() {
+        Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null));
+        CountDownLatch latch = new CountDownLatch(1);
+
+        p.then(i -> {
+            fail();
+        });
+        p.except(ex -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+        });
+
+        assertEquals(0, latch.getCount());
     }
 
     @Test
     public void await_whenResolved_shouldReturnResolved() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1));
 
-        Promise.State s = p.await();
-        assertEquals(Promise.State.RESOLVED, s);
+        Promise.PromiseState s = p.await();
+        assertEquals(Promise.PromiseState.RESOLVED, s);
     }
 
     @Test
     public void await_whenRejected_shouldReturnRejected() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null));
 
-        Promise.State s = p.await();
-        assertEquals(Promise.State.REJECTED, s);
+        Promise.PromiseState s = p.await();
+        assertEquals(Promise.PromiseState.REJECTED, s);
+    }
+
+    @Test
+    public void sequence_whenInvoked_shouldRunSequentially() {
+        CountDownLatch latch = new CountDownLatch(3);
+        Promise<Integer> p1 = new Promise<>(finisher -> {
+            assertEquals(3, latch.getCount());
+            finisher.resolve(1);
+            latch.countDown();
+        }, false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> {
+            assertEquals(2, latch.getCount());
+            finisher.resolve(2);
+            latch.countDown();
+        }, false, false);
+        Promise<Integer> p3 = new Promise<>(finisher -> {
+            assertEquals(1, latch.getCount());
+            finisher.resolve(3);
+            latch.countDown();
+        }, false, false);
+
+        Promise.sequence(p1, p2, p3);
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void sequence_whenAllPromisesResolve_shouldResolvePromise() {
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
+        Promise<Integer> p3 = new Promise<>(finisher -> finisher.resolve(3), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Promise<Map<Promise, Object>> p = Promise.sequence(p1, p2, p3);
+        p.then(results -> {
+            assertEquals(1, results.get(p1));
+            assertEquals(2, results.get(p2));
+            assertEquals(3, results.get(p3));
+            latch.countDown();
+        });
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void sequence_whenAnyPromiseRejects_shouldRejectPromise() {
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> {
+            throw new RuntimeException();
+        }, false, false);
+        Promise<Integer> p3 = new Promise<>(finisher -> finisher.resolve(3), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Promise<Map<Promise, Object>> p = Promise.sequence(false, p1, p2, p3);
+        p.except(ex -> {
+            latch.countDown();
+        });
+        p.schedule();
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void any_whenAnyPromiseResolves_shouldResolve() {
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Promise<Object> p = Promise.any(p1, p2).schedule();
+        p.then(obj -> {
+            assertEquals(1, latch.getCount());
+            assertEquals(1, obj);
+            latch.countDown();
+        });
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void any_whenAnyPromiseRejects_shouldReject() {
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.reject(null), false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Promise<Object> p = Promise.any(p1, p2).schedule();
+        p.then(result -> {
+            fail();
+        });
+        p.except(ex -> {
+            assertEquals(1, latch.getCount());
+            assertNull(ex);
+            latch.countDown();
+        });
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void all_whenSomePromisesResolve_shouldNeverFinish() {
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
+        Promise<Integer> p3 = new Promise<>(finisher -> {}, false, false);
+
+        Promise<Map<Promise, Object>> p = Promise.all(p1, p2, p3);
+        p.then(result -> {
+            fail();
+        });
+        p.except(ex -> {
+            fail();
+        });
+    }
+
+    @Test
+    public void all_whenAllPromisesResolve_shouldResolve() {
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
+        Promise<Integer> p3 = new Promise<>(finisher -> finisher.resolve(3), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Promise<Map<Promise, Object>> p = Promise.all(p1, p2, p3);
+        p.then(result -> {
+            assertEquals(1, latch.getCount());
+            assertEquals(1, result.get(p1));
+            assertEquals(2, result.get(p2));
+            assertEquals(3, result.get(p3));
+            latch.countDown();
+        });
+        p.except(ex -> {
+            fail();
+        });
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void all_whenSomePromisesReject_shouldReject() {
+        Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
+        Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
+        Promise<Integer> p3 = new Promise<>(finisher -> finisher.reject(null), false, false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Promise<Map<Promise, Object>> p = Promise.all(p1, p2, p3);
+        p.then(result -> {
+            fail();
+        });
+        p.except(ex -> {
+            assertEquals(1, latch.getCount());
+            assertNull(ex);
+            latch.countDown();
+        });
+
+        assertEquals(0, latch.getCount());
     }
 }
