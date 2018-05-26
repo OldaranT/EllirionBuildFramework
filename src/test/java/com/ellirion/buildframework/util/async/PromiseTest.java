@@ -8,7 +8,6 @@ import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.util.async.Promise;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -299,16 +298,16 @@ public class PromiseTest {
     public void await_whenResolved_shouldReturnResolved() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1));
 
-        Promise.PromiseState s = p.await();
-        assertEquals(Promise.PromiseState.RESOLVED, s);
+        PromiseState s = p.await();
+        assertEquals(PromiseState.RESOLVED, s);
     }
 
     @Test
     public void await_whenRejected_shouldReturnRejected() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null));
 
-        Promise.PromiseState s = p.await();
-        assertEquals(Promise.PromiseState.REJECTED, s);
+        PromiseState s = p.await();
+        assertEquals(PromiseState.REJECTED, s);
     }
 
     @Test
