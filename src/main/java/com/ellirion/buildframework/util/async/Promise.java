@@ -233,10 +233,37 @@ public class Promise<TResult> {
     }
 
     /**
+     * When this Promise is finished in any way, the {@code runnable} is invoked.
+     * The {@code runnable} is ran with with the given synchronicity.
+     * @param runnable The function body that is invoked upon finishing
+     * @param async Whether to run the {@code runnable} asynchronously or not
+     */
+    public synchronized void always(Runnable runnable, boolean async) {
+        // If we have already finished, just run the consumer-
+        // but be careful to run it with the correct synchronicity!
+        if (state != PENDING) {
+            schedule(runnable, async);
+        }
+
+        // Otherwise, we add it to the queues.
+        onResolve.add(result -> schedule(runnable, async));
+        onReject.add(ex -> schedule(runnable, async));
+    }
+
+    /**
+     * When this Promise is finished in any way, the {@code runnable} is invoked.
+     * The {@code runnable} is ran with the same synchronicity as this Promise.
+     * @param runnable The function body that is invoked upon finishing
+     */
+    public void always(Runnable runnable) {
+        always(runnable, async);
+    }
+
+    /**
      * Waits for this Promise to resolve or reject.
      * @return The PromiseState of this Promise after awaiting
      */
-    public PromiseState await() {
+    public boolean await() {
         // Make sure execution is scheduled if it isn't already.
         this.schedule();
 
@@ -244,8 +271,9 @@ public class Promise<TResult> {
         try {
             latch.await();
         } catch (Exception ex) {
+            throw new RuntimeException("Promise.await() was interrupted", ex);
         }
-        return state;
+        return state == RESOLVED;
     }
 
     /**
@@ -265,7 +293,11 @@ public class Promise<TResult> {
         }
         scheduled = true;
 
-        // Schedule depending on our synchronicity.
+        // Actually schedule.
+        schedule(r, async);
+    }
+
+    private void schedule(Runnable r, boolean async) {
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(BuildFramework.getInstance(), r);
         } else {
@@ -353,12 +385,8 @@ public class Promise<TResult> {
             Map<Promise, Object> results = new HashMap<>();
             for (Promise<?> p : promises) {
                 p.schedule();
-                PromiseState s = p.await();
-                if (s == REJECTED) {
+                if (!p.await()) {
                     finisher.reject(p.exception);
-                } else if (s == PENDING) {
-                    finisher.reject(new IllegalStateException(
-                            "Promise await() yielded but Promise is still pending"));
                 }
                 results.put(p, p.result);
             }
