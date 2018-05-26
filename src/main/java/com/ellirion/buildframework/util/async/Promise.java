@@ -108,9 +108,14 @@ public class Promise<TResult> {
             return next;
         }
 
-        // If we have been rejected, schedule the next Promise for failure.
+        // If we have been rejected, we actually DO NOT schedule the next Promise
+        // for failure. Since the next Promise is new and still pending, doing this
+        // would cause the next Promise to immediately throw an "unhandled exception"
+        // exception. What we WILL do is straight away set the next Promise to a failed
+        // state without running the handlers.
         if (state == REJECTED) {
-            next.runFailure(exception);
+            next.state = REJECTED;
+            next.exception = exception;
             return next;
         }
 
@@ -232,6 +237,10 @@ public class Promise<TResult> {
      * @return The PromiseState of this Promise after awaiting
      */
     public PromiseState await() {
+        // Make sure execution is scheduled if it isn't already.
+        this.schedule();
+
+        // Wait for the countdown to reach zero.
         try {
             latch.await();
         } catch (Exception ex) {
@@ -245,19 +254,18 @@ public class Promise<TResult> {
      * @return This Promise
      */
     public synchronized Promise<TResult> schedule() {
-        // Only schedule if we haven't been scheduled yet!
-        if (scheduled) {
-            return this;
-        }
-
-        // Schedule the runBody method depending on our synchronicity.
-        scheduled = true;
         runBody();
         return this;
     }
 
     private synchronized void schedule(Runnable r) {
+        // Only schedule if we haven't been scheduled yet!
+        if (scheduled || state != PENDING) {
+            return;
+        }
         scheduled = true;
+
+        // Schedule depending on our synchronicity.
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(BuildFramework.getInstance(), r);
         } else {
@@ -430,5 +438,31 @@ public class Promise<TResult> {
                 p.schedule();
             }
         }, true, immediate);
+    }
+
+    /**
+     * Create a resolved Promise with {@code t} as the result value.
+     * @param t The result value to use
+     * @param <TResult> The type of the result value
+     * @return The resolved Promise
+     */
+    public static <TResult> Promise<TResult> resolve(TResult t) {
+        Promise<TResult> p = new Promise<>(null, false, false);
+        p.state = RESOLVED;
+        p.result = t;
+        return p;
+    }
+
+    /**
+     * Create a rejected Promise with {@code ex} as the exception.
+     * @param ex The exception to use
+     * @param <TResult> The type of the result value
+     * @return The resolved Promise
+     */
+    public static <TResult> Promise<TResult> reject(Exception ex) {
+        Promise<TResult> p = new Promise<>(null, false, false);
+        p.state = REJECTED;
+        p.exception = ex;
+        return p;
     }
 }

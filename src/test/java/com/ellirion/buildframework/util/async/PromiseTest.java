@@ -229,7 +229,7 @@ public class PromiseTest {
     }
 
     @Test
-    public void resolve_whenInvokedAndPending_shouldInvokeOnlyResolveHandlers() {
+    public void finisherResolve_whenInvokedAndPending_shouldInvokeOnlyResolveHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1), false, false);
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -246,7 +246,7 @@ public class PromiseTest {
     }
 
     @Test
-    public void resolve_whenInvokedAndFinished_shouldInvokeOnlyResolveHandlers() {
+    public void finisherResolve_whenInvokedAndFinished_shouldInvokeOnlyResolveHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1));
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -262,7 +262,7 @@ public class PromiseTest {
     }
 
     @Test
-    public void reject_whenInvokedAndPending_shouldInvokeOnlyRejectionHandlers() {
+    public void finisherReject_whenInvokedAndPending_shouldInvokeOnlyRejectionHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false, false);
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -279,7 +279,7 @@ public class PromiseTest {
     }
 
     @Test
-    public void reject_whenInvokedAndFinished_shouldInvokeOnlyRejectionHandlers() {
+    public void finisherReject_whenInvokedAndFinished_shouldInvokeOnlyRejectionHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null));
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -458,6 +458,63 @@ public class PromiseTest {
             assertNull(ex);
             latch.countDown();
         });
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void resolve_whenGivenResult_shouldReturnPromiseResolvedToResult() {
+        Promise<Boolean> p = Promise.resolve(true);
+        CountDownLatch latch = new CountDownLatch(2);
+
+        p.then(b -> {
+            assertEquals(2, latch.getCount());
+            latch.countDown();
+            assertTrue(b);
+        });
+        p.then(b -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+            assertTrue(b);
+            return 0;
+        });
+        p.except(ex -> {
+            fail();
+        });
+        p.except(ex -> {
+            fail();
+            return 0;
+        });
+        p.schedule();
+
+        assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void reject_whenGivenException_shouldReturnPromiseRejectedToException() {
+        Exception e = new Exception();
+        Promise<Boolean> p = Promise.reject(e);
+        CountDownLatch latch = new CountDownLatch(2);
+
+        p.then(b -> {
+            fail();
+        });
+        p.then(b -> {
+            fail();
+            return 0;
+        });
+        p.except(ex -> {
+            assertEquals(2, latch.getCount());
+            latch.countDown();
+            assertEquals(e, ex);
+        });
+        p.except(ex -> {
+            assertEquals(1, latch.getCount());
+            latch.countDown();
+            assertEquals(e, ex);
+            return 0;
+        });
+        p.schedule();
 
         assertEquals(0, latch.getCount());
     }
