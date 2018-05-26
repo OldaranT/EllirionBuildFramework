@@ -2,6 +2,7 @@ package com.ellirion.buildframework.util.async;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -22,11 +23,8 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @PrepareForTest({BuildFramework.class, Bukkit.class})
 public class PromiseTest {
 
-    public PromiseTest() {
-        mockScheduler();
-    }
-
-    private void mockScheduler() {
+    @Before
+    public void setup() {
         BukkitScheduler sched = mock(BukkitScheduler.class);
 
         mockStatic(BuildFramework.class);
@@ -493,7 +491,7 @@ public class PromiseTest {
     public void all_whenSomePromisesResolve_shouldNeverFinish() {
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
         Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
-        Promise<Integer> p3 = new Promise<>(finisher -> {}, false, false);
+        Promise<Integer> p3 = new Promise<>(finisher -> { }, false, false);
 
         Promise<Map<Promise, Object>> p = Promise.all(p1, p2, p3);
         p.then(result -> {
