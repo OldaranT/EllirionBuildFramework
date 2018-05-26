@@ -17,6 +17,7 @@ public class PathingSession {
     @Getter private Player player;
     @Getter private List<Point> path;
     @Getter @Setter private List<Point> visited;
+    @Getter @Setter private PathingGraph graph;
     @Getter @Setter private Point point1;
     @Getter @Setter private Point point2;
     @Getter @Setter private NBTTagCompound config;
@@ -28,6 +29,8 @@ public class PathingSession {
     public PathingSession(final Player player) {
         this.player = player;
         this.path = null;
+        this.visited = null;
+        this.graph = null;
         this.point1 = null;
         this.point2 = null;
         this.config = new NBTTagCompound();
@@ -42,7 +45,6 @@ public class PathingSession {
 
         config.setDouble("f-goal-fac", 2);
         config.setDouble("f-goal-exp", 1.1);
-        config.setDouble("f-line", 0);
 
         config.setInt("turn-short-threshold", 1);
         config.setInt("turn-short-length", 3);

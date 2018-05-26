@@ -36,12 +36,11 @@ public class Heap<TData, TScore extends Comparable<TScore>> {
         // the end of the array (at the bottom of the binary tree).
         int index = ++size;
         Node<TData, TScore> node = new Node<>(data, scorer.apply(data));
+        arr[index] = node;
+        indices.put(data, index);
 
         // We insert the item and move the item upwards as many times as necessary.
-        index = percolateUp(node, index);
-
-        // Lastly we make sure we can find the item back at a later time.
-        indices.put(data, index);
+        percolateUp(node, index);
     }
 
     /**
@@ -61,10 +60,14 @@ public class Heap<TData, TScore extends Comparable<TScore>> {
         arr[1] = arr[size];
         arr[size--] = null;
 
+        if (arr[1] != null) {
+            indices.put(arr[1].data, 1);
+        }
+
         // Shrink the array if necessary
         //        if (size < arr.length / 2 && size > 8) {
         //            shrink();
-        //        }
+        //         }
 
         // Percolate down from the new top element
         percolateDown(1);
@@ -92,9 +95,11 @@ public class Heap<TData, TScore extends Comparable<TScore>> {
             return true;
         }
 
-        // Otherwise, we fill the empty space with the item at arr[index]
-        // and we percolate down from that index.
-        arr[index] = arr[size--];
+        // Otherwise, we fill the empty space with the last item in the array
+        // and percolate down from there.
+        arr[index] = arr[size];
+        arr[size--] = null;
+        indices.put(arr[index].data, index);
         percolateDown(index);
 
         return true;
@@ -109,6 +114,38 @@ public class Heap<TData, TScore extends Comparable<TScore>> {
         return arr[i].data;
     }
 
+    /**
+     * Gets the index of data {@code data} in the internal array.
+     * @param data The data to get the index of
+     * @return The index of the data in the array, or -1 if the
+     *         data is not contained in this heap.
+     */
+    public int indexOf(final TData data) {
+        return indices.getOrDefault(data, -1);
+    }
+
+    /**
+     * Checks whether data {@code data} is stored in this heap.
+     * @param data The data whose membership to check
+     * @return Whether the data is contained in this heap
+     */
+    public boolean contains(final TData data) {
+        return indexOf(data) != -1;
+    }
+
+    /**
+     * Checks whether data {@code data} is stored in this heap.
+     * @param data The data whose membership to check
+     * @return Whether the data is contained in this heap
+     */
+    public boolean arrayContains(final TData data) {
+        int i = indexOf(data);
+        if (i == -1) {
+            return false;
+        }
+        return arr[i].data.equals(data);
+    }
+
     private int percolateUp(Node<TData, TScore> node, int cur) {
         // Loop as long as we haven't reached the top element (cur > 1),
         // and as long as the parent element is GREATER than the child element.
@@ -116,10 +153,12 @@ public class Heap<TData, TScore extends Comparable<TScore>> {
         // the loop as finished do we fill the last spot: the last PARENT.
         for (; cur > 1 && node.score.compareTo(arr[cur / 2].score) < 0; cur /= 2) {
             arr[cur] = arr[cur / 2];
+            indices.put(arr[cur].data, cur);
         }
 
         // Lastly, we insert the new item in the resulting cur.
         arr[cur] = node;
+        indices.put(arr[cur].data, cur);
         return cur;
     }
 
@@ -156,6 +195,8 @@ public class Heap<TData, TScore extends Comparable<TScore>> {
             temp = arr[cur];
             arr[cur] = arr[lower];
             arr[lower] = temp;
+            indices.put(arr[cur].data, cur);
+            indices.put(arr[lower].data, lower);
 
             // Continue percolating down as the lower child
             cur = lower;

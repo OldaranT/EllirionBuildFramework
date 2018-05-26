@@ -21,9 +21,8 @@ public class PathingVertex implements IVertex<Point> {
     @Getter private double fScore;
     @Getter @Setter private double vScore;
     @Getter @Setter private boolean visited;
-
-    // PathChecker variables
-    @Getter @Setter private boolean solid;
+    @Getter @Setter private int visitIndex;
+    @Getter @Setter private int seenIndex;
 
     /**
      * Construct a new PathingVertex belonging to PathingGraph {@code graph}.
@@ -40,7 +39,8 @@ public class PathingVertex implements IVertex<Point> {
         this.fScore = Double.POSITIVE_INFINITY;
         this.vScore = 0;
 
-        this.solid = false;
+        this.visitIndex = Integer.MAX_VALUE;
+        this.seenIndex = Integer.MAX_VALUE;
     }
 
     /**
@@ -124,24 +124,31 @@ public class PathingVertex implements IVertex<Point> {
         }
 
         adjacents = new ArrayList<>();
-        adjacents.add(graph.find(point.north()));
-        adjacents.add(graph.find(adjacents.get(0).getData().up()));
-        adjacents.add(graph.find(adjacents.get(0).getData().down()));
-        adjacents.add(graph.find(point.south()));
-        adjacents.add(graph.find(adjacents.get(3).getData().up()));
-        adjacents.add(graph.find(adjacents.get(3).getData().down()));
-        adjacents.add(graph.find(point.east()));
-        adjacents.add(graph.find(adjacents.get(6).getData().up()));
-        adjacents.add(graph.find(adjacents.get(6).getData().down()));
-        adjacents.add(graph.find(point.west()));
-        adjacents.add(graph.find(adjacents.get(9).getData().up()));
-        adjacents.add(graph.find(adjacents.get(9).getData().down()));
+        adjacents.add(graph.findOrCreate(point.north()));
+        adjacents.add(graph.findOrCreate(adjacents.get(0).getData().up()));
+        adjacents.add(graph.findOrCreate(adjacents.get(0).getData().down()));
+        adjacents.add(graph.findOrCreate(point.south()));
+        adjacents.add(graph.findOrCreate(adjacents.get(3).getData().up()));
+        adjacents.add(graph.findOrCreate(adjacents.get(3).getData().down()));
+        adjacents.add(graph.findOrCreate(point.east()));
+        adjacents.add(graph.findOrCreate(adjacents.get(6).getData().up()));
+        adjacents.add(graph.findOrCreate(adjacents.get(6).getData().down()));
+        adjacents.add(graph.findOrCreate(point.west()));
+        adjacents.add(graph.findOrCreate(adjacents.get(9).getData().up()));
+        adjacents.add(graph.findOrCreate(adjacents.get(9).getData().down()));
         return adjacents;
     }
 
     @Override
     public int getEdgeCount() {
         return 12;
+    }
+
+    @Override
+    public String toString() {
+        return point + ": g=" + gScore + " v=" + vScore + " f=" + fScore + " from=" +
+               (cameFrom != null ? cameFrom.getData() : "nowhere") +
+               " visited=" + visitIndex + " seen=" + seenIndex;
     }
 
     @Override

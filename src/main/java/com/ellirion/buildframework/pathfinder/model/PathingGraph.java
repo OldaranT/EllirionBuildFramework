@@ -47,7 +47,7 @@ public class PathingGraph implements IGraph<Point> {
 
     @Override
     public PathingVertex find(Point point) {
-        return findOrCreate(point);
+        return vertices.getOrDefault(point, null);
     }
 
     @Override
@@ -56,7 +56,6 @@ public class PathingGraph implements IGraph<Point> {
         if (v == null) {
             v = new PathingVertex(this, point);
             vertices.put(point, v);
-            //heap.insert(v);
         }
         return v;
     }

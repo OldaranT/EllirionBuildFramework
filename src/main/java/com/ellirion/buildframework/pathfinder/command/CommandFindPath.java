@@ -49,6 +49,7 @@ public class CommandFindPath implements CommandExecutor {
         astar.searchAsync().consumeSync((path) -> {
             // Show the new path
             PathingManager.getSession(player).setPath(path);
+            PathingManager.getSession(player).setGraph(astar.getGraph());
         }).consumeFailSync((ex) -> {
             player.sendMessage("Heap failed: " + ex.getMessage());
         });

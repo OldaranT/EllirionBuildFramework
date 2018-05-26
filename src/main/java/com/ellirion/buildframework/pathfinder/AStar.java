@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.pathfinder;
 
+import lombok.Getter;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -21,7 +22,8 @@ public class AStar {
     private Point goal;
 
     private PathChecker checker;
-    private PathingGraph graph;
+    @Getter private PathingGraph graph;
+    @Getter private List<Point> path;
 
     private double vStep;
     private double vGrounded;
@@ -33,7 +35,6 @@ public class AStar {
 
     private double fGoalFactor;
     private double fGoalExp;
-    private double fLine;
 
     private int turnShortThreshold;
     private int turnShortLength;
@@ -72,7 +73,6 @@ public class AStar {
 
         fGoalFactor = config.getDouble("f-goal-fac");
         fGoalExp = config.getDouble("f-goal-exp");
-        fLine = config.getDouble("f-line");
 
         turnShortThreshold = config.getInt("turn-short-threshold");
         turnShortLength = config.getInt("turn-short-length");
@@ -93,7 +93,7 @@ public class AStar {
                                   new int[] {turnShortThreshold, turnLongThreshold},
                                   new int[] {turnShortLength, turnLongLength});
         graph = new PathingGraph();
-        PathingVertex startVert = graph.find(start);
+        PathingVertex startVert = graph.findOrCreate(this.start);
         startVert.setGScore(0);
         startVert.setFScore(0);
     }
@@ -118,11 +118,15 @@ public class AStar {
             long wantVisited;
             long haveVisited = 0;
 
+            int visitIndex = 0;
+            int seenIndex = 0;
+
             while ((cur = graph.next()) != null) {
+                cur.setVisitIndex(visitIndex++);
 
                 // Check if we reached the goal
                 if (cur.getData().equals(goal)) {
-                    List<Point> path = new ArrayList<>();
+                    path = new ArrayList<>();
                     while (cur != null) {
                         path.add(cur.getData());
                         cur = cur.getCameFrom();
@@ -150,9 +154,15 @@ public class AStar {
                 // Check all adjacent vertices
                 for (PathingVertex adjacent : cur.getAdjacents()) {
 
-                    // Ignore this adjacent point if we've visited it before
+                    // Ignore this adjacent point if we've visited it before or if it
+                    // does not pass some of the possibility checks
                     if (!canVisitAdjacent(cur, adjacent)) {
                         continue;
+                    }
+
+                    // Set the seen index if it wasn't seen yet
+                    if (adjacent.getSeenIndex() == Integer.MAX_VALUE) {
+                        adjacent.setSeenIndex(seenIndex++);
                     }
 
                     // Determine the gScore
@@ -250,7 +260,7 @@ public class AStar {
         double fScore = Math.pow(adjacent.getData().distanceEuclidian(goal), fGoalExp) * fGoalFactor;
 
         // Add the distance from the "optimal" line
-        fScore += adjacent.getData().distanceFromLine(start, goal) * fLine;
+        //fScore += adjacent.getData().distanceFromLine(start, goal) * fLine;
 
         return fScore;
     }

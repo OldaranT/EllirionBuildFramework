@@ -309,7 +309,7 @@ public class PathChecker {
             p = p.up();
             b = world.getBlockAt(p.toLocation(world));
             m = b.getType();
-            if (checkSolid(m) && !b.isLiquid()) {
+            if (checkSolid(m) || b.isLiquid()) {
                 return false;
             }
         }
