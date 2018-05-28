@@ -61,6 +61,7 @@ public class Counter {
 
     /**
      * Wait for this Counter to reach {@code i}.
+     * @param i The number to reach
      * @return Whether the wait completed without interruption
      */
     public boolean await(int i) {

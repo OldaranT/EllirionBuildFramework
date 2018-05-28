@@ -27,7 +27,7 @@ public class Promise<TResult> {
     private final IPromiseBody<TResult> runner;
     private final IPromiseFinisher<TResult> finisher;
 
-    private final CountDownLatch latch;
+    private final Counter latch;
     private final boolean async;
 
     /**
@@ -75,7 +75,7 @@ public class Promise<TResult> {
             }
         };
 
-        this.latch = new CountDownLatch(1);
+        this.latch = new Counter(1);
         this.async = async;
 
         // Schedule (sync or async) the invocation of our runner if requested.
@@ -329,7 +329,7 @@ public class Promise<TResult> {
         // We also notify any threads waiting for this Promise to finish.
         state = RESOLVED;
         result = t;
-        latch.countDown();
+        latch.decrement();
 
         // Invoke all functions waiting on this Promise being resolved.
         for (Consumer<TResult> next : onResolve) {
@@ -346,7 +346,7 @@ public class Promise<TResult> {
         // We also notify any threads waiting for this Promise to finish.
         state = REJECTED;
         exception = ex;
-        latch.countDown();
+        latch.decrement();
 
         // If there are no exception handlers registered on this Promise, throw the exception.
         if (onReject.size() == 0 && ex != null) {

@@ -329,7 +329,7 @@ public class PromiseTest {
     }
 
     @Test
-    public void finisherResolve_whenInvokedAndFinished_shouldInvokeOnlyResolveHandlers() {
+    public void finisherResolve_whenInvokedAndNotPending_shouldInvokeOnlyResolveHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1));
         Counter c = new Counter(1);
 
@@ -342,6 +342,26 @@ public class PromiseTest {
         });
 
         assertEquals(0, c.get());
+    }
+
+    @Test
+    public void finisherResolve_whenInvokedAndAlreadyResolved_shouldDoNothing() {
+        Promise<Integer> p = new Promise<>(finisher -> {
+            finisher.resolve(1);
+            finisher.resolve(2);
+        });
+
+        assertEquals(1, (int) p.getResult());
+    }
+
+    @Test
+    public void finisherResolve_whenInvokedAndAlreadyRejected_shouldDoNothing() {
+        Promise<Integer> p = new Promise<>(finisher -> {
+            finisher.reject(null);
+            finisher.resolve(2);
+        });
+
+        assertNull(p.getResult());
     }
 
     @Test
@@ -362,7 +382,7 @@ public class PromiseTest {
     }
 
     @Test
-    public void finisherReject_whenInvokedAndFinished_shouldInvokeOnlyRejectionHandlers() {
+    public void finisherReject_whenInvokedAndNotPending_shouldInvokeOnlyRejectionHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null));
         Counter c = new Counter(1);
 
@@ -375,6 +395,26 @@ public class PromiseTest {
         });
 
         assertEquals(0, c.get());
+    }
+
+    @Test
+    public void finisherReject_whenInvokedAndAlreadyResolved_shouldDoNothing() {
+        Promise<Integer> p = new Promise<>(finisher -> {
+            finisher.resolve(1);
+            finisher.reject(new Exception());
+        });
+
+        assertNull(p.getException());
+    }
+
+    @Test
+    public void finisherReject_whenInvokedAndAlreadyRejected_shouldDoNothing() {
+        Promise<Integer> p = new Promise<>(finisher -> {
+            finisher.reject(new Exception());
+            finisher.reject(null);
+        });
+
+        assertNotNull(p.getException());
     }
 
     @Test
