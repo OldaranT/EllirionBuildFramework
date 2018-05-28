@@ -2,8 +2,6 @@ package com.ellirion.buildframework.util.async;
 
 import lombok.Getter;
 import org.apache.commons.lang.UnhandledException;
-import org.bukkit.Bukkit;
-import com.ellirion.buildframework.BuildFramework;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +13,9 @@ import java.util.function.Consumer;
 import static com.ellirion.buildframework.util.async.PromiseState.*;
 
 public class Promise<TResult> {
+
+    private static Consumer<Runnable> SYNC_RUNNER;
+    private static Consumer<Runnable> ASYNC_RUNNER;
 
     private PromiseState state;
     private boolean scheduled;
@@ -299,9 +300,9 @@ public class Promise<TResult> {
 
     private void schedule(Runnable r, boolean async) {
         if (async) {
-            Bukkit.getScheduler().runTaskAsynchronously(BuildFramework.getInstance(), r);
+            ASYNC_RUNNER.accept(r);
         } else {
-            Bukkit.getScheduler().runTask(BuildFramework.getInstance(), r);
+            SYNC_RUNNER.accept(r);
         }
     }
 
@@ -492,5 +493,18 @@ public class Promise<TResult> {
         p.state = REJECTED;
         p.exception = ex;
         return p;
+    }
+
+    public static void setSyncRunner(Consumer<Runnable> c) {
+        SYNC_RUNNER = c;
+    }
+
+    public static void setAsyncRunner(Consumer<Runnable> c) {
+        ASYNC_RUNNER = c;
+    }
+
+    static {
+        SYNC_RUNNER = r -> r.run();
+        ASYNC_RUNNER = r -> new Thread(r).start();
     }
 }

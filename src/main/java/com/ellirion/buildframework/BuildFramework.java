@@ -1,5 +1,6 @@
 package com.ellirion.buildframework;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,6 +18,7 @@ import com.ellirion.buildframework.templateengine.util.TabCompletionMarkerNameLi
 import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import com.ellirion.buildframework.util.EventListener;
+import com.ellirion.buildframework.util.async.Promise;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +63,9 @@ public class BuildFramework extends JavaPlugin {
         createBlockValueConfig();
         createTemplateFormatConfig();
         getLogger().info("BuildFramework is enabled.");
+
+        Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
+        Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
     }
 
     /**
