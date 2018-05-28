@@ -699,8 +699,8 @@ public class TerrainCorrector {
     }
 
     private Block getRelativeBlock(int dir, Block block) {
-        World world = block.getWorld();
-        BuildFramework.getInstance().getLogger().info("" + block);
+        //        World world = block.getWorld();
+        //        BuildFramework.getInstance().getLogger().info("" + block);
         switch (dir) {
             case 0:
                 // NORTH
