@@ -11,7 +11,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -46,30 +45,30 @@ public class PromiseTest {
 
     @Test
     public void thenConsume_whenResolvingBefore_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(0), false, true);
 
         p.then(i -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void thenConsume_whenResolvingAfter_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(0), false, false);
 
         p.then(i -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, c.get());
         p.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -94,44 +93,44 @@ public class PromiseTest {
 
     @Test
     public void thenResume_whenResolvingBefore_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(2);
+        Counter c = new Counter(2);
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, true);
 
         Promise<Integer> p2 = p1.then(i -> {
             assertEquals(1, (int) i);
-            assertEquals(2, latch.getCount());
-            latch.countDown();
+            assertEquals(2, c.get());
+            c.decrement();
             return i * 2;
         });
         p2.then(i -> {
             assertEquals(2, (int) i);
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void thenResume_whenResolvingAfter_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(2);
+        Counter c = new Counter(2);
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
 
         Promise<Integer> p2 = p1.then(i -> {
             assertEquals(1, (int) i);
-            assertEquals(2, latch.getCount());
-            latch.countDown();
+            assertEquals(2, c.get());
+            c.decrement();
             return i * 2;
         });
         p2.then(i -> {
             assertEquals(2, (int) i);
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(2, latch.getCount());
+        assertEquals(2, c.get());
         p1.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -178,30 +177,30 @@ public class PromiseTest {
 
     @Test
     public void exceptConsume_whenRejectingBefore_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false, true);
 
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void exceptConsume_whenRejectingAfter_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false, false);
 
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, c.get());
         p.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -228,154 +227,154 @@ public class PromiseTest {
 
     @Test
     public void exceptResume_whenRejectingBefore_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false, true);
 
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
             return 0;
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void exceptResume_whenRejectingAfter_shouldInvokeHandler() {
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false, false);
 
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
             return 0;
         });
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, c.get());
         p.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void always_whenResolvingBefore_shouldInvokeHandler() {
         Promise<Boolean> p = new Promise<>(finisher -> finisher.resolve(true), false, true);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.always(() -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void always_whenResolvingAfter_shouldInvokeHandler() {
         Promise<Boolean> p = new Promise<>(finisher -> finisher.resolve(true), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.always(() -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, c.get());
         p.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void always_whenRejectingBefore_shouldInvokeHandler() {
         Promise<Boolean> p = new Promise<>(finisher -> finisher.reject(null), false, true);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.always(() -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void always_whenRejectingAfter_shouldInvokeHandler() {
         Promise<Boolean> p = new Promise<>(finisher -> finisher.reject(null), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.always(() -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, c.get());
         p.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void finisherResolve_whenInvokedAndPending_shouldInvokeOnlyResolveHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.then(i -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
         p.except(ex -> {
             fail();
         });
 
         p.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void finisherResolve_whenInvokedAndFinished_shouldInvokeOnlyResolveHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.resolve(1));
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.then(i -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
         p.except(ex -> {
             fail();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void finisherReject_whenInvokedAndPending_shouldInvokeOnlyRejectionHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.then(i -> {
             fail();
         });
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
         p.schedule();
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void finisherReject_whenInvokedAndFinished_shouldInvokeOnlyRejectionHandlers() {
         Promise<Integer> p = new Promise<>(finisher -> finisher.reject(null));
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         p.then(i -> {
             fail();
         });
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -394,26 +393,26 @@ public class PromiseTest {
 
     @Test
     public void sequence_whenInvoked_shouldRunSequentially() {
-        CountDownLatch latch = new CountDownLatch(3);
+        Counter c = new Counter(3);
         Promise<Integer> p1 = new Promise<>(finisher -> {
-            assertEquals(3, latch.getCount());
+            assertEquals(3, c.get());
             finisher.resolve(1);
-            latch.countDown();
+            c.decrement();
         }, false, false);
         Promise<Integer> p2 = new Promise<>(finisher -> {
-            assertEquals(2, latch.getCount());
+            assertEquals(2, c.get());
             finisher.resolve(2);
-            latch.countDown();
+            c.decrement();
         }, false, false);
         Promise<Integer> p3 = new Promise<>(finisher -> {
-            assertEquals(1, latch.getCount());
+            assertEquals(1, c.get());
             finisher.resolve(3);
-            latch.countDown();
+            c.decrement();
         }, false, false);
 
         Promise.sequence(p1, p2, p3);
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -421,17 +420,17 @@ public class PromiseTest {
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
         Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
         Promise<Integer> p3 = new Promise<>(finisher -> finisher.resolve(3), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         Promise<Map<Promise, Object>> p = Promise.sequence(p1, p2, p3);
         p.then(results -> {
             assertEquals(1, results.get(p1));
             assertEquals(2, results.get(p2));
             assertEquals(3, results.get(p3));
-            latch.countDown();
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -441,50 +440,50 @@ public class PromiseTest {
             throw new RuntimeException();
         }, false, false);
         Promise<Integer> p3 = new Promise<>(finisher -> finisher.resolve(3), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         Promise<Map<Promise, Object>> p = Promise.sequence(false, p1, p2, p3);
         p.except(ex -> {
-            latch.countDown();
+            c.decrement();
         });
         p.schedule();
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void any_whenAnyPromiseResolves_shouldResolve() {
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
         Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         Promise<Object> p = Promise.any(p1, p2).schedule();
         p.then(obj -> {
-            assertEquals(1, latch.getCount());
+            assertEquals(1, c.get());
             assertEquals(1, obj);
-            latch.countDown();
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void any_whenAnyPromiseRejects_shouldReject() {
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.reject(null), false, false);
         Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         Promise<Object> p = Promise.any(p1, p2).schedule();
         p.then(result -> {
             fail();
         });
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
+            assertEquals(1, c.get());
             assertNull(ex);
-            latch.countDown();
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -507,21 +506,21 @@ public class PromiseTest {
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
         Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
         Promise<Integer> p3 = new Promise<>(finisher -> finisher.resolve(3), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         Promise<Map<Promise, Object>> p = Promise.all(p1, p2, p3);
         p.then(result -> {
-            assertEquals(1, latch.getCount());
+            assertEquals(1, c.get());
             assertEquals(1, result.get(p1));
             assertEquals(2, result.get(p2));
             assertEquals(3, result.get(p3));
-            latch.countDown();
+            c.decrement();
         });
         p.except(ex -> {
             fail();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
@@ -529,34 +528,34 @@ public class PromiseTest {
         Promise<Integer> p1 = new Promise<>(finisher -> finisher.resolve(1), false, false);
         Promise<Integer> p2 = new Promise<>(finisher -> finisher.resolve(2), false, false);
         Promise<Integer> p3 = new Promise<>(finisher -> finisher.reject(null), false, false);
-        CountDownLatch latch = new CountDownLatch(1);
+        Counter c = new Counter(1);
 
         Promise<Map<Promise, Object>> p = Promise.all(p1, p2, p3);
         p.then(result -> {
             fail();
         });
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
+            assertEquals(1, c.get());
             assertNull(ex);
-            latch.countDown();
+            c.decrement();
         });
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void resolve_whenGivenResult_shouldReturnPromiseResolvedToResult() {
         Promise<Boolean> p = Promise.resolve(true);
-        CountDownLatch latch = new CountDownLatch(2);
+        Counter c = new Counter(2);
 
         p.then(b -> {
-            assertEquals(2, latch.getCount());
-            latch.countDown();
+            assertEquals(2, c.get());
+            c.decrement();
             assertTrue(b);
         });
         p.then(b -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
             assertTrue(b);
             return 0;
         });
@@ -569,14 +568,14 @@ public class PromiseTest {
         });
         p.schedule();
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 
     @Test
     public void reject_whenGivenException_shouldReturnPromiseRejectedToException() {
         Exception e = new Exception();
         Promise<Boolean> p = Promise.reject(e);
-        CountDownLatch latch = new CountDownLatch(2);
+        Counter c = new Counter(2);
 
         p.then(b -> {
             fail();
@@ -586,18 +585,18 @@ public class PromiseTest {
             return 0;
         });
         p.except(ex -> {
-            assertEquals(2, latch.getCount());
-            latch.countDown();
+            assertEquals(2, c.get());
+            c.decrement();
             assertEquals(e, ex);
         });
         p.except(ex -> {
-            assertEquals(1, latch.getCount());
-            latch.countDown();
+            assertEquals(1, c.get());
+            c.decrement();
             assertEquals(e, ex);
             return 0;
         });
         p.schedule();
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, c.get());
     }
 }
