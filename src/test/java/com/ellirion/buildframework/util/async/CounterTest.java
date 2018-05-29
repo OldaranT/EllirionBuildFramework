@@ -2,6 +2,9 @@ package com.ellirion.buildframework.util.async;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 public class CounterTest {
@@ -43,6 +46,39 @@ public class CounterTest {
         for (int i = 0; i < 5; i++) {
             assertEquals(i, c.get());
             c.increment();
+        }
+    }
+
+    @Test
+    public void perform_whenInvoked_shouldExecuteRunnable() {
+        Counter c = new Counter();
+
+        assertEquals(0, c.get());
+        c.perform(c::increment);
+        assertEquals(1, c.get());
+    }
+
+    @Test
+    public void perform_whenInvokedWithValidLatchNumber_shouldExecuteRunnable() {
+        Counter c = new Counter();
+
+        Thread t1 = new Thread(() -> {
+            c.perform(1, c::increment);
+        });
+
+        Thread t2 = new Thread(c::increment);
+
+        assertEquals(0, c.get());
+        t1.start();
+        assertEquals(0, c.get());
+        t2.start();
+
+        try{
+            t2.join();
+            t1.join();
+            assertEquals(2, c.get());
+        } catch (InterruptedException ex) {
+            fail();
         }
     }
 
