@@ -18,6 +18,7 @@ import java.util.List;
 
 import static com.ellirion.buildframework.terraincorrector.TerrainTestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -51,6 +52,7 @@ public class TerrainValidatorTest {
 
         when(TerrainManager.getBoundingBoxes()).thenReturn(new ArrayList<>());
 
+        when(mockConfig.getInt(any(String.class), eq(5))).thenReturn(2);
         when(mockConfig.getInt("TerrainCorrector.OverheadLimit", 50)).thenReturn(10);
         when(mockConfig.getInt("TerrainCorrector.BlocksLimit", 100)).thenReturn(10);
         when(mockConfig.getInt("TerrainCorrector.TotalLimit", 200)).thenReturn(15);
@@ -424,6 +426,27 @@ public class TerrainValidatorTest {
         boolean result = validator.validate(boundingBox, world);
 
         // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    public void validate_whenHasRiverUnderBoundingBox_shouldReturnFalse() {
+        TerrainValidator validator = new TerrainValidator();
+        BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 3, 3);
+        World world = createDefaultWorld();
+        for (int y = 0; y >= -5; y--) {
+            for (int x = 0; x <= 5; x++) {
+                for (int z = 0; z <= 5; z++) {
+                    setBlockAtCoordinates(world, x, y, z, Material.STONE);
+                }
+            }
+        }
+
+        setBlockAtCoordinates(world, 1, 0, 1, Material.WATER);
+        setBlockAtCoordinates(world, 0, 0, 1, Material.WATER);
+
+        boolean result = validator.validate(boundingBox, world);
+
         assertFalse(result);
     }
 

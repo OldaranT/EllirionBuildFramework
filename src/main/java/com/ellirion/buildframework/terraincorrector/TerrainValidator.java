@@ -202,8 +202,8 @@ public class TerrainValidator {
 
         for (Block b : blocks) {
             if (b.isLiquid() &&
-                ((b.getX() == minX && getRelativeBlock(1, b, world).isLiquid()) ||
-                 (b.getX() == maxX && getRelativeBlock(3, b, world).isLiquid()) ||
+                ((b.getX() == minX && getRelativeBlock(3, b, world).isLiquid()) ||
+                 (b.getX() == maxX && getRelativeBlock(1, b, world).isLiquid()) ||
                  (b.getZ() == minZ && getRelativeBlock(0, b, world).isLiquid()) ||
                  (b.getZ() == maxZ && getRelativeBlock(2, b, world).isLiquid()))) {
                 return true;
