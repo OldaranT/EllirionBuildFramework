@@ -6,7 +6,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -24,12 +23,11 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.doAnswer;
 import static org.powermock.api.mockito.PowerMockito.*;
 
+@SuppressWarnings("Duplicates")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({BuildFramework.class, Bukkit.class})
 public class TerrainCorrectorTest {
 
-    private static final Block MOCK_BLOCK_AIR = createMockBlock(true, false, Material.AIR);
-    private static final Block MOCK_BLOCK_STONE = createMockBlock(false, false, Material.STONE);
     private static final Material stone = Material.STONE;
     private static final Material air = Material.AIR;
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
@@ -45,7 +43,7 @@ public class TerrainCorrectorTest {
         mockStatic(BuildFramework.class);
         mockStatic(Bukkit.class);
 
-        when(BuildFramework.getInstance()).thenReturn(null);
+        //        when(BuildFramework.getInstance()).thenReturn(null);
         when(Bukkit.getScheduler()).thenReturn(sched);
         when(sched.runTask(anyObject(), Mockito.any(Runnable.class))).thenAnswer((inv) -> {
             Runnable r = (Runnable) inv.getArguments()[1];
@@ -57,11 +55,6 @@ public class TerrainCorrectorTest {
             r.run();
             return null;
         });
-    }
-
-    @Before
-    public void setup() {
-        mockStatic(BuildFramework.class);
 
         final BuildFramework mockPlugin = mock(BuildFramework.class);
         final FileConfiguration mockConfig = mock(FileConfiguration.class);
@@ -74,19 +67,30 @@ public class TerrainCorrectorTest {
         when(mockConfig.getInt("TerrainCorrecter.AreaLimitOffset", 5)).thenReturn(1);
     }
 
+    //    @Before
+    //    public void setup() {
+    //        mockStatic(BuildFramework.class);
+    //
+    //        final BuildFramework mockPlugin = mock(BuildFramework.class);
+    //        final FileConfiguration mockConfig = mock(FileConfiguration.class);
+    //
+    //        when(BuildFramework.getInstance()).thenReturn(mockPlugin);
+    //
+    //        when(mockPlugin.getConfig()).thenReturn(mockConfig);
+    //
+    //        when(mockConfig.getInt("TerrainCorrecter.MaxHoleDepth", 5)).thenReturn(5);
+    //        when(mockConfig.getInt("TerrainCorrecter.AreaLimitOffset", 5)).thenReturn(1);
+    //    }
+
     @Test
-    public void correctTerrain_whenHoleFacesSouthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
+    public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
         World mockWorld = createDefaultWorld();
         TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
-            for (int z = -1; z <= 4; z++) {
-                setBlockAtCoordinates(mockWorld, 4, y, z, air);
-                setBlockAtCoordinates(mockWorld, 5, y, z, air);
-            }
-            for (int x = 2; x <= 3; x++) {
+            for (int x = 2; x <= 5; x++) {
                 for (int z = 1; z <= 3; z++) {
                     setBlockAtCoordinates(mockWorld, x, y, z, air);
                 }
@@ -105,7 +109,85 @@ public class TerrainCorrectorTest {
     }
 
     @Test
-    public void correctTerrain_whenCornerHoleAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
+    public void correctTerrain_whenHoleFacesWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
+        // Arrange
+        World mockWorld = createDefaultWorld();
+        TerrainCorrector corrector = new TerrainCorrector();
+        int yDepth = 0;
+
+        for (int y = 2; y >= -5; y--) {
+            for (int x = -1; x < 3; x++) {
+                for (int z = 1; z <= 3; z++) {
+                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                }
+            }
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int depth = 0; depth < 2; depth++) {
+            for (int x = 1 + depth; x <= 2; x++) {
+                assertTrue(mockWorld.getBlockAt(x, yDepth - depth, 2).getType() == Material.FENCE);
+            }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenHoleFacesNorthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
+        // Arrange
+        World mockWorld = createDefaultWorld();
+        TerrainCorrector corrector = new TerrainCorrector();
+        int yDepth = 0;
+
+        for (int y = 2; y >= -5; y--) {
+            for (int x = 1; x <= 3; x++) {
+                for (int z = -1; z < 3; z++) {
+                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                }
+            }
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int depth = 0; depth < 2; depth++) {
+            for (int z = 1 + depth; z <= 2; z++) {
+                assertTrue(mockWorld.getBlockAt(2, yDepth - depth, z).getType() == Material.FENCE);
+            }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenHoleFacesSouthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
+        // Arrange
+        World mockWorld = createDefaultWorld();
+        TerrainCorrector corrector = new TerrainCorrector();
+        int yDepth = 0;
+
+        for (int y = 2; y >= -5; y--) {
+            for (int x = 1; x <= 3; x++) {
+                for (int z = 2; z <= 5; z++) {
+                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                }
+            }
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int depth = 0; depth < 2; depth++) {
+            for (int z = 3 - depth; z >= 2; z--) {
+                assertTrue(mockWorld.getBlockAt(2, yDepth - depth, z).getType() == Material.FENCE);
+            }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenCornerHoleFacesSouthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
         World mockWorld = createDefaultWorld();
         TerrainCorrector corrector = new TerrainCorrector();
@@ -133,7 +215,91 @@ public class TerrainCorrectorTest {
     }
 
     @Test
-    public void correctTerrain_whenOverRavineAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupports() {
+    public void correctTerrain_whenCornerHoleFacesNorthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
+        // Arrange
+        World mockWorld = createDefaultWorld();
+        TerrainCorrector corrector = new TerrainCorrector();
+        int yDepth = 0;
+
+        for (int y = 2; y >= -6; y--) {
+            for (int z = -1; z <= 2; z++) {
+                for (int x = 2; x <= 4; x++) {
+                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                }
+            }
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int depth = 0; depth < 2; depth++) {
+            for (int x = 3 - depth; x >= 2; x--) {
+                for (int z = 1 + depth; z <= 2; z++) {
+                    assertTrue(mockWorld.getBlockAt(x, yDepth - depth, z).getType() == Material.FENCE);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenCornerHoleFacesSouthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
+        // Arrange
+        World mockWorld = createDefaultWorld();
+        TerrainCorrector corrector = new TerrainCorrector();
+        int yDepth = 0;
+
+        for (int y = 2; y >= -6; y--) {
+            for (int z = 2; z <= 4; z++) {
+                for (int x = -1; x <= 2; x++) {
+                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                }
+            }
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int depth = 0; depth < 2; depth++) {
+            for (int x = 1 + depth; x <= 2; x++) {
+                for (int z = 3 - depth; z >= 2; z--) {
+                    assertTrue(mockWorld.getBlockAt(x, yDepth - depth, z).getType() == Material.FENCE);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenCornerHoleFacesNorthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
+        // Arrange
+        World mockWorld = createDefaultWorld();
+        TerrainCorrector corrector = new TerrainCorrector();
+        int yDepth = 0;
+
+        for (int y = 2; y >= -6; y--) {
+            for (int z = -1; z <= 2; z++) {
+                for (int x = -1; x <= 2; x++) {
+                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                }
+            }
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int depth = 0; depth < 2; depth++) {
+            for (int x = 1 + depth; x <= 2; x++) {
+                for (int z = 1 + depth; z <= 2; z++) {
+                    assertTrue(mockWorld.getBlockAt(x, yDepth - depth, z).getType() == Material.FENCE);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenOverRavineOnZAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnXAxis() {
         // Arrange
         World mockWorld = createDefaultWorld();
         TerrainCorrector corrector = new TerrainCorrector();
@@ -161,11 +327,40 @@ public class TerrainCorrectorTest {
         }
     }
 
+    @Test
+    public void correctTerrain_whenOverRavineOnXAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnZAxis() {
+        // Arrange
+        World mockWorld = createDefaultWorld();
+        TerrainCorrector corrector = new TerrainCorrector();
+        BoundingBox boundingBox = new BoundingBox(1, 1, 1, 2, 2, 5);
+        int yDepth = 0;
+        int centreZ = 3;
+
+        for (int y = 2; y >= -6; y--) {
+            for (int x = 0; x <= 3; x++) {
+                for (int z = 2; z <= 4; z++) {
+                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                }
+            }
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int depth = 0; depth < 2; depth++) {
+            for (int x = 1; x <= 2; x++) {
+                assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ + depth).getType());
+                assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ - depth).getType());
+            }
+        }
+    }
+
     private World createDefaultWorld() {
         final World mockWorld = mock(World.class);
-        for (int x = -5; x <= 10; x++) {
-            for (int z = -5; z <= 10; z++) {
-                for (int y = -10; y <= 10; y++) {
+        for (int x = -3; x <= 7; x++) {
+            for (int z = -3; z <= 7; z++) {
+                for (int y = -7; y <= 3; y++) {
                     setBlockAtCoordinates(mockWorld, x, y, z, stone);
                 }
             }
@@ -196,6 +391,7 @@ public class TerrainCorrectorTest {
             when(b.getType()).thenReturn(material);
             return null;
         }).when(mockBlock).setType(any(Material.class));
+
         when(world.getBlockAt(x, y, z)).thenReturn(mockBlock);
     }
 }
