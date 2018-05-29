@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.pathbuilder.command;
 
+import com.google.common.base.Stopwatch;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -8,23 +9,18 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BlockChange;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathbuilder.BuilderManager;
 import com.ellirion.buildframework.pathbuilder.model.PathBuilder;
 import com.ellirion.buildframework.pathbuilder.util.BresenhamLine3D;
-import com.ellirion.buildframework.pathfinder.AStar;
 import com.ellirion.buildframework.pathfinder.PathingManager;
-import com.ellirion.buildframework.pathfinder.model.PathingSession;
 import com.ellirion.buildframework.util.StringHelper;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class CommandPathBuilder implements CommandExecutor {
-
-    private List<Point> path = new ArrayList<>();
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
@@ -52,6 +48,9 @@ public class CommandPathBuilder implements CommandExecutor {
             case "ADDBLOCK":
                 addBlock(player, strings);
                 break;
+            case "ADDSTEP":
+                addStep(player, strings);
+                break;
             case "REMOVEBLOCK":
                 removeBlock(player, strings);
                 break;
@@ -67,23 +66,14 @@ public class CommandPathBuilder implements CommandExecutor {
             case "ANCHOR":
                 anchor(player);
                 break;
-            case "ADDPOINT":
-                addPoint(player);
-                break;
-            case "CREATEPATH":
-                createPath(player);
-                break;
-            case "CLEARPATH":
-                clearPath();
-                break;
             case "CREATEFROMPATHFINDER":
                 createPathFromPathFinder(player, strings);
                 break;
             case "UNDO":
-                BuilderManager.undo();
+                BuilderManager.undo(player);
                 break;
             case "REDO":
-                BuilderManager.redo();
+                BuilderManager.redo(player);
                 break;
             default:
                 player.sendMessage(ChatColor.DARK_RED +
@@ -94,8 +84,8 @@ public class CommandPathBuilder implements CommandExecutor {
         return true;
     }
 
-    //Create a PathBuilder with a given name,
-    //Params: [string]
+    // Create a PathBuilder with a given name
+    // Params: [string]
     private void create(Player player, String[] strings) {
         if (strings.length < 2) {
             player.sendMessage(ChatColor.DARK_RED + "Please enter a name");
@@ -109,8 +99,8 @@ public class CommandPathBuilder implements CommandExecutor {
         player.sendMessage("The path builder was successfully created");
     }
 
-    //Set the name of the selected PathBuilder to the given name,
-    //Params: [string]
+    // Set the name of the selected PathBuilder to the given name
+    // Params: [string]
     private void setName(Player player, String[] strings) {
         if (strings.length < 2) {
             player.sendMessage(ChatColor.DARK_RED + "Please enter a name");
@@ -123,8 +113,8 @@ public class CommandPathBuilder implements CommandExecutor {
         player.sendMessage("The path builder was renamed to " + name);
     }
 
-    //Set the radius of the selected PathBuilder,
-    //Params: <int>
+    // Set the radius of the selected PathBuilder
+    // Params: <int>
     private void setRadius(Player player, String[] strings) {
         try {
             PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
@@ -137,8 +127,8 @@ public class CommandPathBuilder implements CommandExecutor {
         }
     }
 
-    //Add a block to the selected PathBuilder,
-    //Params: <Material> <weight> <metadata as int>
+    // Add a block to the selected PathBuilder
+    // Params: <Material> <weight> <metadata as int>
     private void addBlock(Player player, String[] strings) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         if (builder == null) {
@@ -152,7 +142,7 @@ public class CommandPathBuilder implements CommandExecutor {
         }
 
         try {
-            Material mat = Material.valueOf(strings[1]);
+            Material mat = Material.matchMaterial(strings[1]);
             double weight = Double.parseDouble(strings[2]);
             byte data = (byte) Integer.parseInt(strings[3]);
             builder.addBlock(mat, weight, data);
@@ -161,11 +151,44 @@ public class CommandPathBuilder implements CommandExecutor {
                     weight);
         } catch (Exception e) {
             player.sendMessage(
-                    ChatColor.DARK_RED + "Command usage: /pathbuilder addblock <material> <weight> <metadata>");
+                    ChatColor.DARK_RED +
+                    "something went wrong when trying to add this block. Did you make sure you entered everything correctly?");
             return;
         }
     }
 
+    // Add a step block to the selected PathBuilder
+    // Params: <Material> <weight> <metadata as int>
+    private void addStep(Player player, String[] strings) {
+        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
+        if (builder == null) {
+            player.sendMessage(ChatColor.DARK_RED + "You have no path builder selected");
+            return;
+        }
+        if (strings.length < 4) {
+            player.sendMessage(
+                    ChatColor.DARK_RED + "Command usage: /pathbuilder addstep <material> <weight> <metadata>");
+            return;
+        }
+
+        try {
+            Material mat = Material.matchMaterial(strings[1]);
+            double weight = Double.parseDouble(strings[2]);
+            byte data = (byte) Integer.parseInt(strings[3]);
+            builder.addStep(mat, weight, data);
+            player.sendMessage(
+                    "Step " + mat + ":" + data + " added to path builder " + builder.getName() + " with weight " +
+                    weight);
+        } catch (Exception e) {
+            player.sendMessage(
+                    ChatColor.DARK_RED +
+                    "Something went wrong when trying to add this step. Did you make sure you entered everything correctly?");
+            return;
+        }
+    }
+
+    // Remove a block from the selected PathBuilder
+    // Params: <Material> <metadata as int>
     private void removeBlock(Player player, String[] strings) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         if (builder == null) {
@@ -189,8 +212,8 @@ public class CommandPathBuilder implements CommandExecutor {
         }
     }
 
-    //Save the selected PathBuilder to a file,
-    //Params: none
+    // Save the selected PathBuilder to a file
+    // Params: none
     private void save(Player player, String[] strings) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         //filter out illegal characters
@@ -209,8 +232,8 @@ public class CommandPathBuilder implements CommandExecutor {
         }
     }
 
-    //Load a PathBuilder from a file,
-    //Params: [string]
+    // Load a PathBuilder from a file
+    // Params: [string]
     private void load(Player player, String[] strings) {
         String[] nameStrings = Arrays.copyOfRange(strings, 1, strings.length);
         String name = String.join(" ", nameStrings);
@@ -230,12 +253,16 @@ public class CommandPathBuilder implements CommandExecutor {
         player.sendMessage(ChatColor.GREEN + "The path builder " + name + " was successfully loaded");
     }
 
+    // Show info about the selected PathBuilder
+    // Params: none
     private void info(Player player) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
 
         player.sendMessage(builder.toString());
     }
 
+    // Use the anchorPoints method to find an anchor point from the player's location (for debugging purposes)
+    // Params: none
     private void anchor(Player player) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         Location l = player.getLocation();
@@ -249,52 +276,17 @@ public class CommandPathBuilder implements CommandExecutor {
         }
     }
 
-    private void addPoint(Player player) {
-        path.add(new Point(player.getLocation()).floor());
-    }
-
-    private void createPath(Player player) {
-        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
-
-        builder.build(path, player.getWorld());
-    }
-
-    private void clearPath() {
-        path = new ArrayList<>();
-    }
-
+    // Build a path along the path from the path finder
+    // Params: none
     private void createPathFromPathFinder(Player player, String[] args) {
-        // Get the intended start and goal
-        Point start, goal;
+        // Get path from PathingManager
+        PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
+        List<Point> path = PathingManager.getSession(player).getPath();
 
-        if (args.length > 1) {
-            int size = Integer.parseInt(args[1]) - 1;
-            start = new Point(player.getLocation()).floor();
-            goal = new Point(start.getX() + size, start.getY() + size, start.getZ() + size);
-        } else {
-            PathingSession session = PathingManager.getSession(player);
-            start = session.getPoint1();
-            goal = session.getPoint2();
-            if (start == null) {
-                player.sendMessage(ChatColor.RED + "No first point selected");
-                return;
-            }
-            if (goal == null) {
-                player.sendMessage(ChatColor.RED + "No second point selected");
-                return;
-            }
-        }
-
-        // Heap
-        AStar.searchAsync(player, start, goal).consumeSync((path) -> {
-            // Show the new path
-            PathingManager.getSession(player).setPath(path);
-
-            PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
-            List<BlockChange> pathh = builder.build(path, player.getWorld());
-            BuilderManager.placePath(pathh, builder);
-        }).consumeFailSync((ex) ->
-                                   player.sendMessage("Heap failed: " + ex.getMessage())
-        );
+        Stopwatch watch = Stopwatch.createStarted();
+        BuilderManager.placePath(player, builder.build(path, player.getWorld()));
+        watch.stop();
+        BuildFramework.getInstance().getLogger().info("Generating and building path took " + watch.elapsed(
+                TimeUnit.MILLISECONDS) + "ms");
     }
 }

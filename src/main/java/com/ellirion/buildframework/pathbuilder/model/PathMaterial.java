@@ -23,7 +23,7 @@ public class PathMaterial {
 
     /**
      * serialize a pathmaterial to NBT.
-     * @param pm PathMaterial
+     * @param pm a PathMaterial
      * @return NBT
      */
     public static NBTTagCompound serialize(PathMaterial pm) {
@@ -38,7 +38,7 @@ public class PathMaterial {
     /**
      * Deserialize NBT into PathMaterial.
      * @param ntc NBTTagCompound
-     * @return pathmaterial
+     * @return a PathMaterial
      */
     public static PathMaterial deserialize(NBTTagCompound ntc) {
         Material mat = Material.valueOf(ntc.getString("mat"));

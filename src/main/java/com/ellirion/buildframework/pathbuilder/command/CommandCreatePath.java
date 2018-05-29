@@ -29,28 +29,39 @@ public class CommandCreatePath implements CommandExecutor {
         List<Point> points = new LinkedList<>();
         points.add(new Point(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()));
         for (int i = 0; i < 10; i++) {
-            x++;
             z++;
             points.add(new Point(x, y, z));
         }
-        for (int i = 0; i < 10; i++) {
-            z++;
-            points.add(new Point(x, y, z));
-        }
-        for (int i = 0; i < 10; i++) {
-            z++;
-            x++;
-            points.add(new Point(x, y, z));
-        }
-        for (int i = 0; i < (20 * builder.getRadius()); i++) {
+        for (int i = 0; i < (10 * builder.getRadius()); i++) {
             x++;
             if (i % builder.getRadius() == 0) {
                 y++;
             }
             points.add(new Point(x, y, z));
         }
+        for (int i = 0; i < (10 * builder.getRadius()); i++) {
+            z++;
+            if (i % builder.getRadius() == 0) {
+                y++;
+            }
+            points.add(new Point(x, y, z));
+        }
+        for (int i = 0; i < (10 * builder.getRadius()); i++) {
+            x--;
+            if (i % builder.getRadius() == 0) {
+                y++;
+            }
+            points.add(new Point(x, y, z));
+        }
+        for (int i = 0; i < (10 * builder.getRadius()); i++) {
+            z--;
+            if (i % builder.getRadius() == 0) {
+                y++;
+            }
+            points.add(new Point(x, y, z));
+        }
 
-        BuilderManager.placePath(builder.build(points, player.getWorld()), builder);
+        BuilderManager.placePath(player, builder.build(points, player.getWorld()));
 
         return true;
     }

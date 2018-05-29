@@ -1,6 +1,7 @@
 package com.ellirion.buildframework.model;
 
 import lombok.Getter;
+import com.ellirion.buildframework.pathfinder.model.Direction;
 
 public enum DirectionChange {
     NONE(0),
@@ -20,11 +21,15 @@ public enum DirectionChange {
      * @return The resulting Direction
      */
     public Direction apply(final Direction d) {
-        switch(this) {
-            case LEFT: return d.getLeft();
-            case RIGHT: return d.getRight();
-            case REVERSE: return d.getReverse();
-            default: return Direction.NONE;
+        switch (this) {
+            case LEFT:
+                return d.getLeft();
+            case RIGHT:
+                return d.getRight();
+            case REVERSE:
+                return d.getReverse();
+            default:
+                return Direction.NONE;
         }
     }
 
