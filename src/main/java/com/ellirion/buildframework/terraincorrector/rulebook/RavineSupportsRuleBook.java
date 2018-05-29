@@ -5,14 +5,14 @@ import com.deliveredtechnologies.rulebook.model.rulechain.cor.CoRRuleBook;
 
 public class RavineSupportsRuleBook extends CoRRuleBook<Integer> {
 
-    private static final String minHoleX = "minHoleX";
-    private static final String minX = "minX";
-    private static final String maxHoleX = "maxHoleX";
-    private static final String maxX = "maxX";
-    private static final String minHoleZ = "minHoleZ";
-    private static final String minZ = "minZ";
-    private static final String maxHoleZ = "maxHoleZ";
-    private static final String maxZ = "maxZ";
+    private String minHoleX = "minHoleX";
+    private String minX = "minX";
+    private String maxHoleX = "maxHoleX";
+    private String maxX = "maxX";
+    private String minHoleZ = "minHoleZ";
+    private String minZ = "minZ";
+    private String maxHoleZ = "maxHoleZ";
+    private String maxZ = "maxZ";
 
     /*
      * withResultType == what kind of object you return
@@ -141,5 +141,27 @@ public class RavineSupportsRuleBook extends CoRRuleBook<Integer> {
                         .then((facts, result) -> result.setValue(9))
                         .stop()
                         .build());
+    }
+
+    /**
+     * @param minHoleX key for minHoleX
+     * @param minX key for minX
+     * @param maxHoleX key for maxHoleX
+     * @param maxX key for maxX
+     * @param minHoleZ key for minHoleZ
+     * @param minZ key for minZ
+     * @param maxHoleZ key for maxHoleZ
+     * @param maxZ key for maxZ
+     */
+    public void setKeys(String minHoleX, String minX, String maxHoleX, String maxX, String minHoleZ, String minZ,
+                        String maxHoleZ, String maxZ) {
+        this.minHoleX = minHoleX;
+        this.minX = minX;
+        this.maxHoleX = maxHoleX;
+        this.maxX = maxX;
+        this.minHoleZ = minHoleZ;
+        this.minZ = minZ;
+        this.maxHoleZ = maxHoleZ;
+        this.maxZ = maxZ;
     }
 }

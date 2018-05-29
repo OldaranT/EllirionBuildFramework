@@ -3,7 +3,6 @@ package com.ellirion.buildframework.terraincorrector;
 import com.deliveredtechnologies.rulebook.FactMap;
 import com.deliveredtechnologies.rulebook.Result;
 import com.deliveredtechnologies.rulebook.lang.RuleBookBuilder;
-import com.deliveredtechnologies.rulebook.model.RuleBook;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -38,7 +37,8 @@ public class TerrainCorrector {
     private static final String maxHoleZFactKey = "maxHoleZ";
     private static final String maxZFactKey = "maxZ";
 
-    private static final RuleBook ravineSupportsRuleBook = RuleBookBuilder.create(RavineSupportsRuleBook.class)
+    private static final RavineSupportsRuleBook ravineSupportsRuleBook = (RavineSupportsRuleBook) RuleBookBuilder
+            .create(RavineSupportsRuleBook.class)
             .withResultType(Integer.class)
             .withDefaultResult(Integer.MAX_VALUE)
             .build();
@@ -53,6 +53,8 @@ public class TerrainCorrector {
      */
 
     public void correctTerrain(BoundingBox boundingBox, World world) {
+        ravineSupportsRuleBook.setKeys(minHoleXFactKey, minXFactKey, maxHoleXFactKey, maxXFactKey, minHoleZFactKey,
+                                       minZFactKey, maxHoleZFactKey, maxZFactKey);
         new Promise<>(finisher -> {
             this.boundingBox = boundingBox;
             this.world = world;

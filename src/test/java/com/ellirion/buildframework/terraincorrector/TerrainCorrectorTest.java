@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.Before;
@@ -30,20 +29,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 public class TerrainCorrectorTest {
 
     private static final Block MOCK_BLOCK_AIR = createMockBlock(true, false, Material.AIR);
-    private static final Block MOCK_BLOCK_LIQUID = createMockBlock(false, true, Material.WATER);
     private static final Block MOCK_BLOCK_STONE = createMockBlock(false, false, Material.STONE);
-    private static final Block MOCK_LIQUID_FACING_BLOCK = createMockBlock(false, true, Material.WATER);
-    private static final Block MOCK_BLOCK_IN_BOUNDINGBOX = createMockBlock(false, false, Material.STONE);
-    private static final Block MOCK_BLOCK_LOWEST = createMockBlock(false, false, Material.STONE);
-    private static final Block MOCK_BLOCK_OUT_OF_BOUNDS = createMockBlock(false, false, Material.STONE);
-    private static final BlockFace[] faces = {
-            BlockFace.NORTH,
-            BlockFace.EAST,
-            BlockFace.SOUTH,
-            BlockFace.WEST,
-            BlockFace.DOWN,
-            BlockFace.UP
-    };
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
 
     public TerrainCorrectorTest() {
@@ -163,12 +149,5 @@ public class TerrainCorrectorTest {
             return null;
         }).when(mockBlock).setType(any(Material.class));
         when(world.getBlockAt(x, y, z)).thenReturn(mockBlock);
-    }
-
-    private void setFacingBlocks(Block mock, Block defaultFacingBlock, Block facing, BlockFace face) {
-        for (BlockFace f : faces) {
-            when(mock.getRelative(f)).thenReturn(defaultFacingBlock);
-        }
-        when(mock.getRelative(face)).thenReturn(facing);
     }
 }
