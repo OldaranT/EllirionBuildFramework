@@ -2,9 +2,6 @@ package com.ellirion.buildframework.util.async;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.Assert.*;
 
 public class CounterTest {
@@ -59,11 +56,11 @@ public class CounterTest {
     }
 
     @Test
-    public void perform_whenInvokedWithValidLatchNumber_shouldExecuteRunnable() {
+    public void awaitAndPerform_whenInvoked_shouldWaitAndExecuteRunnable() {
         Counter c = new Counter();
 
         Thread t1 = new Thread(() -> {
-            c.perform(1, c::increment);
+            c.awaitAndPerform(1, c::increment);
         });
 
         Thread t2 = new Thread(c::increment);
@@ -73,7 +70,7 @@ public class CounterTest {
         assertEquals(0, c.get());
         t2.start();
 
-        try{
+        try {
             t2.join();
             t1.join();
             assertEquals(2, c.get());
@@ -96,7 +93,7 @@ public class CounterTest {
         new Thread(() -> {
             for (int i = 0; i < 2; i++) {
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(250);
                 } catch (Exception ex) {
                     fail();
                 }

@@ -66,7 +66,7 @@ public class Counter {
      * @param i The number to reach
      * @param r The Runnable to run
      */
-    public void perform(int i, Runnable r) {
+    public void awaitAndPerform(int i, Runnable r) {
         synchronized (latch) {
             await(i);
             r.run();
