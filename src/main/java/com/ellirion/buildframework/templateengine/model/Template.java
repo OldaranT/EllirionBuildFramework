@@ -303,7 +303,8 @@ public class Template {
             TileEntity te = w.getHandle().getTileEntity(
                     new BlockPosition(below.getX(), below.getY(), below.getZ()));
             if (te != null) {
-                ntc.a(te.d());
+                ntc = te.save(ntc);
+                te.load(new NBTTagCompound());
             }
 
             below.setType(Material.STONE, false);
@@ -313,9 +314,12 @@ public class Template {
             state.setData(block.getMetadata());
             state.update();
 
-            below.setType(belowMaterial, false);
-            below.getState().setData(new MaterialData(belowMaterial, metadata));
-            below.getState().update(false, false);
+            below.setTypeIdAndData(belowMaterial.ordinal(), metadata, false);
+            te = w.getHandle().getTileEntity(
+                    new BlockPosition(below.getX(), below.getY(), below.getZ()));
+            if (te != null) {
+                te.load(ntc);
+            }
         }
 
         // Place doors last.
