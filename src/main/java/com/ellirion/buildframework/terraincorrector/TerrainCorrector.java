@@ -412,7 +412,7 @@ public class TerrainCorrector {
             // if the rulebook returns are result get the to change blocks
             // else create an empty list to prevent a NPE
             if (ravineSupportsRuleBook.getResult().isPresent()) {
-                Result result = (Result) ravineSupportsRuleBook.getResult().get();
+                Result result = ravineSupportsRuleBook.getResult().get();
                 toChange = supportSelector((int) result.getValue(), top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             } else {
                 toChange = new ArrayList<>();
@@ -454,11 +454,9 @@ public class TerrainCorrector {
                 holeCentre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
                 maxDepth = (maxHoleZ - minHoleZ) / 2;
                 for (int x = minHoleX; x <= maxHoleX; x++) {
-                    if ((Math.abs(x) % 3) == 0) {
-                        for (int i = 0; i <= maxDepth; i++) {
-                            toChange.addAll(blocksToReplace(x, y, holeCentre + i, i, underBoundingBox));
-                            toChange.addAll(blocksToReplace(x, y, holeCentre - i, i, underBoundingBox));
-                        }
+                    for (int i = 0; i <= maxDepth; i++) {
+                        toChange.addAll(blocksToReplace(x, y, holeCentre + i, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(x, y, holeCentre - i, i, underBoundingBox));
                     }
                 }
                 return toChange;
@@ -467,11 +465,9 @@ public class TerrainCorrector {
                 holeCentre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 maxDepth = (maxHoleX - minHoleX) / 2;
                 for (int z = minHoleZ; z <= maxHoleZ; z++) {
-                    if ((Math.abs(z) % 3) == 0) {
-                        for (int i = 0; i <= maxDepth; i++) {
-                            toChange.addAll(blocksToReplace(holeCentre + i, y, z, i, underBoundingBox));
-                            toChange.addAll(blocksToReplace(holeCentre + i, y, z, i, underBoundingBox));
-                        }
+                    for (int i = 0; i <= maxDepth; i++) {
+                        toChange.addAll(blocksToReplace(holeCentre + i, y, z, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(holeCentre - i, y, z, i, underBoundingBox));
                     }
                 }
                 return toChange;
