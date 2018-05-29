@@ -103,7 +103,7 @@ public class MinecraftHelper {
 
         aMap.put(Material.ENDER_CHEST, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
 
-        aMap.put(Material.FENCE_GATE, new int[] {0, 2, 1, 3, 5, 6, 7, 4, 8, 2, 1, 11, 7, 4, 5, 6});
+        aMap.put(Material.FENCE_GATE, new int[] {1, 2, 3, 0, 5, 6, 7, 4, 3, 0, 1, 2, 7, 4, 5, 6});
 
         aMap.put(Material.FURNACE, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3});
 
@@ -184,7 +184,7 @@ public class MinecraftHelper {
                 11
         });
 
-        aMap.put(Material.STONE_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 6, 4, 3, 1, 2, 11});
+        aMap.put(Material.STONE_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
 
         aMap.put(Material.TORCH, new int[] {0, 3, 4, 2, 1, 5, 6, 4, 3, 1, 2, 11});
 
@@ -204,7 +204,7 @@ public class MinecraftHelper {
 
         aMap.put(Material.WALL_SIGN, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 2, 5, 3});
 
-        aMap.put(Material.WOOD_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 6, 4, 3, 1, 2, 11});
+        aMap.put(Material.WOOD_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
 
         MATERIAL_ROTATION_DATA = aMap;
     }
@@ -233,6 +233,15 @@ public class MinecraftHelper {
      */
     public static boolean isStair(Material mat) {
         return mat.toString().contains("STAIRS");
+    }
+
+    /**
+     * A method to determine whether a certain material is a fence gate or not.
+     * @param mat the material to check
+     * @return if the material is a fence gate return true.
+     */
+    public static boolean isFenceGate(Material mat) {
+        return mat.toString().contains("FENCE_GATE");
     }
 
     /**

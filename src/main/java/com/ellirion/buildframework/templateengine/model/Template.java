@@ -62,31 +62,78 @@ public class Template {
     };
 
     private static final Material[] TO_ROTATE = new Material[] {
-            Material.ACACIA_DOOR,
-            Material.ACTIVATOR_RAIL,
-            Material.ANVIL,
-            Material.BED_BLOCK,
-            Material.BIRCH_DOOR,
+
+            //Building blocks
+            Material.LOG_2,
+            Material.LOG,
             Material.BONE_BLOCK,
+            Material.HAY_BLOCK,
+            Material.JACK_O_LANTERN,
+            Material.PUMPKIN,
+            Material.QUARTZ_BLOCK,
+
+            //Decoration blocks
             Material.CHEST,
-            Material.DARK_OAK_DOOR,
-            Material.DETECTOR_RAIL,
+            Material.ENDER_CHEST,
+            Material.FURNACE,
+            Material.ANVIL,
+            Material.LADDER,
+            Material.VINE,
+            Material.WALL_BANNER,
+            Material.STANDING_BANNER,
+            Material.BED_BLOCK,
+            Material.END_ROD,
+            Material.WALL_SIGN,
+            Material.SIGN_POST,
+            Material.SKULL,
+            Material.TORCH,
+
+            //Redstone
             Material.DIODE_BLOCK_OFF,
             Material.DIODE_BLOCK_ON,
             Material.DISPENSER,
             Material.DROPPER,
-            Material.END_ROD,
-            Material.ENDER_CHEST,
-            Material.FENCE_GATE,
-            Material.FURNACE,
-            Material.HAY_BLOCK,
+            Material.OBSERVER,
             Material.HOPPER,
-            Material.IRON_DOOR,
             Material.IRON_TRAPDOOR,
-            Material.JACK_O_LANTERN,
-            Material.JUNGLE_DOOR,
-            Material.LADDER,
+            Material.TRAP_DOOR,
             Material.LEVER,
+            Material.REDSTONE_TORCH_OFF,
+            Material.REDSTONE_TORCH_ON,
+            Material.STONE_BUTTON,
+            Material.WOOD_BUTTON,
+            Material.PISTON_BASE,
+            Material.PISTON_EXTENSION,
+            Material.PISTON_MOVING_PIECE,
+            Material.PISTON_STICKY_BASE,
+            Material.TRAPPED_CHEST,
+
+            //Fence Gate
+            Material.FENCE_GATE,
+            Material.ACACIA_FENCE,
+            Material.ACACIA_FENCE_GATE,
+            Material.BIRCH_FENCE_GATE,
+            Material.DARK_OAK_FENCE_GATE,
+            Material.JUNGLE_FENCE_GATE,
+            Material.SPRUCE_FENCE_GATE,
+
+            //Rail
+            Material.ACTIVATOR_RAIL,
+            Material.DETECTOR_RAIL,
+            Material.RAILS,
+            Material.POWERED_RAIL,
+
+            //Door
+            Material.ACACIA_DOOR,
+            Material.BIRCH_DOOR,
+            Material.DARK_OAK_DOOR,
+            Material.IRON_DOOR,
+            Material.JUNGLE_DOOR,
+            Material.WOOD_DOOR,
+            Material.WOODEN_DOOR,
+            Material.SPRUCE_DOOR,
+
+            //Terracotta
             Material.GRAY_GLAZED_TERRACOTTA,
             Material.GREEN_GLAZED_TERRACOTTA,
             Material.CYAN_GLAZED_TERRACOTTA,
@@ -103,33 +150,8 @@ public class Template {
             Material.WHITE_GLAZED_TERRACOTTA,
             Material.YELLOW_GLAZED_TERRACOTTA,
             Material.LIME_GLAZED_TERRACOTTA,
-            Material.LOG_2,
-            Material.LOG,
-            Material.OBSERVER,
-            Material.PISTON_BASE,
-            Material.PISTON_EXTENSION,
-            Material.PISTON_MOVING_PIECE,
-            Material.PISTON_STICKY_BASE,
-            Material.POWERED_RAIL,
-            Material.PUMPKIN,
-            Material.QUARTZ_BLOCK,
-            Material.RAILS,
-            Material.REDSTONE_TORCH_OFF,
-            Material.REDSTONE_TORCH_ON,
-            Material.SKULL,
-            Material.SPRUCE_DOOR,
-            Material.STANDING_BANNER,
-            Material.STONE_BUTTON,
-            Material.TORCH,
-            Material.TRAP_DOOR,
-            Material.TRAPPED_CHEST,
-            Material.VINE,
-            Material.WALL_BANNER,
-            Material.WALL_SIGN,
-            Material.WOOD_BUTTON,
-            Material.WOOD_DOOR,
-            Material.WOODEN_DOOR,
-            Material.SIGN_POST,
+
+            //Stairs
             Material.ACACIA_STAIRS,
             Material.BIRCH_WOOD_STAIRS,
             Material.BRICK_STAIRS,
@@ -143,8 +165,8 @@ public class Template {
             Material.SANDSTONE_STAIRS,
             Material.SMOOTH_STAIRS,
             Material.SPRUCE_WOOD_STAIRS,
-            Material.WOOD_STAIRS
-    };
+            Material.WOOD_STAIRS,
+            };
 
     private static final String DATA = "data";
     private static final List<String> POSSIBLE_MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
@@ -542,9 +564,12 @@ public class Template {
                         if (MinecraftHelper.isStair(currentMaterial)) {
                             currentMaterial = Material.ACACIA_STAIRS;
                         }
+                        if (MinecraftHelper.isFenceGate(currentMaterial)) {
+                            currentMaterial = Material.FENCE_GATE;
+                        }
 
                         int newMetaData = MinecraftHelper.getMaterialRotationData(currentMaterial, currentMetaData,
-                                                                                  true);
+                                                                                  direction);
                         block.getMetadata().setData((byte) newMetaData);
                     }
                     rotatedTemplateBlock[x][y][z] = block;
