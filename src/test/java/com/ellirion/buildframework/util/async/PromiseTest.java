@@ -530,6 +530,7 @@ public class PromiseTest {
             fail();
         });
 
+        c.await();
         assertEquals(0, c.get());
     }
 
