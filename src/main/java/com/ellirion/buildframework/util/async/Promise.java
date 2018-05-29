@@ -19,11 +19,12 @@ public class Promise<TResult> {
 
     private PromiseState state;
     private boolean scheduled;
-    @Getter private TResult result;
-    @Getter private Exception exception;
+    @Getter private volatile TResult result;
+    @Getter private volatile Exception exception;
 
-    private List<Consumer<TResult>> onResolve;
-    private List<Consumer<Exception>> onReject;
+    private final List<Consumer<TResult>> onResolve;
+    private final List<Consumer<Exception>> onReject;
+    private final List<Promise> children;
 
     private final IPromiseBody<TResult> runner;
     private final IPromiseFinisher<TResult> finisher;
@@ -62,6 +63,7 @@ public class Promise<TResult> {
 
         this.onResolve = new ArrayList<>();
         this.onReject = new ArrayList<>();
+        this.children = new ArrayList<>();
 
         this.runner = runner;
         this.finisher = new IPromiseFinisher<TResult>() {
@@ -81,7 +83,7 @@ public class Promise<TResult> {
 
         // Schedule (sync or async) the invocation of our runner if requested.
         if (immediate) {
-            this.schedule();
+            schedule();
         }
     }
 
@@ -97,11 +99,17 @@ public class Promise<TResult> {
         // Create a follow-up promise that does not schedule itself immediately.
         Promise<TNext> next = new Promise<>(finisher -> {
             try {
-                finisher.resolve(continuer.run(result));
+                synchronized (this) {
+                    TNext n = continuer.run(result);
+                    finisher.resolve(n);
+                }
             } catch (Exception ex) {
                 finisher.reject(ex);
             }
         }, async, false);
+        synchronized (children) {
+            children.add(next);
+        }
 
         // If we have already been resolved, schedule the next Promise for execution.
         if (state == RESOLVED) {
@@ -146,7 +154,7 @@ public class Promise<TResult> {
     public void then(Consumer<TResult> consumer, boolean async) {
         then(result -> {
             consumer.accept(result);
-            return null;
+            return result;
         }, async);
     }
 
@@ -158,7 +166,7 @@ public class Promise<TResult> {
     public void then(Consumer<TResult> consumer) {
         then(result -> {
             consumer.accept(result);
-            return null;
+            return result;
         }, async);
     }
 
@@ -179,6 +187,9 @@ public class Promise<TResult> {
                 finisher.reject(ex);
             }
         }, async, false);
+        synchronized (children) {
+            children.add(next);
+        }
 
         // If we have already been resolved, just return the
         // next Promise. It will never be executed.
@@ -217,7 +228,7 @@ public class Promise<TResult> {
     public void except(Consumer<Exception> consumer, boolean async) {
         except(ex -> {
             consumer.accept(ex);
-            return null;
+            return ex;
         }, async);
     }
 
@@ -227,9 +238,9 @@ public class Promise<TResult> {
      * @param consumer The function body that is invoked upon rejection
      */
     public void except(Consumer<Exception> consumer) {
-        except(result -> {
-            consumer.accept(result);
-            return null;
+        except(ex -> {
+            consumer.accept(ex);
+            return ex;
         }, async);
     }
 
@@ -244,6 +255,7 @@ public class Promise<TResult> {
         // but be careful to run it with the correct synchronicity!
         if (state != PENDING) {
             schedule(runnable, async);
+            return;
         }
 
         // Otherwise, we add it to the queues.
@@ -265,8 +277,12 @@ public class Promise<TResult> {
      * @return The PromiseState of this Promise after awaiting
      */
     public boolean await() {
-        // Make sure execution is scheduled if it isn't already.
-        this.schedule();
+        // Wait for all our child Promises to finish
+        synchronized (children) {
+            for (int i = 0; i < children.size(); i++) {
+                children.get(i).await();
+            }
+        }
 
         // Wait for the countdown to reach zero.
         try {
@@ -330,12 +346,14 @@ public class Promise<TResult> {
         // We also notify any threads waiting for this Promise to finish.
         state = RESOLVED;
         result = t;
-        latch.decrement();
 
         // Invoke all functions waiting on this Promise being resolved.
         for (Consumer<TResult> next : onResolve) {
             next.accept(t);
         }
+
+        // Only notify waiting threads after all handlers have been ran.
+        latch.decrement();
     }
 
     private synchronized void handleReject(Exception ex) {
@@ -347,7 +365,6 @@ public class Promise<TResult> {
         // We also notify any threads waiting for this Promise to finish.
         state = REJECTED;
         exception = ex;
-        latch.decrement();
 
         // If there are no exception handlers registered on this Promise, throw the exception.
         if (onReject.size() == 0 && ex != null) {
@@ -358,6 +375,9 @@ public class Promise<TResult> {
         for (Consumer<Exception> next : onReject) {
             next.accept(ex);
         }
+
+        // Only notify waiting threads after all handlers have been ran.
+        latch.decrement();
     }
 
     /**

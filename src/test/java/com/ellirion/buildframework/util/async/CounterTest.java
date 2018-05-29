@@ -2,8 +2,6 @@ package com.ellirion.buildframework.util.async;
 
 import org.junit.Test;
 
-import java.util.concurrent.CountDownLatch;
-
 import static org.junit.Assert.*;
 
 public class CounterTest {
@@ -49,63 +47,14 @@ public class CounterTest {
     }
 
     @Test
-    public void await_whenAtZero_shouldImmediatelyReturnTrue() {
-        Counter c = new Counter(0);
-
-        assertTrue(c.await());
-    }
-
-    @Test
-    public void await_whenNotAtZero_shouldWaitForZeroAndReturnTrue() {
+    public void await_whenAtCorrectCount_shouldReturnImmediately() {
         Counter c = new Counter(2);
 
-        new Thread(() -> {
-            for (int i = 0; i < 2; i++) {
-                try {
-                    Thread.sleep(500);
-                } catch (Exception ex) {
-                    fail();
-                }
-                c.decrement();
-            }
-        }).start();
-
-        assertTrue(c.await());
-        assertEquals(0, c.get());
+        c.await(2);
     }
 
     @Test
-    public void await_whenNotAtZeroAndInterrupted_shouldReturnFalse() {
-        Counter c = new Counter(2);
-        CountDownLatch l = new CountDownLatch(1);
-
-        Thread t1 = new Thread(() -> {
-            assertFalse(c.await());
-            assertEquals(2, c.get());
-            l.countDown();
-        });
-        Thread t2 = new Thread(() -> t1.interrupt());
-
-        t1.start();
-        t2.start();
-
-        try {
-            l.await();
-        } catch (InterruptedException ex) {
-            fail();
-        }
-        assertEquals(0, l.getCount());
-    }
-
-    @Test
-    public void awaitCount_whenAtCorrectCount_shouldReturnImmediately() {
-        Counter c = new Counter(2);
-
-        assertTrue(c.await(2));
-    }
-
-    @Test
-    public void awaitCount_whenNotAtCorrectCount_shouldWaitForCountAndReturnTrue() {
+    public void await_whenNotAtCorrectCount_shouldWaitForCountToMatch() {
         Counter c = new Counter(0);
 
         new Thread(() -> {
@@ -119,19 +68,22 @@ public class CounterTest {
             }
         }).start();
 
-        assertTrue(c.await(2));
+        c.await(2);
+
         assertEquals(2, c.get());
     }
 
     @Test
-    public void awaitCount_whenNotAtCorrectCountAndInterrupted_shouldReturnFalse() {
+    public void await_whenNotAtCorrectCountAndInterrupted_shouldThrowException() {
         Counter c = new Counter(0);
-        CountDownLatch l = new CountDownLatch(1);
 
         Thread t1 = new Thread(() -> {
-            assertFalse(c.await(2));
-            assertEquals(0, c.get());
-            l.countDown();
+            try {
+                c.await(1);
+                fail();
+            } catch (RuntimeException ex) {
+                assertEquals("await() was interrupted", ex.getMessage());
+            }
         });
         Thread t2 = new Thread(() -> t1.interrupt());
 
@@ -139,10 +91,10 @@ public class CounterTest {
         t2.start();
 
         try {
-            l.await();
+            t2.join();
+            t1.join();
         } catch (InterruptedException ex) {
             fail();
         }
-        assertEquals(0, l.getCount());
     }
 }

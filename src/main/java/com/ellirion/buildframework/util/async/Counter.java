@@ -52,28 +52,47 @@ public class Counter {
     }
 
     /**
-     * Wait for this Counter to reach zero.
-     * @return Whether the wait completed without interruption
+     * Acquire the lock and perform the Runnable {@code r}.
+     * @param r The Runnable to run
      */
-    public boolean await() {
-        return await(0);
+    public void perform(Runnable r) {
+        synchronized (latch) {
+            r.run();
+        }
+    }
+
+    /**
+     * Wait for this Counter to reach {@code i}, and then perform {@code r}.
+     * @param i The number to reach
+     * @param r The Runnable to run
+     */
+    public void perform(int i, Runnable r) {
+        synchronized (latch) {
+            await(i);
+            r.run();
+        }
+    }
+
+    /**
+     * Wait for this Counter to reach zero.
+     */
+    public void await() {
+        await(0);
     }
 
     /**
      * Wait for this Counter to reach {@code i}.
      * @param i The number to reach
-     * @return Whether the wait completed without interruption
      */
-    public boolean await(int i) {
+    public void await(int i) {
         try {
             synchronized (latch) {
                 while (count != i) {
                     latch.wait();
                 }
             }
-            return true;
         } catch (InterruptedException ex) {
-            return false;
+            throw new RuntimeException("await() was interrupted", ex);
         }
     }
 }
