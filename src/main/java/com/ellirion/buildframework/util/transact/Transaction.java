@@ -57,7 +57,8 @@ public abstract class Transaction {
         // that the apply() and revert() methods are synchronized prevents this, but that's
         // not necessarily the case since the Promise may go unresolved for an extended period of time.
         latch.perform(0, () -> {
-            // After we've waited for the latch to reach zero,
+            // After we've waited for the latch to reach zero, we can now
+            // safely increment it *without yielding the synchronized block*.
             latch.increment();
         });
 
