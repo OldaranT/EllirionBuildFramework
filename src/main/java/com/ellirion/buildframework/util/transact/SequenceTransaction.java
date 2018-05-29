@@ -5,6 +5,7 @@ import com.ellirion.buildframework.util.async.IPromiseFinisher;
 import com.ellirion.buildframework.util.async.Promise;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SequenceTransaction extends Transaction {
@@ -17,6 +18,16 @@ public class SequenceTransaction extends Transaction {
      */
     public SequenceTransaction() {
         this.children = new ArrayList<>();
+        this.finalized = false;
+    }
+
+    /**
+     * Construct a new SequenceTransaction using {@code transactions}
+     * as the initial children.
+     * @param transactions The initial children
+     */
+    public SequenceTransaction(final Transaction... transactions) {
+        this.children = Arrays.asList(transactions);
         this.finalized = false;
     }
 
