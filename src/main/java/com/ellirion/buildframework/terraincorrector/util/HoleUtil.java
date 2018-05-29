@@ -12,11 +12,11 @@ import java.util.List;
 public class HoleUtil {
 
     /**
-     * @param world ksfdja
-     * @param boundingBox jahsdl
-     * @param offset asasd
-     * @param depthOffset asddasa
-     * @return jhdjfhsj
+     * @param world the world.
+     * @param boundingBox the boundingbox
+     * @param offset the offset for how far around the boundingbox you can go.
+     * @param depthOffset the offset for how deep you can go.
+     * @return return the found holes.
      */
     public static List<Hole> findHoles(World world, BoundingBox boundingBox, int offset, int depthOffset) {
         List<Hole> holes = new ArrayList<>();
@@ -52,14 +52,14 @@ public class HoleUtil {
     }
 
     /**
-     * @param block sdfsdf
-     * @param hole sdfsdf
-     * @param todo sdfsdf
-     * @param onlyUnder sdfsf
-     * @param offset sadasd
-     * @param boundingBox asdasd
-     * @param depthOffset asdad
-     * @param world asdasd
+     * @param block the starting block.
+     * @param hole the hole to fill.
+     * @param todo the list of blocks that still need to be done.
+     * @param onlyUnder boolean to determine whether to stop at the edge of the bounding box or not.
+     * @param offset how far outside the boundingbox it needs to look.
+     * @param boundingBox the boundingbox under which it looks.
+     * @param depthOffset the maximum amount of blocks it can go down.
+     * @param world the world in which to look.
      */
     public static void exploreAdjacentNonSolidBlocks(Block block, Hole hole, List<Block> todo, boolean onlyUnder,
                                                      int offset, BoundingBox boundingBox, int depthOffset,
@@ -102,10 +102,10 @@ public class HoleUtil {
     }
 
     /**
-     * @param dir sdf
-     * @param block sdf
-     * @param world sdf
-     * @return sdfsd
+     * @param dir in what direction it needs to look.
+     * @param block the block from where it needs to look.
+     * @param world the world where you are looking in.
+     * @return return the found block.
      */
     public static Block getRelativeBlock(int dir, Block block, World world) {
         //        World world = block.getWorld();
