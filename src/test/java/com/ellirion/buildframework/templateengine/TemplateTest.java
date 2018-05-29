@@ -29,10 +29,153 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(Enclosed.class)
 public class TemplateTest {
+
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest({BuildFramework.class})
+    @PowerMockIgnore("javax.management.*")
+    public static class RotationTests {
+
+        @Before
+        public void setup() {
+
+            mockStatic(BuildFramework.class);
+
+            final BuildFramework mockPlugin = mock(BuildFramework.class);
+            final FileConfiguration mockConfig = mock(FileConfiguration.class);
+
+            when(BuildFramework.getInstance()).thenReturn(mockPlugin);
+            when(mockPlugin.getTemplateFormatConfig()).thenReturn(mockConfig);
+        }
+
+        private Template createRotateTemplate(int xLength, int zLength) {
+            Template template = new Template();
+            template.setTemplateName("template");
+
+            TemplateBlock[][][] blocks = new TemplateBlock[xLength][1][zLength];
+            for (int x = 0; x < xLength; x++) {
+                for (int y = 0; y < 1; y++) {
+                    for (int z = 0; z < zLength; z++) {
+                        TemplateBlock block;
+                        if (z < 1) {
+                            block = new TemplateBlock(Material.STONE);
+                        } else {
+                            block = new TemplateBlock(Material.DIAMOND_BLOCK);
+                        }
+                        block.setMetadata(new MaterialData(1, (byte) 0));
+                        block.setData(new NBTTagCompound());
+                        blocks[x][y][z] = block;
+                    }
+                }
+            }
+            template.setTemplateBlocks(blocks);
+
+            return template;
+        }
+
+        private Template createRotateClockwiseTemplate(int xLength, int zLength) {
+            Template template = new Template();
+            template.setTemplateName("template");
+
+            TemplateBlock[][][] blocks = new TemplateBlock[zLength][1][xLength];
+            for (int x = 0; x < zLength; x++) {
+                for (int y = 0; y < 1; y++) {
+                    for (int z = 0; z < xLength; z++) {
+                        TemplateBlock block;
+                        if (x == zLength - 1) {
+                            block = new TemplateBlock(Material.STONE);
+                        } else {
+                            block = new TemplateBlock(Material.DIAMOND_BLOCK);
+                        }
+                        block.setMetadata(new MaterialData(1, (byte) 0));
+                        block.setData(new NBTTagCompound());
+                        blocks[x][y][z] = block;
+                    }
+                }
+            }
+            template.setTemplateBlocks(blocks);
+
+            return template;
+        }
+
+        private Template createRotateCounterClockwiseTemplate(int xLength, int zLength) {
+            Template template = new Template();
+            template.setTemplateName("template");
+
+            TemplateBlock[][][] blocks = new TemplateBlock[zLength][1][xLength];
+            for (int x = 0; x < zLength; x++) {
+                for (int y = 0; y < 1; y++) {
+                    for (int z = 0; z < xLength; z++) {
+                        TemplateBlock block;
+                        if (x == 0) {
+                            block = new TemplateBlock(Material.STONE);
+                        } else {
+                            block = new TemplateBlock(Material.DIAMOND_BLOCK);
+                        }
+                        block.setMetadata(new MaterialData(1, (byte) 0));
+                        block.setData(new NBTTagCompound());
+                        blocks[x][y][z] = block;
+                    }
+                }
+            }
+            template.setTemplateBlocks(blocks);
+
+            return template;
+        }
+
+        @Test
+        public void rotateTemplate_whenRotatingClockwiseSquareTemplate_shouldUpdateTemplate() {
+            int xLength = 3;
+            int zLength = 3;
+            Template templateToCheck = createRotateTemplate(xLength, zLength);
+            Template templateResult = createRotateClockwiseTemplate(xLength, zLength);
+
+            templateToCheck.rotateTemplate(true);
+
+            Assert.assertEquals(templateResult, templateToCheck);
+        }
+
+        @Test
+        public void rotateTemplate_whenRotatingCounterClockwiseSquareTemplate_shouldUpdateTemplate() {
+            int xLength = 3;
+            int zLength = 3;
+            Template templateToCheck = createRotateTemplate(xLength, zLength);
+            Template templateResult = createRotateCounterClockwiseTemplate(xLength, zLength);
+
+            templateToCheck.rotateTemplate(false);
+
+            Assert.assertEquals(templateResult, templateToCheck);
+        }
+
+        @Test
+        public void rotateTemplate_whenRotatingClockwiseRectangleTemplate_shouldUpdateTemplate() {
+            int xLength = 2;
+            int zLength = 4;
+            Template templateToCheck = createRotateTemplate(xLength, zLength);
+            Template templateResult = createRotateClockwiseTemplate(xLength, zLength);
+
+            templateToCheck.rotateTemplate(true);
+
+            Assert.assertEquals(templateResult, templateToCheck);
+        }
+
+        @Test
+        public void rotateTemplate_whenRotatingCounterClockwiseRectangleTemplate_shouldUpdateTemplate() {
+            int xLength = 2;
+            int zLength = 4;
+            Template templateToCheck = createRotateTemplate(xLength, zLength);
+            Template templateResult = createRotateCounterClockwiseTemplate(xLength, zLength);
+
+            templateToCheck.rotateTemplate(false);
+
+            Assert.assertEquals(templateResult, templateToCheck);
+        }
+    }
 
     @RunWith(PowerMockRunner.class)
     @PrepareForTest({BuildFramework.class})

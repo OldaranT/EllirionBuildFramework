@@ -27,7 +27,8 @@ public class TemplateMovementListener implements Listener {
         }
 
         if (event.getItem().getType() != Material.DIAMOND_SWORD &&
-            event.getItem().getType() != Material.DIAMOND_SPADE) {
+            event.getItem().getType() != Material.DIAMOND_SPADE &&
+            event.getItem().getType() != Material.DIAMOND_HOE) {
             return;
         }
 
@@ -48,16 +49,23 @@ public class TemplateMovementListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_AIR) {
             if (event.getItem().getType() == Material.DIAMOND_SPADE) {
                 prevHologram.setLocation(new Location(player.getWorld(),
-                                                      player.getLocation().getBlockX(),
-                                                      player.getLocation().getBlockY(),
-                                                      player.getLocation().getBlockZ()));
+                                                      player.getTargetBlock(null, 35565).getX(),
+                                                      player.getTargetBlock(null, 35565).getY(),
+                                                      player.getTargetBlock(null, 35565).getZ()));
+            } else if (event.getItem().getType() == Material.DIAMOND_HOE) {
+                t.rotateTemplate(false);
             } else {
                 prevHologram.moveHologram(1, blockFace);
             }
             prevHologram = new TemplateHologram(t, prevHologram.getLocation());
         } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
             if (event.getItem().getType() == Material.DIAMOND_SPADE) {
-                t.rotateTemplate();
+                prevHologram.setLocation(new Location(player.getWorld(),
+                                                      player.getLocation().getBlockX(),
+                                                      player.getLocation().getBlockY(),
+                                                      player.getLocation().getBlockZ()));
+            } else if (event.getItem().getType() == Material.DIAMOND_HOE) {
+                t.rotateTemplate(true);
             } else {
                 prevHologram.moveHologram(1, blockFace.getOppositeFace());
             }

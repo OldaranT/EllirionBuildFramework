@@ -57,6 +57,8 @@ public class MinecraftHelper {
                 1, 2, 3, 0, 5, 6, 7, 4, 8, 9, 10, 11, 3, 0, 1, 2, 7, 4, 5, 6, 8, 9, 10, 11
         });
 
+        aMap.put(Material.ACACIA_STAIRS, new int[] {2, 3, 1, 0, 3, 2, 0, 1});
+
         aMap.put(Material.ACTIVATOR_RAIL, new int[] {
                 1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 20, 21, 9, 8, 12, 13, 11, 10
         });
@@ -65,7 +67,7 @@ public class MinecraftHelper {
                 1, 2, 3, 0, 5, 6, 7, 4, 9, 10, 11, 8, 3, 0, 1, 2, 7, 4, 5, 6, 11, 8, 9, 10
         });
 
-        aMap.put(Material.BED, new int[] {
+        aMap.put(Material.BED_BLOCK, new int[] {
                 1, 2, 3, 0, 1, 2, 3, 0, 9, 10, 11, 8, 9, 10, 11, 8, 3, 0, 1, 2, 3, 0, 1, 2, 11, 8, 9, 10, 11, 8, 9, 10
         });
 
@@ -216,12 +218,21 @@ public class MinecraftHelper {
     }
 
     /**
-     * A method to determine whether a certain material can be used as an anchor point for path supports.
+     * A method to determine whether a certain material is a door or not.
      * @param mat the material to check
-     * @return whether the given material can be used as an anchor point
+     * @return if the material is a door return true.
      */
     public static boolean isDoor(Material mat) {
-        return mat.toString().contains("DOOR") && mat.toString().contains("TRAP");
+        return mat.toString().contains("DOOR") && !mat.toString().contains("TRAP");
+    }
+
+    /**
+     * A method to determine whether a certain material is a stair or not.
+     * @param mat the material to check
+     * @return if the material is a stair return true.
+     */
+    public static boolean isStair(Material mat) {
+        return mat.toString().contains("STAIRS");
     }
 
     /**

@@ -65,7 +65,7 @@ public class Template {
             Material.ACACIA_DOOR,
             Material.ACTIVATOR_RAIL,
             Material.ANVIL,
-            Material.BED,
+            Material.BED_BLOCK,
             Material.BIRCH_DOOR,
             Material.BONE_BLOCK,
             Material.CHEST,
@@ -129,7 +129,21 @@ public class Template {
             Material.WOOD_BUTTON,
             Material.WOOD_DOOR,
             Material.WOODEN_DOOR,
-            Material.SIGN_POST
+            Material.SIGN_POST,
+            Material.ACACIA_STAIRS,
+            Material.BIRCH_WOOD_STAIRS,
+            Material.BRICK_STAIRS,
+            Material.COBBLESTONE_STAIRS,
+            Material.DARK_OAK_STAIRS,
+            Material.JUNGLE_WOOD_STAIRS,
+            Material.NETHER_BRICK_STAIRS,
+            Material.PURPUR_STAIRS,
+            Material.QUARTZ_STAIRS,
+            Material.RED_SANDSTONE_STAIRS,
+            Material.SANDSTONE_STAIRS,
+            Material.SMOOTH_STAIRS,
+            Material.SPRUCE_WOOD_STAIRS,
+            Material.WOOD_STAIRS
     };
 
     private static final String DATA = "data";
@@ -497,8 +511,9 @@ public class Template {
 
     /**
      * Rotate the template 90 degrees in a direction.
+     * @param direction True = clockwise, false = counter clockwise
      */
-    public void rotateTemplate() {
+    public void rotateTemplate(boolean direction) {
         int xDepth = templateBlocks.length;
         int yDepth = templateBlocks[0].length;
         int zDepth = templateBlocks[0][0].length;
@@ -509,7 +524,12 @@ public class Template {
             //for each Y rotate x and z.
             for (int x = 0; x < zDepth; x++) {
                 for (int z = 0; z < xDepth; z++) {
-                    TemplateBlock block = templateBlocks[z][y][zDepth - x - 1];
+                    TemplateBlock block;
+                    if (direction) {
+                        block = templateBlocks[z][y][zDepth - x - 1];
+                    } else {
+                        block = templateBlocks[xDepth - z - 1][y][x];
+                    }
                     if (Arrays.asList(TO_ROTATE).contains(block.getMaterial())) {
                         Material currentMaterial = block.getMaterial();
                         int currentMetaData = (int) block.getMetadata().getData();
@@ -518,6 +538,9 @@ public class Template {
                         }
                         if (MinecraftHelper.isDoor(currentMaterial)) {
                             currentMaterial = Material.ACACIA_DOOR;
+                        }
+                        if (MinecraftHelper.isStair(currentMaterial)) {
+                            currentMaterial = Material.ACACIA_STAIRS;
                         }
 
                         int newMetaData = MinecraftHelper.getMaterialRotationData(currentMaterial, currentMetaData,
