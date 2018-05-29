@@ -6,12 +6,21 @@ import org.bukkit.configuration.file.FileConfiguration;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.terraincorrector.model.Hole;
+
+import java.util.List;
+
+import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
 
 public class TerrainValidator {
 
     private static final BuildFramework BUILD_FRAMEWORK = BuildFramework.getInstance();
     private static final FileConfiguration CONFIG = BUILD_FRAMEWORK.getConfig();
     private static final FileConfiguration BLOCK_VALUE_CONFIG = BUILD_FRAMEWORK.getBlockValueConfig();
+    private static final String maxHoleDepthConfigPath = "TerrainCorrecter.MaxHoleDepth";
+    private static final int depthOffset = CONFIG.getInt(maxHoleDepthConfigPath, 5);
+    private World world;
+    private BoundingBox boundingBox;
 
     /**
      * Validate whether the impact on the terrain is within acceptable levels.
@@ -25,26 +34,36 @@ public class TerrainValidator {
         final double blocksLimit = CONFIG.getInt("TerrainCorrector.BlocksLimit", 100);
         final double totalLimit = CONFIG.getInt("TerrainCorrector.TotalLimit", 200);
         final int offset = CONFIG.getInt("TerrainCorrector.Offset", 5);
+        this.world = world;
+        this.boundingBox = boundingBox;
 
-        if (checkForBoundingBoxes(boundingBox)) {
+        if (checkForBoundingBoxes()) {
             return false;
         }
 
-        final double overhangScore = calculateOverhang(boundingBox, world);
+        final double overhangScore = calculateOverhang();
 
         if (overhangScore >= overhangLimit) {
             return false;
         }
 
-        final double blocksScore = calculateBlocks(boundingBox, world, offset);
+        final double blocksScore = calculateBlocks(offset);
         if (blocksScore >= blocksLimit) {
             return false;
+        }
+
+        List<Hole> holes = findHoles(world, boundingBox, 0, depthOffset);
+        for (Hole h : holes) {
+            List<Block> blocks = h.getBlockList();
+            if (checkForRiver(blocks)) {
+                return false;
+            }
         }
 
         return !(blocksScore + overhangScore >= totalLimit);
     }
 
-    private boolean checkForBoundingBoxes(BoundingBox boundingBox) {
+    private boolean checkForBoundingBoxes() {
         final int checkRadius = CONFIG.getInt("TerrainCorrector.BoundingBoxMinDist", 5);
 
         Point point1 = new Point(boundingBox.getX1() - checkRadius, boundingBox.getY1() - checkRadius,
@@ -62,7 +81,7 @@ public class TerrainValidator {
         return false;
     }
 
-    private double calculateOverhang(final BoundingBox boundingBox, final World world) {
+    private double calculateOverhang() {
         double total = 0D;
 
         final double totalArea = boundingBox.getWidth() * boundingBox.getDepth();
@@ -75,7 +94,7 @@ public class TerrainValidator {
 
                 if (block.isLiquid() || block.isEmpty()) {
 
-                    final double distance = findClosestBlock(new Point(x, y, z), boundingBox, world);
+                    final double distance = findClosestBlock(new Point(x, y, z));
                     final Double score = calculateOverhangScore(totalArea, distance);
                     total += score;
                 }
@@ -88,7 +107,7 @@ public class TerrainValidator {
         return (distance / area) * 75;
     }
 
-    private double calculateBlocks(final BoundingBox boundingBox, final World world, final int offset) {
+    private double calculateBlocks(final int offset) {
 
         double blockCounter = 0;
 
@@ -122,26 +141,25 @@ public class TerrainValidator {
         return blockCounter;
     }
 
-    private double findClosestBlock(final Point startingPosition, final BoundingBox boundingBox, final World world) {
+    private double findClosestBlock(final Point startingPosition) {
 
         final double x = startingPosition.getX();
 
         double finalDistance = Double.POSITIVE_INFINITY;
 
         for (double loopX = x; loopX <= boundingBox.getX2(); loopX++) {
-            finalDistance = loopTroughBlocks(finalDistance, world, loopX, boundingBox, startingPosition);
+            finalDistance = loopTroughBlocks(finalDistance, loopX, startingPosition);
         }
 
         for (double loopX = x; loopX >= boundingBox.getX1(); loopX--) {
 
-            finalDistance = loopTroughBlocks(finalDistance, world, loopX, boundingBox, startingPosition);
+            finalDistance = loopTroughBlocks(finalDistance, loopX, startingPosition);
         }
 
         return finalDistance;
     }
 
-    private double loopTroughBlocks(double currentDistance, final World world, final double x,
-                                    final BoundingBox boundingBox, final Point startingPosition) {
+    private double loopTroughBlocks(double currentDistance, final double x, final Point startingPosition) {
 
         final double z = startingPosition.getZ();
         final double y = boundingBox.getY1() - 1;
@@ -174,5 +192,24 @@ public class TerrainValidator {
         }
 
         return currentDistance;
+    }
+
+    private boolean checkForRiver(final List<Block> blocks) {
+        final int minX = boundingBox.getX1();
+        final int maxX = boundingBox.getX2();
+        final int minZ = boundingBox.getZ1();
+        final int maxZ = boundingBox.getZ2();
+
+        for (Block b : blocks) {
+            if (b.isLiquid() &&
+                ((b.getX() == minX && getRelativeBlock(1, b, world).isLiquid()) ||
+                 (b.getX() == maxX && getRelativeBlock(3, b, world).isLiquid()) ||
+                 (b.getZ() == minZ && getRelativeBlock(0, b, world).isLiquid()) ||
+                 (b.getZ() == maxZ && getRelativeBlock(2, b, world).isLiquid()))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
+
 public class TerrainCorrector {
 
     private static final FileConfiguration CONFIG = BuildFramework.getInstance().getConfig();
@@ -36,6 +38,8 @@ public class TerrainCorrector {
     private static final String minZFactKey = "minZ";
     private static final String maxHoleZFactKey = "maxHoleZ";
     private static final String maxZFactKey = "maxZ";
+    private static final int offset = CONFIG.getInt(areaLimitOffsetConfigPath, 5);
+    private static final int depthOffset = CONFIG.getInt(maxHoleDepthConfigPath, 5);
 
     private static final RavineSupportsRuleBook ravineSupportsRuleBook = (RavineSupportsRuleBook) RuleBookBuilder
             .create(RavineSupportsRuleBook.class)
@@ -58,7 +62,7 @@ public class TerrainCorrector {
         new Promise<>(finisher -> {
             this.boundingBox = boundingBox;
             this.world = world;
-            List<Hole> holes = findHoles();
+            List<Hole> holes = findHoles(world, boundingBox, offset, depthOffset);
 
             for (Hole h : holes) {
                 correctHole(h);
@@ -132,7 +136,7 @@ public class TerrainCorrector {
 
         //Loop through the adjacent blocks
         for (int dir = 0; dir < 4; dir++) {
-            Block nextBlock = getRelativeBlock(dir, currentEntry.getBlock());
+            Block nextBlock = getRelativeBlock(dir, currentEntry.getBlock(), world);
 
             int percentage = currentEntry.getPercentage();
             int maxOffset = currentEntry.getMaxDepthOffset();
@@ -172,7 +176,7 @@ public class TerrainCorrector {
 
         while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
             sendSyncBlockChanges(currentBlock, mat);
-            currentBlock = getRelativeBlock(5, currentBlock);
+            currentBlock = getRelativeBlock(5, currentBlock, world);
         }
     }
 
@@ -199,43 +203,6 @@ public class TerrainCorrector {
         }
     }
 
-    private List<Hole> findHoles() {
-        List<Hole> holes = new ArrayList<>();
-        int y = boundingBox.getY1() - 1;
-
-        for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
-            for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
-                Block block = world.getBlockAt(x, y, z);
-                if ((block.isEmpty() || block.isLiquid() || !block.getType().isSolid()) &&
-                    holes.stream().noneMatch(hole -> hole.contains(block))) {
-
-                    // Add the hole to the list of holes once all blocks are found
-                    holes.add(getHole(block));
-                }
-            }
-        }
-        return holes;
-    }
-
-    private boolean checkForRiver(final List<Block> blocks) {
-        final int minX = boundingBox.getX1();
-        final int maxX = boundingBox.getX2();
-        final int minZ = boundingBox.getZ1();
-        final int maxZ = boundingBox.getZ2();
-
-        for (Block b : blocks) {
-            if (b.isLiquid() && blocksBelowBoundingBoxOrWithinOffset(b, 0) &&
-                ((b.getX() == minX && getRelativeBlock(1, b).isLiquid()) ||
-                 (b.getX() == maxX && getRelativeBlock(3, b).isLiquid()) ||
-                 (b.getZ() == minZ && getRelativeBlock(0, b).isLiquid()) ||
-                 (b.getZ() == maxZ && getRelativeBlock(2, b).isLiquid()))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private Material getFloorMaterial() {
         Map<Material, Integer> materials = new HashMap<>();
 
@@ -260,59 +227,6 @@ public class TerrainCorrector {
         }
 
         return material;
-    }
-
-    private Hole getHole(Block block) {
-        Hole hole = new Hole(block);
-        LinkedList<Block> todoBlocks = new LinkedList<>();
-
-        //Add the current block to the todoBlocks of blocks that are yet to be done
-        todoBlocks.add(block);
-
-        //Execute this method for each block in the todoBlocks
-        while ((block = todoBlocks.poll()) != null) {
-            exploreAdjacentNonSolidBlocks(block, hole, todoBlocks, false);
-        }
-
-        return hole;
-    }
-
-    private void exploreAdjacentNonSolidBlocks(Block block, Hole hole, List<Block> todo, boolean onlyUnder) {
-
-        final int offset = CONFIG.getInt(areaLimitOffsetConfigPath, 5);
-
-        int minX = boundingBox.getX1();
-        int maxX = boundingBox.getX2();
-        int minZ = boundingBox.getZ1();
-        int maxZ = boundingBox.getZ2();
-        final int maxY = boundingBox.getY1() - 1;
-        final int minY = boundingBox.getY1() - CONFIG.getInt(maxHoleDepthConfigPath, 5);
-        if (!onlyUnder) {
-            minX -= offset;
-            maxX += offset;
-            minZ -= offset;
-            maxZ += offset;
-        }
-
-        for (int i = 0; i < 6; i++) {
-            Block b = getRelativeBlock(i, block);
-
-            if (!(b.getY() <= maxY && (b.isLiquid() || b.isEmpty() || !b.getType().isSolid()) &&
-                  !hole.contains(b))) {
-                continue;
-            }
-            if (!(b.getX() >= minX && b.getX() <= maxX && b.getZ() >= minZ && b.getZ() <= maxZ)) {
-                hole.setExceedsAreaLimit(true);
-                continue;
-            }
-            if (b.getY() < minY) {
-                hole.setExceedsMaxDepth(true);
-                continue;
-            }
-
-            hole.add(b);
-            todo.add(b);
-        }
     }
 
     private List<Block> getBlocksInBoundingBox() {
@@ -388,7 +302,7 @@ public class TerrainCorrector {
                     todo.add(b);
                     Block current;
                     while ((current = todo.poll()) != null) {
-                        exploreAdjacentNonSolidBlocks(current, h, todo, true);
+                        exploreAdjacentNonSolidBlocks(current, h, todo, true, offset, boundingBox, depthOffset, world);
                     }
                     subHoles.add(h);
                 }
@@ -691,34 +605,6 @@ public class TerrainCorrector {
                     }
                 }
                 return toChange;
-            default:
-                throw new IndexOutOfBoundsException();
-        }
-    }
-
-    private Block getRelativeBlock(int dir, Block block) {
-        //        World world = block.getWorld();
-        //        BuildFramework.getInstance().getLogger().info("" + block);
-        switch (dir) {
-            case 0:
-                // NORTH
-                return world.getBlockAt(block.getX(), block.getY(), block.getZ() - 1);
-            case 1:
-                // EAST
-                return world.getBlockAt(block.getX() + 1, block.getY(), block.getZ());
-            case 2:
-                // SOUTH
-                return world.getBlockAt(block.getX(), block.getY(), block.getZ() + 1);
-            case 3:
-                // WEST
-                return world.getBlockAt(block.getX() - 1, block.getY(), block.getZ());
-            case 4:
-                // UP
-                return world.getBlockAt(block.getX(), block.getY() + 1, block.getZ());
-            case 5:
-                // DOWN
-                return world.getBlockAt(block.getX(), block.getY() - 1, block.getZ());
-
             default:
                 throw new IndexOutOfBoundsException();
         }
