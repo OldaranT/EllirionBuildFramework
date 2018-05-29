@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.verification.VerificationMode;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -356,7 +357,8 @@ public class TemplateTest {
             TemplateBlock[][][] blocks = t.getTemplateBlocks();
             int invocationCount = blocks.length * blocks[0].length * blocks[0][0].length;
 
-            verify(mockAirBlock, times(invocationCount)).setType(any());
+            VerificationMode mode = times(invocationCount);
+            verify(mockAirBlock, mode).setType(any(), eq(false));
         }
 
         private Template createTemplate() {
