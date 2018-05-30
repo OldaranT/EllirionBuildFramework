@@ -547,9 +547,7 @@ public class TerrainCorrector {
         }
     }
 
-    @SuppressWarnings("Duplicates")
-    private List<Block> cornerSupportMap(int dir, int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ,
-                                         List<Block> underBoundingBox) {
+    private List<Block> cornerSupportMap(int dir, int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
         List<Block> toChange = new ArrayList<>();
         int y = boundingBox.getY1() - 1;
         int widthX = maxHoleX - minHoleX;
@@ -624,55 +622,44 @@ public class TerrainCorrector {
 
     private List<Block> supportSelector(int method, List<Block> top, int minHoleX, int maxHoleX,
                                         int minHoleZ, int maxHoleZ) {
-        List<Block> toChange;
         switch (method) {
+            //START OF BRIDGE STYLE SUPPORTS
             case 0:
                 // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-                toChange = getBridgeSupport(0, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-                return toChange;
+                return getBridgeSupport(0, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 1:
                 // build bridge style supports for structure from point 1 to point 2 on the X axis.
-                toChange = getBridgeSupport(1, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-                return toChange;
+                return getBridgeSupport(1, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             //START OF THE ONE SIDED SUPPORTS
             case 2:
                 //NORTH TO SOUTH
-                toChange = oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
             case 3:
                 //EAST TO WEST
-                toChange = oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
             case 4:
                 // SOUTH TO NORTH
-                toChange = oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
             case 5:
                 // WEST TO EAST
-                toChange = oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
             // START OF THE CORNER SUPPORTS
             case 6:
                 // NORTH EAST TO SOUTH WEST
-                toChange = cornerSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return cornerSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 7:
                 // SOUTH EAST TO NORTH WEST
-                toChange = cornerSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return cornerSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 8:
                 // SOUTH WEST TO NORTH EAST
-                toChange = cornerSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return cornerSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 9:
                 // NORTH WEST TO SOUTH EAST
-                toChange = cornerSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
-                return toChange;
+                return cornerSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             default:
                 // FOR UNEXPECTED SCENARIO'S JUST FILL FROM OUTSIDE IN ON ALL SIDES
                 // build building supports under the bounding box from all sides inwards.
-                toChange = createSupportsLocationMap();
-                return toChange;
+                return createSupportsLocationMap();
         }
     }
 }
