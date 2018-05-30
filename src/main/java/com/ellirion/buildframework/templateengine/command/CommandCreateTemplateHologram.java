@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.PlayerHologramSession;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
@@ -40,7 +41,7 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
 
         hologram.create(player);
 
-        PlayerHologramSession.givePlayerTools(player);
+        new PlayerHologramSession(BuildFramework.getInstance(), player);
 
         player.sendMessage(ChatColor.GREEN + "Template hologram successfully created");
 

@@ -70,6 +70,8 @@ public class TemplateHologram {
      * @param player the player for which to create the hologram
      */
     public void create(Player player) {
+        new PlayerHologramSession(BuildFramework.getInstance(), player);
+
         int[] coordinates = CommandHelper.getCoordinates(box, location);
         World w = getLocation().getWorld();
 
