@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.PlayerHologramSession;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
 
@@ -29,6 +30,9 @@ public class CommandPutTemplate implements CommandExecutor {
         }
 
         ts.getTemplate().putTemplateInWorld(th.getLocation());
+
+        player.getInventory().setContents(PlayerHologramSession.getOLD_PLAYER_INVENTORY().getContents());
+        player.updateInventory();
         return true;
     }
 }
