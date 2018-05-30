@@ -66,6 +66,11 @@ public class TemplateHologram {
         int[] coordinates = CommandHelper.getCoordinates(box, location);
         World w = getLocation().getWorld();
 
+        int groundLevel = template.getMarkers().containsKey("GROUND")
+                          ? template.getMarkers().get("GROUND").getBlockY()
+                          : 0;
+
+        TemplateBlock[][][] blocks = template.getTemplateBlocks();
         for (int x = coordinates[0]; x <= coordinates[1]; x++) {
             for (int y = coordinates[2]; y <= coordinates[3]; y++) {
                 for (int z = coordinates[4]; z <= coordinates[5]; z++) {
@@ -89,6 +94,34 @@ public class TemplateHologram {
             player.sendBlockChange(loc, Material.WOOL,
                                    (byte) BuildFramework.getInstance().getConfig().getInt(
                                            ((String) pair.getKey()).toUpperCase()));
+
+            // For each marker we also want to show the blocks around the marker
+            Point[] connected = new Point[] {
+                    p.up(),
+                    p.north(),
+                    p.east(),
+                    p.south(),
+                    p.west(),
+                    p.down(),
+                    p.up().up(),
+                    p.up().north(),
+                    p.up().east(),
+                    p.up().south(),
+                    p.up().west(),
+                    p.down().north(),
+                    p.down().east(),
+                    p.down().south(),
+                    p.down().west()
+            };
+
+            for (Point p1 : connected) {
+                Location l = new Location(w,
+                                          p1.getBlockX() + location.getBlockX(),
+                                          p1.getBlockY() + location.getBlockY(),
+                                          p1.getBlockZ() + location.getBlockZ());
+                TemplateBlock block = blocks[p1.getBlockX()][p1.getBlockY()][p1.getBlockZ()];
+                player.sendBlockChange(l, block.getMaterial(), block.getMetadata().getData());
+            }
         }
 
         for (TemplateHologramBlock block : getHologramBlocks()) {

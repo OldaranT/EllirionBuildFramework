@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
 
 public class TemplateLoadMenu implements Listener {
 
@@ -243,7 +244,7 @@ public class TemplateLoadMenu implements Listener {
             TemplateManager.getSelectedHolograms().put(player, hologram);
             hologram.create(player);
         } catch (Exception e) {
-            BuildFramework.getInstance().getLogger().severe(e.getMessage());
+            BuildFramework.getInstance().getLogger().log(Level.INFO, e.getMessage(), e.getStackTrace());
             player.sendMessage(ChatColor.DARK_RED + "Something went wrong when trying to load this template");
         }
     }
