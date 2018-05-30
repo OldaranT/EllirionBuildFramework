@@ -120,6 +120,8 @@ public class TerrainValidator {
         final int bottomBlockZ = boundingBox.getZ1() - offset;
         final int topBlockZ = boundingBox.getZ2() + offset;
 
+        final double volume = boundingBox.getDepth() * boundingBox.getWidth() * boundingBox.getHeight();
+
         for (int x = bottomBlockX; x <= topBlockX; x++) {
 
             for (int y = bottomBlockY; y <= topBlockY; y++) {
@@ -138,7 +140,11 @@ public class TerrainValidator {
             }
         }
 
-        return blockCounter;
+        return calculateBlockScore(volume, blockCounter);
+    }
+
+    private double calculateBlockScore(final double volume, final double blockCounter) {
+        return (blockCounter / volume) * 75;
     }
 
     private double findClosestBlock(final Point startingPosition) {

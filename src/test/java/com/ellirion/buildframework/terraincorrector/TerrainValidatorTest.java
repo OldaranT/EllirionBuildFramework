@@ -164,7 +164,12 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(5, 5, 6)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(5, 5, 7)).thenReturn(MOCK_BLOCK_STONE);
-        when(world.getBlockAt(5, 5, 8)).thenReturn(MOCK_BLOCK_STONE);
+        when(world.getBlockAt(anyInt(), eq(5), eq(8))).thenReturn(MOCK_BLOCK_STONE);
+        for (int y = 1; y <= 10; y++) {
+            for (int x = 1; x <= 10; x++) {
+                when(world.getBlockAt(x, y, 1)).thenReturn(MOCK_BLOCK_STONE);
+            }
+        }
 
         // Act
         final boolean result = validator.validate(boundingBox, world);
@@ -299,7 +304,17 @@ public class TerrainValidatorTest {
         setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(anyInt(), eq(1), eq(1))).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(1, 1, 2)).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(anyInt(), eq(2), eq(1))).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(anyInt(), eq(3), eq(1))).thenReturn(MOCK_BLOCK_STONE);
+        when(mockWorld.getBlockAt(anyInt(), eq(4), eq(1))).thenReturn(MOCK_BLOCK_STONE);
+        for (int y = 1; y <= 10; y++) {
+            for (int x = 1; x <= 10; x++) {
+                when(mockWorld.getBlockAt(x, y, 2)).thenReturn(MOCK_BLOCK_STONE);
+            }
+        }
+        for (int x = 1; x <= 7; x++) {
+            when(mockWorld.getBlockAt(x, 1, 3)).thenReturn(MOCK_BLOCK_STONE);
+        }
 
         // Act
         boolean result = t.validate(boundingBox, mockWorld);
@@ -334,31 +349,6 @@ public class TerrainValidatorTest {
         setFloor(mockWorld);
 
         when(mockWorld.getBlockAt(anyInt(), eq(1), anyInt())).thenReturn(MOCK_BLOCK_STONE);
-
-        // Act
-        boolean result = t.validate(boundingBox, mockWorld);
-
-        // Assert
-        assertFalse(result);
-    }
-
-    @Test
-    public void validate_whenExactlyOnBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnFalse() {
-        // Arrange
-        final TerrainValidator t = new TerrainValidator();
-        World mockWorld = createDefaultWorld();
-        setFloor(mockWorld);
-
-        when(mockWorld.getBlockAt(-2, 2, 12)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(-3, 8, 6)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(1, 13, 10)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(1, 1, 8)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(14, 13, -4)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(-1, 8, 13)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(-4, 10, -2)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(14, 7, 9)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(13, 1, -4)).thenReturn(MOCK_BLOCK_STONE);
-        when(mockWorld.getBlockAt(10, 14, -4)).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
         boolean result = t.validate(boundingBox, mockWorld);
