@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,6 +21,7 @@ import com.ellirion.buildframework.templateengine.util.FileUtil;
 
 import java.io.FileInputStream;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
@@ -32,6 +34,8 @@ public class TemplateLoadMenu implements Listener {
     private Player player;
     private String inventoryName;
     private String currentSelectedRace;
+    private String currentSelectedBuildingType;
+    private int currentPage;
 
     /**
      * Create a menu for loading templates.
@@ -40,6 +44,8 @@ public class TemplateLoadMenu implements Listener {
      */
     public TemplateLoadMenu(final Plugin p, final Player player) {
         currentSelectedRace = "";
+        currentSelectedBuildingType = "";
+        currentPage = 0;
         back = createItemStack(DyeColor.WHITE, "Back", Arrays.asList(new String[] {"Go back"}));
         previousMenus = new Stack<>();
         this.player = player;
@@ -50,7 +56,43 @@ public class TemplateLoadMenu implements Listener {
 
     private void setInventoryItems() {
         inv = Bukkit.getServer().createInventory(null, 27, inventoryName);
-        inv.setContents(items);
+
+        // Loop through the first 18 items in the items array
+        int length = (items.length > 18) ? 18 : items.length;
+        for (int i = 0; i < length; i++) {
+            inv.setItem(i, items[i]);
+        }
+
+        if (items.length > 18) {
+            ItemStack next = createItemStack(DyeColor.WHITE, "Next page", new LinkedList<>());
+            inv.setItem(23, next);
+        }
+
+        if (!previousMenus.peek().equals("overview")) { //NOPMD
+            inv.setItem(18, back);
+        }
+    }
+
+    private void setInventoryItems(int page) {
+        inv = Bukkit.getServer().createInventory(null, 27, inventoryName);
+
+        // Loop through the amount of items on the nth page
+        int length = items.length - (page * 18) > 18 ? 18 : items.length - (page * 18);
+        for (int i = 18 * page; i < length + (18 * page); i++) {
+            inv.setItem(i - (18 * page), items[i]);
+        }
+
+        // If the page is higher than 0, add a 'previous page' item
+        if (page > 0) {
+            ItemStack prev = createItemStack(DyeColor.WHITE, "Previous page", new LinkedList<>());
+            inv.setItem(21, prev);
+        }
+
+        // If there is a next page (there are more than (page + 1) * 18 items), add a 'next page' item
+        if (items.length > ((page + 1) * 18)) {
+            ItemStack next = createItemStack(DyeColor.WHITE, "Next page", new LinkedList<>());
+            inv.setItem(23, next);
+        }
 
         if (!previousMenus.peek().equals("overview")) { //NOPMD
             inv.setItem(18, back);
@@ -65,8 +107,9 @@ public class TemplateLoadMenu implements Listener {
         int i = 0;
         for (String s : races) {
             DyeColor color = DyeColor.valueOf(raceColors.get(i));
+            int amountOfFiles = FileUtil.getNumberOfTemplatesWithPrefix(s);
             ItemStack stack = createItemStack(color, "Race: " + s,
-                                              Arrays.asList(new String[] {"Create a", s, "building"}));
+                                              Arrays.asList("Create a", s, "building", amountOfFiles + " templates"));
             items[i] = stack;
             i++;
         }
@@ -81,8 +124,10 @@ public class TemplateLoadMenu implements Listener {
         int i = 0;
         DyeColor raceColor = getRaceColor(currentSelectedRace);
         for (String s : buildingTypes) {
+            int amountOfFiles = FileUtil.getNumberOfTemplatesWithPrefix(currentSelectedRace + "-" + s);
             ItemStack stack = createItemStack(raceColor, "Building: " + s,
-                                              Arrays.asList(new String[] {"Create a", s}));
+                                              Arrays.asList(
+                                                      new String[] {"Create a", s, amountOfFiles + " templates"}));
             items[i] = stack;
             i++;
         }
@@ -97,7 +142,10 @@ public class TemplateLoadMenu implements Listener {
         int i = 0;
         DyeColor raceColor = getRaceColor(currentSelectedRace);
         for (String s : levels) {
-            ItemStack stack = createItemStack(raceColor, "Level: " + s, Arrays.asList(new String[] {"Level", s}));
+            int amountOfFiles = FileUtil.getNumberOfTemplatesWithPrefix(
+                    currentSelectedRace + "-" + currentSelectedBuildingType + "-" + s);
+            ItemStack stack = createItemStack(raceColor, "Level: " + s,
+                                              Arrays.asList(new String[] {"Level", s, amountOfFiles + " templates"}));
             items[i] = stack;
             i++;
         }
@@ -200,16 +248,29 @@ public class TemplateLoadMenu implements Listener {
             return;
         }
 
-        String item = e.getCurrentItem().getItemMeta().getDisplayName();
+        ItemStack item = e.getCurrentItem();
+        if (item.getType() == Material.AIR) {
+            return;
+        }
+        String itemName = item.getItemMeta().getDisplayName();
 
-        if (item.equals("Back")) {
+        if (itemName.equals("Back")) {
             // Pop twice, because the stack also has the current state
             previousMenus.pop();
             String currentState = previousMenus.pop();
 
             createCorrectMenu(currentState, (Player) e.getWhoClicked());
+            currentPage = 0;
+        } else if (itemName.equals("Previous page")) {
+            currentPage--;
+            setInventoryItems(currentPage);
+            show(player);
+        } else if (itemName.equals("Next page")) {
+            currentPage++;
+            setInventoryItems(currentPage);
+            show(player);
         } else {
-            createCorrectMenu(item, (Player) e.getWhoClicked());
+            createCorrectMenu(itemName, (Player) e.getWhoClicked());
         }
     }
 
@@ -226,6 +287,7 @@ public class TemplateLoadMenu implements Listener {
         } else if (item.startsWith("Building: ")) {
             // Create building levels menu
             previousMenus.push(item);
+            currentSelectedBuildingType = item.split(" ")[1];
             createLevelsInventory();
         } else if (item.startsWith("Level: ")) {
             previousMenus.push(item);

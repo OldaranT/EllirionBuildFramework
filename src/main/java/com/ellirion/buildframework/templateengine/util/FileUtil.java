@@ -14,7 +14,6 @@ public class FileUtil {
      * @return list of file names.
      */
     public static List<String> getListOfNBTFileNames() {
-
         String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path");
         File folder = new File(path);
         File[] listOfFiles = folder.listFiles();
@@ -40,5 +39,28 @@ public class FileUtil {
         String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path");
 
         return new File(path + "\\" + name + ".nbt");
+    }
+
+    /**
+     * Get the number of files in a directory that start with a certain prefix.
+     * @param prefix the prefix of the files to count
+     * @return the amount of files that start with {@code prefix}
+     */
+    public static int getNumberOfTemplatesWithPrefix(String prefix) {
+        String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path");
+        File folder = new File(path);
+        File[] listOfFiles = folder.listFiles();
+
+        int count = 0;
+        if (listOfFiles != null) {
+            for (File f : listOfFiles) {
+                String filename = f.getName();
+                if (filename.startsWith(prefix)) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 }
