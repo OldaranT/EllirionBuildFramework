@@ -5,7 +5,7 @@ import lombok.Setter;
 import com.ellirion.buildframework.model.BlockChange;
 import com.ellirion.buildframework.util.async.IPromiseFinisher;
 
-public class PendingBlockChange {
+class PendingBlockChange {
 
     @Getter private BlockChange change;
     @Getter @Setter private IPromiseFinisher<Boolean> finisher;
