@@ -5,7 +5,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.templateengine.model.TemplateLoadMenu;
+import com.ellirion.buildframework.templateengine.TemplateLoadMenu;
 
 public class CommandLoadTemplate implements CommandExecutor {
 

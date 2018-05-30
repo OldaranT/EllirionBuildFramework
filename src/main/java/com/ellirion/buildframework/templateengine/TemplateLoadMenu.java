@@ -1,4 +1,4 @@
-package com.ellirion.buildframework.templateengine.model;
+package com.ellirion.buildframework.templateengine;
 
 import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
 import org.bukkit.Bukkit;
@@ -17,6 +17,9 @@ import org.bukkit.material.Wool;
 import org.bukkit.plugin.Plugin;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
+import com.ellirion.buildframework.templateengine.model.Template;
+import com.ellirion.buildframework.templateengine.model.TemplateHologram;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
 import com.ellirion.buildframework.templateengine.util.FileUtil;
 
 import java.io.FileInputStream;
