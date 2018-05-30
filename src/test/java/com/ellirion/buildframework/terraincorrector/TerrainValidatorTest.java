@@ -108,7 +108,7 @@ public class TerrainValidatorTest {
 
     @Test
     public void validate_whenFloorNotFilledAirIsBelowThresholdAndAreaToCheckIsAir_shouldReturnTrue() {
-        // Arragne
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
         setFloor(world);
@@ -123,7 +123,7 @@ public class TerrainValidatorTest {
 
     @Test
     public void validate_whenFloorNotFilledWaterIsBelowThresholdAndAreaToCheckIsAir_shouldReturnTrue() {
-        // Arragne
+        // Arrange
         final TerrainValidator validator = new TerrainValidator();
         final World world = createDefaultWorld();
         setFloor(world);

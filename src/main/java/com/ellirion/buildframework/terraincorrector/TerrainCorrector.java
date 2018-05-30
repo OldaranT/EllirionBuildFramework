@@ -292,7 +292,6 @@ public class TerrainCorrector {
 
         List<Hole> subHoles = new ArrayList<>();
 
-        // find the dimensions under the boundingbox
         for (Block b : topBlocks) {
             int blockX = b.getX();
             int blockZ = b.getZ();
@@ -443,12 +442,6 @@ public class TerrainCorrector {
         int baseY = boundingBox.getY1();
         int offsetY = 1;
 
-        // Keep track of what is done and what isn't
-        boolean[][] done = new boolean[width][];
-        for (int i = 0; i < width; i++) {
-            done[i] = new boolean[depth];
-        }
-
         // Keep going until we've shrunk to zero (or lower) width
         while (minX <= maxX && minZ <= maxZ) {
 
@@ -456,17 +449,11 @@ public class TerrainCorrector {
             for (int x = minX; x <= maxX; x++) {
                 for (int z = minZ; z <= maxZ; z++) {
 
-                    // If we already encountered a solid, ignore
-                    if (done[x][z]) {
-                        continue;
-                    }
-
                     // If it's a solid, this column is done
                     Location loc = new Point(x1 + x, baseY - offsetY,
                                              z1 + z).toLocation(world);
                     Block block = world.getBlockAt(loc);
                     if (block.getType().isSolid()) {
-                        //                        done[x][z] = true;
                         continue;
                     }
                     toChange.add(block);
@@ -630,23 +617,6 @@ public class TerrainCorrector {
                 throw new IndexOutOfBoundsException();
         }
     }
-
-    //    private Block syncGetBlockAt(World world, Location location) {
-    //        return syncGetBlockAt(world, location.getBlockX(), location.getBlockY(), location.getBlockZ());
-    //    }
-    //
-    //    private Block syncGetBlockAt(World world, int x, int y, int z) {
-    //        List<Block> result = new ArrayList<>();
-    //
-    //        Promise<Block> p = new Promise<>((finisher) -> {
-    //            BuildFramework.getInstance().getLogger().info("bla");
-    //            finisher.resolve(world.getBlockAt(x, y, z));
-    //        }, false);
-    //
-    //        p.consumeSync(result::add);
-    //
-    //        return result.get(0);
-    //    }
 
     private void sendSyncBlockChanges(Block block, Material mat) {
         new Promise<>(subFinisher -> block.setType(mat), false);
