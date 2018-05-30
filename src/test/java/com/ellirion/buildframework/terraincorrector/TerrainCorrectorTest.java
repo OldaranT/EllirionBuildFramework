@@ -60,8 +60,8 @@ public class TerrainCorrectorTest {
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
 
-        when(mockConfig.getInt("TerrainCorrecter.MaxHoleDepth", 5)).thenReturn(5);
-        when(mockConfig.getInt("TerrainCorrecter.AreaLimitOffset", 5)).thenReturn(1);
+        when(mockConfig.getInt("TerrainCorrector.MaxHoleDepth", 5)).thenReturn(5);
+        when(mockConfig.getInt("TerrainCorrector.AreaLimitOffset", 5)).thenReturn(1);
     }
 
     //    @Before
@@ -318,8 +318,10 @@ public class TerrainCorrectorTest {
         // Assert
         for (int depth = 0; depth < 2; depth++) {
             for (int z = 1; z <= 2; z++) {
-                assertEquals(Material.FENCE, mockWorld.getBlockAt(centreX + depth, yDepth - depth, z).getType());
-                assertEquals(Material.FENCE, mockWorld.getBlockAt(centreX - depth, yDepth - depth, z).getType());
+                if (Math.abs(z) % 2 == 0) {
+                    assertEquals(Material.FENCE, mockWorld.getBlockAt(centreX + depth, yDepth - depth, z).getType());
+                    assertEquals(Material.FENCE, mockWorld.getBlockAt(centreX - depth, yDepth - depth, z).getType());
+                }
             }
         }
     }
@@ -347,8 +349,10 @@ public class TerrainCorrectorTest {
         // Assert
         for (int depth = 0; depth < 2; depth++) {
             for (int x = 1; x <= 2; x++) {
-                assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ + depth).getType());
-                assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ - depth).getType());
+                if (Math.abs(x) % 2 == 0) {
+                    assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ + depth).getType());
+                    assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ - depth).getType());
+                }
             }
         }
     }

@@ -28,8 +28,8 @@ import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
 public class TerrainCorrector {
 
     private static final FileConfiguration CONFIG = BuildFramework.getInstance().getConfig();
-    private static final String maxHoleDepthConfigPath = "TerrainCorrecter.MaxHoleDepth";
-    private static final String areaLimitOffsetConfigPath = "TerrainCorrecter.AreaLimitOffset";
+    private static final String maxHoleDepthConfigPath = "TerrainCorrector.MaxHoleDepth";
+    private static final String areaLimitOffsetConfigPath = "TerrainCorrector.AreaLimitOffset";
     private static final String minHoleXFactKey = "minHoleX";
     private static final String minXFactKey = "minX";
     private static final String maxHoleXFactKey = "maxHoleX";
@@ -40,6 +40,8 @@ public class TerrainCorrector {
     private static final String maxZFactKey = "maxZ";
     private static final int offset = CONFIG.getInt(areaLimitOffsetConfigPath, 5);
     private static final int depthOffset = CONFIG.getInt(maxHoleDepthConfigPath, 5);
+    private static final int bridgeSupportClearancePercentage = CONFIG.getInt(
+            "TerrainCorrector.BridgeCenterSupportClearancePercentage", 15);
 
     private static final RavineSupportsRuleBook ravineSupportsRuleBook = (RavineSupportsRuleBook) RuleBookBuilder
             .create(RavineSupportsRuleBook.class)
@@ -362,15 +364,25 @@ public class TerrainCorrector {
         int y = boundingBox.getY1() - 1;
         List<Block> toChange = new ArrayList<>(underBoundingBox);
         int maxDepth;
+        double centerClearance;
         switch (dir) {
             case 0:
                 // Z AXIS
                 holeCentre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
                 maxDepth = (maxHoleZ - minHoleZ) / 2;
+                centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
                 for (int x = minHoleX; x <= maxHoleX; x++) {
-                    for (int i = 0; i <= maxDepth; i++) {
-                        toChange.addAll(blocksToReplace(x, y, holeCentre + i, i, underBoundingBox));
-                        toChange.addAll(blocksToReplace(x, y, holeCentre - i, i, underBoundingBox));
+                    if (Math.abs(x) % 2 == 0) {
+                        for (int i = 0; i <= maxDepth; i++) {
+                            if (holeCentre + centerClearance + i > maxHoleZ ||
+                                holeCentre - centerClearance - i < minHoleZ) {
+                                break;
+                            }
+                            toChange.addAll(
+                                    blocksToReplace(x, y, holeCentre + (int) centerClearance + i, i, underBoundingBox));
+                            toChange.addAll(
+                                    blocksToReplace(x, y, holeCentre - (int) centerClearance - i, i, underBoundingBox));
+                        }
                     }
                 }
                 return toChange;
@@ -378,10 +390,19 @@ public class TerrainCorrector {
                 // X AXIS
                 holeCentre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 maxDepth = (maxHoleX - minHoleX) / 2;
+                centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
                 for (int z = minHoleZ; z <= maxHoleZ; z++) {
-                    for (int i = 0; i <= maxDepth; i++) {
-                        toChange.addAll(blocksToReplace(holeCentre + i, y, z, i, underBoundingBox));
-                        toChange.addAll(blocksToReplace(holeCentre - i, y, z, i, underBoundingBox));
+                    if (Math.abs(z) % 2 == 0) {
+                        for (int i = 0; i <= maxDepth; i++) {
+                            if (holeCentre + centerClearance + i > maxHoleX ||
+                                holeCentre - centerClearance - i < minHoleX) {
+                                break;
+                            }
+                            toChange.addAll(
+                                    blocksToReplace(holeCentre + (int) centerClearance + i, y, z, i, underBoundingBox));
+                            toChange.addAll(
+                                    blocksToReplace(holeCentre - (int) centerClearance - i, y, z, i, underBoundingBox));
+                        }
                     }
                 }
                 return toChange;

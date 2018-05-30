@@ -24,7 +24,7 @@ public class RavineSupportsRuleBook extends CoRRuleBook<Integer> {
 
     @Override
     public void defineRules() {
-        // check if the hole runs straight from oe side to the other.
+        // check if the hole runs straight from one side to the other.
         // build on the Z AXIS
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->

@@ -98,8 +98,9 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainCorrector.Offset", 5);
         config.addDefault("TerrainCorrector.BoundingBoxMinDist", 5);
         // terrain corrector config settings
-        config.addDefault("TerrainCorrecter.MaxHoleDepth", 5);
-        config.addDefault("TerrainCorrecter.AreaLimitOffset", 5);
+        config.addDefault("TerrainCorrector.MaxHoleDepth", 5);
+        config.addDefault("TerrainCorrector.AreaLimitOffset", 5);
+        config.addDefault("TerrainCorrector.BridgeCenterSupportClearancePercentage", 15);
         // template config settings
         config.addDefault("TemplateEngine.Path", "plugins/Ellirion-BuildFramework/templates/");
         config.options().copyDefaults(true);
