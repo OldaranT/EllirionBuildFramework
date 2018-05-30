@@ -9,6 +9,7 @@ import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandLoadTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
@@ -56,6 +57,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createBlockValueConfig();
@@ -125,6 +127,7 @@ public class BuildFramework extends JavaPlugin {
 
         List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
                                               "HUMAN");
+        List<String> raceColors = Arrays.asList("GREEN", "SILVER", "CYAN", "ORANGE", "RED", "GRAY", "BLACK", "WHITE");
 
         List<String> typeList = Arrays.asList("HOUSE", "BLACKSMITH", "TOWNHALL", "SAWMILL", "STABLE", "BARRACK",
                                               "WINDMILL", "HARBOR");
@@ -137,6 +140,7 @@ public class BuildFramework extends JavaPlugin {
         List<String> markerList = Arrays.asList("DOOR", "GROUND", "PATH");
 
         String racePath = "Races";
+        String raceColorsPath = "RaceColors";
         String typePath = "Types";
         String levelPath = "Levels";
         String markersPath = "Markers";
@@ -150,6 +154,7 @@ public class BuildFramework extends JavaPlugin {
                                               "Markers is a list of all the possible markers you can use.\n");
 
         templateFormatConfig.addDefault(racePath, raceList);
+        templateFormatConfig.addDefault(raceColorsPath, raceColors);
         templateFormatConfig.addDefault(typePath, typeList);
         templateFormatConfig.addDefault(levelPath, levelList);
         templateFormatConfig.addDefault(markersPath, markerList);

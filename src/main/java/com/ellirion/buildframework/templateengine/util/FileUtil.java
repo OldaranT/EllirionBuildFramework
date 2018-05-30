@@ -30,4 +30,15 @@ public class FileUtil {
 
         return listOfFileNames;
     }
+
+    /**
+     * Get the file of a template.
+     * @param name the name of the template
+     * @return the file of the template
+     */
+    public static File getTemplate(String name) {
+        String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path");
+
+        return new File(path + "\\" + name + ".nbt");
+    }
 }
