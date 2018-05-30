@@ -4,7 +4,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -34,11 +33,14 @@ public class TerrainValidatorTest {
     private static final Block MOCK_BLOCK_STONE = createMockBlock(false, false, Material.STONE);
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 10, 10, 10);
 
+    public TerrainValidatorTest() {
+        setup();
+    }
+
     private static void setFloor(World world) {
         when(world.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
     }
 
-    @Before
     public void setup() {
         mockStatic(BuildFramework.class);
         mockStatic(TerrainManager.class);
