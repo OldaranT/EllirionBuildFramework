@@ -30,6 +30,8 @@ public class TemplateLoadMenu implements Listener {
     private Inventory inv;
     private ItemStack[] items;
     private ItemStack back;
+    private ItemStack next;
+    private ItemStack prev;
     private Stack<String> previousMenus;
     private Player player;
     private String inventoryName;
@@ -47,6 +49,8 @@ public class TemplateLoadMenu implements Listener {
         currentSelectedBuildingType = "";
         currentPage = 0;
         back = createItemStack(DyeColor.WHITE, "Back", Arrays.asList(new String[] {"Go back"}));
+        next = createItemStack(DyeColor.WHITE, "Next page", new LinkedList<>());
+        prev = createItemStack(DyeColor.WHITE, "Previous page", new LinkedList<>());
         previousMenus = new Stack<>();
         this.player = player;
 
@@ -55,6 +59,7 @@ public class TemplateLoadMenu implements Listener {
     }
 
     private void setInventoryItems() {
+        // We have to create a new inventory every time to update the name
         inv = Bukkit.getServer().createInventory(null, 27, inventoryName);
 
         // Loop through the first 18 items in the items array
@@ -64,7 +69,6 @@ public class TemplateLoadMenu implements Listener {
         }
 
         if (items.length > 18) {
-            ItemStack next = createItemStack(DyeColor.WHITE, "Next page", new LinkedList<>());
             inv.setItem(23, next);
         }
 
@@ -77,20 +81,18 @@ public class TemplateLoadMenu implements Listener {
         inv = Bukkit.getServer().createInventory(null, 27, inventoryName);
 
         // Loop through the amount of items on the nth page
-        int length = items.length - (page * 18) > 18 ? 18 : items.length - (page * 18);
+        int length = items.length - (page * 18) > 18 ? 18 : items.length - (page * 18) - 1;
         for (int i = 18 * page; i < length + (18 * page); i++) {
             inv.setItem(i - (18 * page), items[i]);
         }
 
         // If the page is higher than 0, add a 'previous page' item
         if (page > 0) {
-            ItemStack prev = createItemStack(DyeColor.WHITE, "Previous page", new LinkedList<>());
             inv.setItem(21, prev);
         }
 
         // If there is a next page (there are more than (page + 1) * 18 items), add a 'next page' item
         if (items.length > ((page + 1) * 18)) {
-            ItemStack next = createItemStack(DyeColor.WHITE, "Next page", new LinkedList<>());
             inv.setItem(23, next);
         }
 
@@ -157,7 +159,8 @@ public class TemplateLoadMenu implements Listener {
         List<String> buildings = FileUtil.getListOfNBTFileNames();
         items = new ItemStack[buildings.size()];
 
-        String buildingPrefix = inv.getName().split("\\.")[0].replaceAll(" ", "-") + level;
+        // This will get a string along the lines of "RACE-TYPE-LEVEL"
+        String buildingPrefix = inv.getName().split("\\.")[0].replaceAll(" ", "-") + "-" + level;
 
         int i = 0;
         DyeColor raceColor = getRaceColor(currentSelectedRace);
@@ -187,13 +190,18 @@ public class TemplateLoadMenu implements Listener {
         return i;
     }
 
+    // Create a string along the lines of "RACE-TYPE-LEVEL", leaving out type and level if those haven't been selected yet
     private String createInventoryName() {
         StringBuilder builder = new StringBuilder();
 
         int i = 0;
         for (String s : previousMenus) {
+            // Ignore the 'overview' menu
             if (i > 0) {
-                builder.append(s.split(" ")[1] + " ");
+                builder.append(s.split(" ")[1]);
+                if (i < previousMenus.size() - 1) {
+                    builder.append(' ');
+                }
             }
             i++;
         }

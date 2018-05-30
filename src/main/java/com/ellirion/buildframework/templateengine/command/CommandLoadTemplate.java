@@ -12,6 +12,7 @@ public class CommandLoadTemplate implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
+            commandSender.sendMessage("Only players can use this command");
             return false;
         }
         Player player = (Player) commandSender;
