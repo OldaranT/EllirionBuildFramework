@@ -6,28 +6,20 @@ import org.bukkit.Material;
 
 public class BlockChange {
 
-    @Getter private Material matBefore;
-    @Getter private byte metadataBefore;
-
-    @Getter private Material matAfter;
-    @Getter private byte metadataAfter;
+    @Getter private Material material;
+    @Getter private byte metaData;
 
     @Getter private Location location;
 
     /**
      * Create a BlockChange.
-     * @param before the material of the before state
-     * @param bbefore the metadata of the before state
-     * @param after the material of the after state
-     * @param bafter the metadata of the after state
+     * @param material the material that needs to be changed to
+     * @param metaData the metaData that needs to be changed to
      * @param loc the location of the block
      */
-    public BlockChange(final Material before, final byte bbefore, final Material after, final byte bafter,
-                       final Location loc) {
-        matBefore = before;
-        metadataBefore = bbefore;
-        matAfter = after;
-        metadataAfter = bafter;
+    public BlockChange(final Material material, final byte metaData, final Location loc) {
+        this.material = material;
+        this.metaData = metaData;
         location = loc;
     }
 }
