@@ -57,10 +57,10 @@ public class MinecraftHelper {
                 1, 2, 3, 0, 5, 6, 7, 4, 8, 9, 10, 11, 3, 0, 1, 2, 7, 4, 5, 6, 8, 9, 10, 11
         });
 
-        aMap.put(Material.ACACIA_STAIRS, new int[] {2, 3, 1, 0, 3, 2, 0, 1});
+        aMap.put(Material.ACACIA_STAIRS, new int[] {2, 3, 1, 0, 6, 7, 5, 4, 3, 2, 0, 1, 7, 6, 4, 5});
 
         aMap.put(Material.ACTIVATOR_RAIL, new int[] {
-                1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 20, 21, 9, 8, 12, 13, 11, 10
+                1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 6, 7, 9, 8, 12, 13, 11, 10
         });
 
         aMap.put(Material.ANVIL, new int[] {
@@ -79,10 +79,10 @@ public class MinecraftHelper {
                 0, 1, 2, 3, 8, 5, 6, 7, 4, 0, 1, 2, 3, 8, 5, 6, 7, 4
         });
 
-        aMap.put(Material.CHEST, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3});
+        aMap.put(Material.CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
 
         aMap.put(Material.DETECTOR_RAIL, new int[] {
-                1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 20, 21, 9, 8, 12, 13, 11, 10
+                1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 6, 7, 9, 8, 12, 13, 11, 10
         });
 
         aMap.put(Material.DIODE_BLOCK_OFF, new int[] {
@@ -105,16 +105,13 @@ public class MinecraftHelper {
 
         aMap.put(Material.FENCE_GATE, new int[] {1, 2, 3, 0, 5, 6, 7, 4, 3, 0, 1, 2, 7, 4, 5, 6});
 
-        aMap.put(Material.FURNACE, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3});
+        aMap.put(Material.FURNACE, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
 
         aMap.put(Material.HAY_BLOCK, new int[] {
                 0, 1, 2, 3, 8, 5, 6, 7, 4, 0, 1, 2, 3, 8, 5, 6, 7, 4
         });
 
         aMap.put(Material.HOPPER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.IRON_DOOR, new int[] {
-        });
 
         aMap.put(Material.IRON_TRAPDOOR, new int[] {
                 3, 2, 0, 1, 7, 6, 4, 5, 11, 10, 8, 9, 15, 14, 12, 13, 2, 3, 1, 0, 6, 7, 5, 4, 10, 11, 9, 8, 14, 15, 13,
@@ -125,44 +122,42 @@ public class MinecraftHelper {
                 1, 2, 3, 0, 3, 0, 1, 2
         });
 
-        aMap.put(Material.LADDER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3});
+        aMap.put(Material.LADDER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
 
         aMap.put(Material.LEVER, new int[] {
                 7, 3, 4, 3, 1, 6, 5, 0, 15, 11, 12, 10, 9, 14, 13, 8, 7, 4, 3, 1, 2, 6, 5, 0, 15, 12, 11, 9, 10, 14, 13,
                 8
         });
 
-        aMap.put(Material.LOG_2, new int[] {
-                0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 10, 11, 12, 13, 8, 9, 16, 17, 4, 5
-        });
+        aMap.put(Material.LOG_2, new int[] {0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0, 1, 2, 3, 8, 9, 6, 7, 4, 5});
 
         aMap.put(Material.LOG, new int[] {
-                0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7, 12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7
+                0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7
         });
 
         aMap.put(Material.OBSERVER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
 
         aMap.put(Material.PISTON_BASE, new int[] {
+                0, 1, 5, 4, 2, 3, 6, 7, 8, 9, 13, 12, 10, 11, 0, 1, 4, 5, 3, 2, 6, 7, 8, 9, 12, 13, 11, 10
         });
 
         aMap.put(Material.PISTON_EXTENSION, new int[] {
-        });
-
-        aMap.put(Material.PISTON_MOVING_PIECE, new int[] {
+                0, 1, 5, 4, 2, 3, 6, 7, 8, 9, 13, 12, 10, 11, 0, 1, 4, 5, 3, 2, 6, 7, 8, 9, 12, 13, 11, 10
         });
 
         aMap.put(Material.PISTON_STICKY_BASE, new int[] {
+                0, 1, 5, 4, 2, 3, 6, 7, 8, 9, 13, 12, 10, 11, 0, 1, 4, 5, 3, 2, 6, 7, 8, 9, 12, 13, 11, 10
         });
 
         aMap.put(Material.POWERED_RAIL, new int[] {
-                1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 20, 21, 9, 8, 12, 13, 11, 10
+                1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 6, 7, 9, 8, 12, 13, 11, 10
         });
 
         aMap.put(Material.PUMPKIN, new int[] {
                 1, 2, 3, 0, 3, 0, 1, 2
         });
 
-        aMap.put(Material.QUARTZ_BLOCK, new int[] {0, 1, 2, 4, 3, 5, 6, 7, 3, 4});
+        aMap.put(Material.QUARTZ_BLOCK, new int[] {0, 1, 2, 4, 3, 0, 1, 2, 4, 3});
 
         aMap.put(Material.RAILS, new int[] {
                 1, 0, 5, 4, 2, 3, 7, 8, 9, 6, 1, 0, 4, 5, 3, 2, 9, 6, 7, 8
@@ -193,7 +188,7 @@ public class MinecraftHelper {
                 12
         });
 
-        aMap.put(Material.TRAPPED_CHEST, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3});
+        aMap.put(Material.TRAPPED_CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
 
         aMap.put(Material.VINE, new int[] {
                 2, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15, 8, 8, 1, 9, 2, 10, 3, 11, 4, 12, 5, 13, 6, 14, 7,

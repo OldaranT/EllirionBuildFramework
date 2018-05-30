@@ -252,8 +252,7 @@ public class Template {
                         if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
                                 doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
-                                                          templateBlocks[x][y + 1][z].getMetadata().getData(),
-                                                          templateBlocks[x][y][z].getMetadata().getData(),
+                                                          templateBlocks[x][y + 1][z].getMetadata(),
                                                           new Point(loc.getBlockX() + x, loc.getBlockY() + y,
                                                                     loc.getBlockZ() + z)));
                             }
@@ -329,14 +328,17 @@ public class Template {
             Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
             Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
 
-            doorBottom.setType(dw.getMaterialData().getItemType(), false);
-            doorTop.setType(dw.getMaterialData().getItemType(), false);
+            doorBottom.setType(dw.getBottomMaterialData().getItemType(), false);
+            doorTop.setType(dw.getTopMaterialData().getItemType(), false);
 
-            doorBottom.setData(dw.getBottom());
-            doorTop.setData(dw.getTop());
+            BlockState bottomState = doorBottom.getState();
+            BlockState topState = doorTop.getState();
 
-            doorBottom.getState().update();
-            doorTop.getState().update();
+            bottomState.setData(dw.getBottomMaterialData());
+            topState.setData(dw.getTopMaterialData());
+
+            topState.update();
+            bottomState.update();
         }
     }
 
