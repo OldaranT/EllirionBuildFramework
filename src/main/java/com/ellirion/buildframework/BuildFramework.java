@@ -67,7 +67,6 @@ public class BuildFramework extends JavaPlugin {
 
         Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
         Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
-
     }
 
     /**
