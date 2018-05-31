@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 public class WorldHelperTest {
 
     @Test
-    public void getBlockAt_whenCalledOnUnloadedChunk_shouldLoadChunkAndReturnBlock() {
+    public void getBlock_whenCalledOnUnloadedChunk_shouldLoadChunkAndReturnBlock() {
         // Arrange
         World world = mock(World.class);
         Block block = mock(Block.class);
@@ -43,7 +43,7 @@ public class WorldHelperTest {
     }
 
     @Test
-    public void getBlockAt_whenCalledOnLoadedChunk_shouldReturnBlockAndNotLoadChunk() {
+    public void getBlock_whenCalledOnLoadedChunk_shouldReturnBlockAndNotLoadChunk() {
         // Arrange
         World world = mock(World.class);
         Block block = mock(Block.class);
@@ -66,7 +66,7 @@ public class WorldHelperTest {
     }
 
     @Test
-    public void queueBlockChange_whenInvoked_shouldScheduleAndExecuteBlockChange() {
+    public void setBlock_whenInvoked_shouldScheduleAndExecuteBlockChange() {
 
         // Schedule the runner
         Thread t1 = new Thread(() -> {
