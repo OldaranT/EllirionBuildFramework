@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
@@ -16,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.stubbing.Answer;
 import org.mockito.verification.VerificationMode;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -25,6 +27,8 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
+import com.ellirion.buildframework.templateengine.model.TemplateHologram;
+import com.ellirion.buildframework.terraincorrector.TerrainValidatorTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,10 +36,168 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.doAnswer;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(Enclosed.class)
 public class TemplateTest {
+
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest({BuildFramework.class})
+    @PowerMockIgnore("javax.management.*")
+    public static class MovementTest {
+
+        private final Block mockAirBlock = createMockBlock(true, false, Material.AIR);
+
+        @Before
+        public void setup() {
+
+            mockStatic(BuildFramework.class);
+
+            final BuildFramework mockPlugin = mock(BuildFramework.class);
+            final FileConfiguration mockConfig = mock(FileConfiguration.class);
+
+            when(BuildFramework.getInstance()).thenReturn(mockPlugin);
+            when(mockPlugin.getTemplateFormatConfig()).thenReturn(mockConfig);
+        }
+
+        private static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
+            final Block mockBlock = mock(Block.class);
+            final BlockState state = mock(BlockState.class);
+
+            when(mockBlock.getType()).thenReturn(material);
+            when(mockBlock.getState()).thenReturn(state);
+
+            return mockBlock;
+        }
+
+        private World createDefaultWorld() {
+            final World mockWorld = mock(CraftWorld.class);
+            final WorldServer mockHandle = mock(WorldServer.class);
+
+            when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockAirBlock);
+            when(((CraftWorld) mockWorld).getHandle()).thenReturn(mockHandle);
+
+            return mockWorld;
+        }
+
+        private void catchSetMethodOfLocation(Location mockLocation) {
+
+            doAnswer((Answer) invocation -> {
+                double x = invocation.getArgument(0);
+                Location l = (Location) invocation.getMock();
+                when(l.getX()).thenReturn(x);
+                when(l.getBlockX()).thenReturn((int) x);
+                return null;
+            }).when(mockLocation).setX(anyDouble());
+            doAnswer((Answer) invocation -> {
+                double y = invocation.getArgument(0);
+                Location l = (Location) invocation.getMock();
+                when(l.getY()).thenReturn(y);
+                when(l.getBlockY()).thenReturn((int) y);
+                return null;
+            }).when(mockLocation).setY(anyDouble());
+            doAnswer((Answer) invocation -> {
+                double z = invocation.getArgument(0);
+                Location l = (Location) invocation.getMock();
+                when(l.getZ()).thenReturn(z);
+                when(l.getBlockZ()).thenReturn((int) z);
+                return null;
+            }).when(mockLocation).setZ(anyDouble());
+        }
+
+        //        private Location createDefaultLocation() {
+        //            final Location mockLocation = TerrainValidatorTest.createDefaultLocation();
+        //            World w = TerrainValidatorTest.createDefaultWorld();
+        //            when(mockLocation.getWorld()).thenReturn(w);
+        //            when(mockLocation.getBlockX()).thenReturn(0);
+        //            when(mockLocation.getBlockY()).thenReturn(0);
+        //            when(mockLocation.getBlockZ()).thenReturn(0);
+        //            when(mockLocation.clone()).thenReturn(mockLocation);
+        //            catchSetMethodOfLocation(mockLocation);
+        //            return mockLocation;
+        //        }
+
+        //        private Location createMovedToFacingpLocation(BlockFace blockFace) {
+        //            final Location mockLocation = mock(Location.class);
+        //            World w = createDefaultWorld();
+        //            when(mockLocation.getWorld()).thenReturn(w);
+        //            int x = 0;
+        //            int y = 0;
+        //            int z = 0;
+        //
+        //            switch (blockFace) {
+        //                case UP:
+        //                    y++;
+        //                    break;
+        //                case DOWN:
+        //                    y--;
+        //                    break;
+        //                case EAST:
+        //                    x++;
+        //                    break;
+        //                case WEST:
+        //                    x--;
+        //                    break;
+        //                case NORTH:
+        //                    z--;
+        //                    break;
+        //                case SOUTH:
+        //                    z++;
+        //                    break;
+        //                default:
+        //                    break;
+        //            }
+        //            when(mockLocation.getBlockX()).thenReturn(x);
+        //            when(mockLocation.getBlockY()).thenReturn(y);
+        //            when(mockLocation.getBlockZ()).thenReturn(z);
+        //            when(mockLocation.clone()).thenReturn(mockLocation);
+        //            catchSetMethodOfLocation(mockLocation);
+        //            return mockLocation;
+        //        }
+
+        private Template createTemplate() {
+            Template template = new Template();
+            template.setTemplateName("template");
+
+            TemplateBlock[][][] blocks = new TemplateBlock[1][1][1];
+            for (int x = 0; x < 1; x++) {
+                for (int y = 0; y < 1; y++) {
+                    for (int z = 0; z < 1; z++) {
+                        TemplateBlock block;
+                        block = new TemplateBlock(Material.STONE);
+                        block.setMetadata(new MaterialData(1, (byte) 0));
+                        block.setData(new NBTTagCompound());
+                        blocks[x][y][z] = block;
+                    }
+                }
+            }
+            template.setTemplateBlocks(blocks);
+
+            return template;
+        }
+
+        private TemplateHologram createTemplateHologram(Template template, Location location) {
+            return new TemplateHologram(template, location);
+        }
+
+        @Test
+        public void moveHologram_whenMovingHologramIsCalled_ShouldUpdateLocation() {
+            //arrange
+            Location toCheckLocation = new Location(TerrainValidatorTest.createDefaultWorld(), 0, 0, 0);
+            Location resultLocation = new Location(TerrainValidatorTest.createDefaultWorld(), 1, 0, 0);
+
+            Template template = createTemplate();
+
+            TemplateHologram toCheckHologram = createTemplateHologram(template, toCheckLocation);
+            TemplateHologram resultHologram = createTemplateHologram(template, resultLocation);
+            //act
+            toCheckHologram.moveHologram(1, BlockFace.EAST);
+
+            //assert
+            Assert.assertEquals(resultHologram, toCheckHologram);
+        }
+    }
 
     @RunWith(PowerMockRunner.class)
     @PrepareForTest({BuildFramework.class})
@@ -131,49 +293,61 @@ public class TemplateTest {
 
         @Test
         public void rotateTemplate_whenRotatingClockwiseSquareTemplate_shouldUpdateTemplate() {
+            //arrange
             int xLength = 3;
             int zLength = 3;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateClockwiseTemplate(xLength, zLength);
 
+            //act
             templateToCheck.rotateTemplate(true);
 
+            //assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
 
         @Test
         public void rotateTemplate_whenRotatingCounterClockwiseSquareTemplate_shouldUpdateTemplate() {
+            //arrange
             int xLength = 3;
             int zLength = 3;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateCounterClockwiseTemplate(xLength, zLength);
 
+            //act
             templateToCheck.rotateTemplate(false);
 
+            //assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
 
         @Test
         public void rotateTemplate_whenRotatingClockwiseRectangleTemplate_shouldUpdateTemplate() {
+            //arrange
             int xLength = 2;
             int zLength = 4;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateClockwiseTemplate(xLength, zLength);
 
+            //act
             templateToCheck.rotateTemplate(true);
 
+            //assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
 
         @Test
         public void rotateTemplate_whenRotatingCounterClockwiseRectangleTemplate_shouldUpdateTemplate() {
+            //arrange
             int xLength = 2;
             int zLength = 4;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateCounterClockwiseTemplate(xLength, zLength);
 
+            //act
             templateToCheck.rotateTemplate(false);
 
+            //assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
     }
