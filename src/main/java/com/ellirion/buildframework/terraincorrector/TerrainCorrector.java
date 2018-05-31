@@ -307,7 +307,6 @@ public class TerrainCorrector {
         }
 
         for (Hole h : subHoles) {
-            List<Block> top = h.getTopBlocks();
             minHoleX = h.getMinX();
             maxHoleX = h.getMaxX();
             minHoleZ = h.getMinZ();
@@ -324,7 +323,7 @@ public class TerrainCorrector {
             // else create an empty list to prevent a NPE
             if (ravineSupportsRuleBook.getResult().isPresent()) {
                 Result result = ravineSupportsRuleBook.getResult().get();
-                toChange = supportSelector((int) result.getValue(), top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                toChange = supportSelector((int) result.getValue(), minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             } else {
                 toChange = new ArrayList<>();
             }
@@ -350,11 +349,11 @@ public class TerrainCorrector {
         return result;
     }
 
-    private List<Block> getBridgeSupport(int dir, List<Block> holeTop, int minHoleX, int maxHoleX,
+    private List<Block> getBridgeSupport(int dir, int minHoleX, int maxHoleX,
                                          int minHoleZ, int maxHoleZ) {
         int holeCentre;
         int y = boundingBox.getY1() - 1;
-        List<Block> toChange = new ArrayList<>(holeTop);
+        List<Block> toChange = new ArrayList<>();
         int maxDepth;
         double centerClearance;
         switch (dir) {
@@ -611,16 +610,16 @@ public class TerrainCorrector {
         new Promise<>(subFinisher -> block.setType(mat), false);
     }
 
-    private List<Block> supportSelector(int method, List<Block> holeTop, int minHoleX, int maxHoleX,
+    private List<Block> supportSelector(int method, int minHoleX, int maxHoleX,
                                         int minHoleZ, int maxHoleZ) {
         switch (method) {
             //START OF BRIDGE STYLE SUPPORTS
             case 0:
                 // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-                return getBridgeSupport(0, holeTop, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                return getBridgeSupport(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 1:
                 // build bridge style supports for structure from point 1 to point 2 on the X axis.
-                return getBridgeSupport(1, holeTop, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                return getBridgeSupport(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             //START OF THE ONE SIDED SUPPORTS
             case 2:
                 //NORTH TO SOUTH
