@@ -17,8 +17,8 @@ public class SequenceTransaction extends Transaction {
      * Construct a new SequenceTransaction.
      */
     public SequenceTransaction() {
-        this.children = new ArrayList<>();
-        this.finalized = false;
+        children = new ArrayList<>();
+        finalized = false;
     }
 
     /**
@@ -27,11 +27,11 @@ public class SequenceTransaction extends Transaction {
      * @param transactions The initial children
      */
     public SequenceTransaction(final Transaction... transactions) {
-        this.children = Arrays.asList(transactions);
 
         boolean isFirst = true;
         boolean applied = false;
-        for (Transaction child : transactions) {
+        for (int i = 0; i < transactions.length; i++) {
+            Transaction child = transactions[i];
             if (isFirst) {
                 applied = child.isApplied();
                 isFirst = false;
@@ -41,8 +41,10 @@ public class SequenceTransaction extends Transaction {
                 }
             }
         }
+        children = Arrays.asList(transactions);
+
         setApplied(applied);
-        this.finalized = applied;
+        finalized = applied;
     }
 
     /**
