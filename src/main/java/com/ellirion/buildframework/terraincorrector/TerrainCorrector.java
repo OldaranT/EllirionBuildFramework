@@ -652,53 +652,6 @@ public class TerrainCorrector {
                 return createSupportsLocationMap();
         }
     }
-
-    private Block getClosestSolidBlockFromCorner(int dir) {
-        Block current;
-        int x;
-        int y = boundingBox.getY1() - 1;
-        int z;
-        switch (dir) {
-            case 0:
-                // NORTH EAST CORNER
-                x = boundingBox.getX2();
-                z = boundingBox.getZ1();
-                current = world.getBlockAt(x, y, z);
-                while (!current.getType().isSolid()) {
-                    current = getRelativeBlock(8, current, world);
-                }
-                return current;
-            case 1:
-                // SOUTH EAST CORNER
-                x = boundingBox.getX2();
-                z = boundingBox.getZ2();
-                current = world.getBlockAt(x, y, z);
-                while (!current.getType().isSolid()) {
-                    current = getRelativeBlock(9, current, world);
-                }
-                return current;
-            case 2:
-                // SOUTH WEST CORNER
-                x = boundingBox.getX1();
-                z = boundingBox.getZ2();
-                current = world.getBlockAt(x, y, z);
-                while (!current.getType().isSolid()) {
-                    current = getRelativeBlock(6, current, world);
-                }
-                return current;
-            case 3:
-                // NORTH WEST CORNER
-                x = boundingBox.getX1();
-                z = boundingBox.getZ1();
-                current = world.getBlockAt(x, y, z);
-                while (!current.getType().isSolid()) {
-                    current = getRelativeBlock(7, current, world);
-                }
-                return current;
-            default:
-                throw new IndexOutOfBoundsException();
-        }
-    }
 }
 
 class ToDoEntry {
