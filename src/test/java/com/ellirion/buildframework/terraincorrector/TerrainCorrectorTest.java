@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -28,9 +29,12 @@ public class TerrainCorrectorTest {
     private static final Material stone = Material.STONE;
     private static final Material air = Material.AIR;
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
+    private World mockWorld;
+    private TerrainCorrector corrector;
 
     public TerrainCorrectorTest() {
         mockScheduler();
+        initialSetup();
     }
 
     // TODO turn this into a global util.
@@ -52,7 +56,9 @@ public class TerrainCorrectorTest {
             r.run();
             return null;
         });
+    }
 
+    private void initialSetup() {
         final BuildFramework mockPlugin = mock(BuildFramework.class);
         final FileConfiguration mockConfig = mock(FileConfiguration.class);
 
@@ -64,26 +70,15 @@ public class TerrainCorrectorTest {
         when(mockConfig.getInt("TerrainCorrector.AreaLimitOffset", 5)).thenReturn(1);
     }
 
-    //    @Before
-    //    public void setup() {
-    //        mockStatic(BuildFramework.class);
-    //
-    //        final BuildFramework mockPlugin = mock(BuildFramework.class);
-    //        final FileConfiguration mockConfig = mock(FileConfiguration.class);
-    //
-    //        when(BuildFramework.getInstance()).thenReturn(mockPlugin);
-    //
-    //        when(mockPlugin.getConfig()).thenReturn(mockConfig);
-    //
-    //        when(mockConfig.getInt("TerrainCorrecter.MaxHoleDepth", 5)).thenReturn(5);
-    //        when(mockConfig.getInt("TerrainCorrecter.AreaLimitOffset", 5)).thenReturn(1);
-    //    }
+    @Before
+    public void setup() {
+        corrector = new TerrainCorrector();
+        mockWorld = createDefaultWorld();
+    }
 
     @Test
     public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
@@ -108,8 +103,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenHoleFacesWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
@@ -134,8 +127,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenHoleFacesNorthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
@@ -160,8 +151,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenHoleFacesSouthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
@@ -186,8 +175,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesSouthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
@@ -214,8 +201,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesNorthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
@@ -242,8 +227,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesSouthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
@@ -270,8 +253,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesNorthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
@@ -298,8 +279,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenOverRavineOnZAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnXAxis() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         BoundingBox boundingBox = new BoundingBox(1, 1, 1, 5, 2, 2);
         int yDepth = 0;
         int centreX = 3;
@@ -329,8 +308,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenOverRavineOnXAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnZAxis() {
         // Arrange
-        World mockWorld = createDefaultWorld();
-        TerrainCorrector corrector = new TerrainCorrector();
         BoundingBox boundingBox = new BoundingBox(1, 1, 1, 2, 2, 5);
         int yDepth = 0;
         int centreZ = 3;
@@ -354,6 +331,52 @@ public class TerrainCorrectorTest {
                     assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ - depth).getType());
                 }
             }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenNoHolesButHasBlocksInBoundingBox_shouldClearBlocksInBoundingBox() {
+        // Arrange
+        // Happens in the setup.
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int y = 1; y <= 2; y++) {
+            for (int x = 1; x <= 3; x++) {
+                for (int z = 1; z <= 3; z++) {
+                    assertEquals(air, mockWorld.getBlockAt(x, y, z).getType());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void correctTerrain_whenHoleOnlyUnderBoundingBox_shouldSetTopBlocksToBarrier() {
+        // Arrange
+        setBlockAtCoordinates(mockWorld, 2, 0, 2, air);
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        assertEquals(Material.BARRIER, mockWorld.getBlockAt(2, 0, 2).getType());
+    }
+
+    @Test
+    public void correctTerrain_whenHoleNotExceedsAreaLimit_shouldFillWithMostCommenMaterial() {
+        // Arrange
+        for (int x = 2; x >= 0; x--) {
+            setBlockAtCoordinates(mockWorld, x, 0, 2, air);
+        }
+
+        // Act
+        corrector.correctTerrain(boundingBox, mockWorld);
+
+        // Assert
+        for (int x = 2; x >= 0; x--) {
+            assertEquals(stone, mockWorld.getBlockAt(x, 0, 2).getType());
         }
     }
 

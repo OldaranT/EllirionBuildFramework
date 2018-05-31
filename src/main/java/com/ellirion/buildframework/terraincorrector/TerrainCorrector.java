@@ -336,9 +336,6 @@ public class TerrainCorrector {
             for (Block b : toChange) {
                 sendSyncBlockChanges(b, Material.FENCE);
             }
-            //            for (Block b : underBoundingBox) {
-            //                b.setType(Material.WOOD);
-            //            }
         }
     }
 
