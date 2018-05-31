@@ -56,30 +56,6 @@ public class CounterTest {
     }
 
     @Test
-    public void awaitAndPerform_whenInvoked_shouldWaitAndExecuteRunnable() {
-        Counter c = new Counter();
-
-        Thread t1 = new Thread(() -> {
-            c.awaitAndPerform(1, c::increment);
-        });
-
-        Thread t2 = new Thread(c::increment);
-
-        assertEquals(0, c.get());
-        t1.start();
-        assertEquals(0, c.get());
-        t2.start();
-
-        try {
-            t2.join();
-            t1.join();
-            assertEquals(2, c.get());
-        } catch (InterruptedException ex) {
-            fail();
-        }
-    }
-
-    @Test
     public void await_whenAtCorrectCount_shouldReturnImmediately() {
         Counter c = new Counter(2);
 

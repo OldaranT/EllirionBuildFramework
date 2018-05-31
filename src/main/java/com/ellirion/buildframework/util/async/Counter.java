@@ -62,18 +62,6 @@ public class Counter {
     }
 
     /**
-     * Wait for this Counter to reach {@code i}, and then perform {@code r}.
-     * @param i The number to reach
-     * @param r The Runnable to run
-     */
-    public void awaitAndPerform(int i, Runnable r) {
-        synchronized (latch) {
-            await(i);
-            r.run();
-        }
-    }
-
-    /**
      * Wait for this Counter to reach zero.
      */
     public void await() {
