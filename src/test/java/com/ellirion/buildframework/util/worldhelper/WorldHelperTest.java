@@ -81,9 +81,7 @@ public class WorldHelperTest {
         byte metaData = 0;
 
         PowerMockito.stub(PowerMockito.method(WorldHelper.class, "getBlock", Location.class)).toReturn(block);
-        doNothing().when(block).setType(material);
-        doNothing().when(block).setData(metaData);
-
+        
         t1.start();
 
         verify(block, times(0)).setType(material);
