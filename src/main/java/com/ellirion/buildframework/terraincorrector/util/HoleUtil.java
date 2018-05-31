@@ -110,25 +110,28 @@ public class HoleUtil {
     public static Block getRelativeBlock(int dir, Block block, World world) {
         //        World world = block.getWorld();
         //        BuildFramework.getInstance().getLogger().info("" + block);
+        int x = block.getX();
+        int y = block.getY();
+        int z = block.getZ();
         switch (dir) {
             case 0:
                 // NORTH
-                return world.getBlockAt(block.getX(), block.getY(), block.getZ() - 1);
+                return world.getBlockAt(x, y, z - 1);
             case 1:
                 // EAST
-                return world.getBlockAt(block.getX() + 1, block.getY(), block.getZ());
+                return world.getBlockAt(x + 1, y, z);
             case 2:
                 // SOUTH
-                return world.getBlockAt(block.getX(), block.getY(), block.getZ() + 1);
+                return world.getBlockAt(x, y, z + 1);
             case 3:
                 // WEST
-                return world.getBlockAt(block.getX() - 1, block.getY(), block.getZ());
+                return world.getBlockAt(x - 1, y, z);
             case 4:
                 // UP
-                return world.getBlockAt(block.getX(), block.getY() + 1, block.getZ());
+                return world.getBlockAt(x, y + 1, z);
             case 5:
                 // DOWN
-                return world.getBlockAt(block.getX(), block.getY() - 1, block.getZ());
+                return world.getBlockAt(x, y - 1, z);
 
             default:
                 throw new IndexOutOfBoundsException();

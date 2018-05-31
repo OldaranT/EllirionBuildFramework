@@ -31,6 +31,8 @@ public class TerrainCorrectorTest {
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
     private World mockWorld;
     private TerrainCorrector corrector;
+    private final BuildFramework mockPlugin = mock(BuildFramework.class);
+    private final FileConfiguration mockConfig = mock(FileConfiguration.class);
 
     public TerrainCorrectorTest() {
         mockScheduler();
@@ -59,8 +61,6 @@ public class TerrainCorrectorTest {
     }
 
     private void initialSetup() {
-        final BuildFramework mockPlugin = mock(BuildFramework.class);
-        final FileConfiguration mockConfig = mock(FileConfiguration.class);
 
         when(BuildFramework.getInstance()).thenReturn(mockPlugin);
 
@@ -365,7 +365,7 @@ public class TerrainCorrectorTest {
     }
 
     @Test
-    public void correctTerrain_whenHoleNotExceedsAreaLimit_shouldFillWithMostCommenMaterial() {
+    public void correctTerrain_whenHoleNotExceedsAreaLimit_shouldFillWithMostCommonMaterial() {
         // Arrange
         for (int x = 2; x >= 0; x--) {
             setBlockAtCoordinates(mockWorld, x, 0, 2, air);

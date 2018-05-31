@@ -100,7 +100,7 @@ public class TerrainCorrector {
 
         Map<Block, Integer> startingDepthMap = calculateStartingDepthMap(blocks);
 
-        placeBlocksAccordingToDepthMap(startingDepthMap, world, mat);
+        placeBlocksAccordingToDepthMap(startingDepthMap, mat);
     }
 
     private Map<Block, Integer> calculateStartingDepthMap(List<Block> blocks) {
@@ -165,15 +165,14 @@ public class TerrainCorrector {
         }
     }
 
-    private void placeBlocksAccordingToDepthMap(Map<Block, Integer> map, World world,
-                                                Material mat) {
+    private void placeBlocksAccordingToDepthMap(Map<Block, Integer> map, Material mat) {
         for (Map.Entry entry : map.entrySet()) {
 
-            fillDownwards((Block) entry.getKey(), world, mat, (int) entry.getValue());
+            fillDownwards((Block) entry.getKey(), mat, (int) entry.getValue());
         }
     }
 
-    private void fillDownwards(Block block, World world, Material mat, int startDepth) {
+    private void fillDownwards(Block block, Material mat, int startDepth) {
         Block currentBlock = world.getBlockAt(block.getX(), block.getY() - startDepth, block.getZ());
 
         while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
@@ -287,7 +286,6 @@ public class TerrainCorrector {
         int maxHoleZ;
 
         List<Block> topBlocks = hole.getTopBlocks();
-        List<Block> underBoundingBox = new ArrayList<>();
         List<Block> toChange;
 
         List<Hole> subHoles = new ArrayList<>();
@@ -295,18 +293,16 @@ public class TerrainCorrector {
         for (Block b : topBlocks) {
             int blockX = b.getX();
             int blockZ = b.getZ();
-            if (!(blockX < minX || blockX > maxX || blockZ < minZ || blockZ > maxZ)) {
-                underBoundingBox.add(b);
-                if (subHoles.stream().noneMatch(subHole -> subHole.contains(b))) {
-                    Hole h = new Hole(b);
-                    LinkedList<Block> todo = new LinkedList<>();
-                    todo.add(b);
-                    Block current;
-                    while ((current = todo.poll()) != null) {
-                        exploreAdjacentNonSolidBlocks(current, h, todo, true, offset, boundingBox, depthOffset, world);
-                    }
-                    subHoles.add(h);
+            if (!(blockX < minX || blockX > maxX || blockZ < minZ || blockZ > maxZ) &&
+                subHoles.stream().noneMatch(subHole -> subHole.contains(b))) {
+                Hole h = new Hole(b);
+                LinkedList<Block> todo = new LinkedList<>();
+                todo.add(b);
+                Block current;
+                while ((current = todo.poll()) != null) {
+                    exploreAdjacentNonSolidBlocks(current, h, todo, true, offset, boundingBox, depthOffset, world);
                 }
+                subHoles.add(h);
             }
         }
 
@@ -354,11 +350,11 @@ public class TerrainCorrector {
         return result;
     }
 
-    private List<Block> getBridgeSupport(int dir, List<Block> underBoundingBox, int minHoleX, int maxHoleX,
+    private List<Block> getBridgeSupport(int dir, List<Block> holeTop, int minHoleX, int maxHoleX,
                                          int minHoleZ, int maxHoleZ) {
         int holeCentre;
         int y = boundingBox.getY1() - 1;
-        List<Block> toChange = new ArrayList<>(underBoundingBox);
+        List<Block> toChange = new ArrayList<>(holeTop);
         int maxDepth;
         double centerClearance;
         switch (dir) {
@@ -375,9 +371,9 @@ public class TerrainCorrector {
                                 break;
                             }
                             toChange.addAll(
-                                    blocksToReplace(x, y, holeCentre + (int) centerClearance + i, i, underBoundingBox));
+                                    blocksToReplace(x, y, holeCentre + (int) centerClearance + i, i));
                             toChange.addAll(
-                                    blocksToReplace(x, y, holeCentre - (int) centerClearance - i, i, underBoundingBox));
+                                    blocksToReplace(x, y, holeCentre - (int) centerClearance - i, i));
                         }
                     }
                 }
@@ -395,9 +391,9 @@ public class TerrainCorrector {
                                 break;
                             }
                             toChange.addAll(
-                                    blocksToReplace(holeCentre + (int) centerClearance + i, y, z, i, underBoundingBox));
+                                    blocksToReplace(holeCentre + (int) centerClearance + i, y, z, i));
                             toChange.addAll(
-                                    blocksToReplace(holeCentre - (int) centerClearance - i, y, z, i, underBoundingBox));
+                                    blocksToReplace(holeCentre - (int) centerClearance - i, y, z, i));
                         }
                     }
                 }
@@ -407,11 +403,10 @@ public class TerrainCorrector {
         }
     }
 
-    private List<Block> blocksToReplace(int x, int y, int z,
-                                        int depth, List<Block> underBB) {
+    private List<Block> blocksToReplace(int x, int y, int z, int depth) {
         List<Block> toChange = new ArrayList<>();
         Block b = world.getBlockAt(x, y, z);
-        if (underBB.contains(b)) {
+        if (blocksBelowBoundingBoxOrWithinOffset(b, 0) && (b.isLiquid() || b.isEmpty())) {
             if (!toChange.contains(b)) {
                 toChange.add(b);
             }
@@ -470,8 +465,7 @@ public class TerrainCorrector {
         return toChange;
     }
 
-    private List<Block> oneSidedSupportMap(int dir, int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ,
-                                           List<Block> underBoundingBox) {
+    private List<Block> oneSidedSupportMap(int dir, int minHoleX, int maxHoleX, int minHoleZ, int maxHoleZ) {
         List<Block> toChange = new ArrayList<>();
         int y = boundingBox.getY1() - 1;
         int maxDepth;
@@ -489,8 +483,8 @@ public class TerrainCorrector {
                 }
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
-                        toChange.addAll(blocksToReplace(centre + dis, y, minHoleZ + i, i, underBoundingBox));
-                        toChange.addAll(blocksToReplace(centre - dis, y, minHoleZ + i, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(centre + dis, y, minHoleZ + i, i));
+                        toChange.addAll(blocksToReplace(centre - dis, y, minHoleZ + i, i));
                     }
                 }
                 return toChange;
@@ -504,8 +498,8 @@ public class TerrainCorrector {
                 }
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
-                        toChange.addAll(blocksToReplace(maxHoleX - i, y, centre + dis, i, underBoundingBox));
-                        toChange.addAll(blocksToReplace(maxHoleX - i, y, centre - dis, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(maxHoleX - i, y, centre + dis, i));
+                        toChange.addAll(blocksToReplace(maxHoleX - i, y, centre - dis, i));
                     }
                 }
                 return toChange;
@@ -519,8 +513,8 @@ public class TerrainCorrector {
                 }
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
-                        toChange.addAll(blocksToReplace(centre + dis, y, maxHoleZ - i, i, underBoundingBox));
-                        toChange.addAll(blocksToReplace(centre - dis, y, maxHoleZ - i, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(centre + dis, y, maxHoleZ - i, i));
+                        toChange.addAll(blocksToReplace(centre - dis, y, maxHoleZ - i, i));
                     }
                 }
                 return toChange;
@@ -534,8 +528,8 @@ public class TerrainCorrector {
                 }
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
-                        toChange.addAll(blocksToReplace(minHoleX + i, y, centre + dis, i, underBoundingBox));
-                        toChange.addAll(blocksToReplace(minHoleX + i, y, centre - dis, i, underBoundingBox));
+                        toChange.addAll(blocksToReplace(minHoleX + i, y, centre + dis, i));
+                        toChange.addAll(blocksToReplace(minHoleX + i, y, centre - dis, i));
                     }
                 }
                 return toChange;
@@ -617,29 +611,29 @@ public class TerrainCorrector {
         new Promise<>(subFinisher -> block.setType(mat), false);
     }
 
-    private List<Block> supportSelector(int method, List<Block> top, int minHoleX, int maxHoleX,
+    private List<Block> supportSelector(int method, List<Block> holeTop, int minHoleX, int maxHoleX,
                                         int minHoleZ, int maxHoleZ) {
         switch (method) {
             //START OF BRIDGE STYLE SUPPORTS
             case 0:
                 // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-                return getBridgeSupport(0, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                return getBridgeSupport(0, holeTop, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 1:
                 // build bridge style supports for structure from point 1 to point 2 on the X axis.
-                return getBridgeSupport(1, top, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                return getBridgeSupport(1, holeTop, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             //START OF THE ONE SIDED SUPPORTS
             case 2:
                 //NORTH TO SOUTH
-                return oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 3:
                 //EAST TO WEST
-                return oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 4:
                 // SOUTH TO NORTH
-                return oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 5:
                 // WEST TO EAST
-                return oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ, top);
+                return oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             // START OF THE CORNER SUPPORTS
             case 6:
                 // NORTH EAST TO SOUTH WEST
@@ -657,6 +651,53 @@ public class TerrainCorrector {
                 // FOR UNEXPECTED SCENARIO'S JUST FILL FROM OUTSIDE IN ON ALL SIDES
                 // build building supports under the bounding box from all sides inwards.
                 return createSupportsLocationMap();
+        }
+    }
+
+    private Block getClosestSolidBlockFromCorner(int dir) {
+        Block current;
+        int x;
+        int y = boundingBox.getY1() - 1;
+        int z;
+        switch (dir) {
+            case 0:
+                // NORTH EAST CORNER
+                x = boundingBox.getX2();
+                z = boundingBox.getZ1();
+                current = world.getBlockAt(x, y, z);
+                while (!current.getType().isSolid()) {
+                    current = getRelativeBlock(8, current, world);
+                }
+                return current;
+            case 1:
+                // SOUTH EAST CORNER
+                x = boundingBox.getX2();
+                z = boundingBox.getZ2();
+                current = world.getBlockAt(x, y, z);
+                while (!current.getType().isSolid()) {
+                    current = getRelativeBlock(9, current, world);
+                }
+                return current;
+            case 2:
+                // SOUTH WEST CORNER
+                x = boundingBox.getX1();
+                z = boundingBox.getZ2();
+                current = world.getBlockAt(x, y, z);
+                while (!current.getType().isSolid()) {
+                    current = getRelativeBlock(6, current, world);
+                }
+                return current;
+            case 3:
+                // NORTH WEST CORNER
+                x = boundingBox.getX1();
+                z = boundingBox.getZ1();
+                current = world.getBlockAt(x, y, z);
+                while (!current.getType().isSolid()) {
+                    current = getRelativeBlock(7, current, world);
+                }
+                return current;
+            default:
+                throw new IndexOutOfBoundsException();
         }
     }
 }
