@@ -68,7 +68,6 @@ public class BuildFramework extends JavaPlugin {
         Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
         Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
 
-        Bukkit.getScheduler().runTaskTimer(this, WorldHelper::run, 0L, -1L);
     }
 
     /**
@@ -89,6 +88,7 @@ public class BuildFramework extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("BuildFramework is disabled.");
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, WorldHelper::run, 1L, 1L);
     }
 
     private void createConfig() {

@@ -20,10 +20,24 @@ public class TransactionManager {
     private static final Map<Transaction, Lock> LOCKS = new ConcurrentHashMap<>();
 
     /**
+     * Add a transaction that has already been applied.
+     * @param player The player that has performed the transaction.
+     * @param transaction The transaction the has been preformed.
+     */
+    public static void addDoneTransaction(Player player, Transaction transaction) {
+        acquireLock(transaction);
+        try {
+            addToDone(player, transaction);
+        } finally {
+            releaseLock(transaction);
+        }
+    }
+
+    /**
      * Performs the {@link Transaction} {@code transaction}.
-     * @param player the player that wants to preform the transaction
-     * @param transaction the transaction that needs to be performed
-     * @return the resulting {@link Promise}
+     * @param player The player that wants to preform the transaction
+     * @param transaction The transaction that needs to be performed
+     * @return The resulting {@link Promise}
      */
     public static Promise performTransaction(Player player, Transaction transaction) {
         acquireLock(transaction);
