@@ -1,23 +1,28 @@
 package com.ellirion.buildframework;
 
+import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.pathfinder.command.CommandFindPath;
 import com.ellirion.buildframework.pathfinder.command.CommandHidePath;
 import com.ellirion.buildframework.pathfinder.command.CommandHideVisited;
 import com.ellirion.buildframework.pathfinder.command.CommandPathConfig;
 import com.ellirion.buildframework.pathfinder.event.PathingListener;
-import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandLoadTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
+import com.ellirion.buildframework.templateengine.util.TabCompletionFileNameList;
+import com.ellirion.buildframework.templateengine.util.TabCompletionMarkerNameList;
+import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
+import com.ellirion.buildframework.util.EventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,19 +50,25 @@ public class BuildFramework extends JavaPlugin {
     @Override
     public void onEnable() {
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
         getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
         getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
         getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
         getCommand("Validate").setExecutor(new ValidateCommand());
         getCommand("AddMarker").setExecutor(new CommandAddMarker());
+        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
+        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
         getCommand("FindPath").setExecutor(new CommandFindPath());
         getCommand("HidePath").setExecutor(new CommandHidePath());
         getCommand("HideVisited").setExecutor(new CommandHideVisited());
         getCommand("PathConfig").setExecutor(new CommandPathConfig());
         getServer().getPluginManager().registerEvents(new PathingListener(), this);
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createBlockValueConfig();
         createTemplateFormatConfig();
@@ -126,6 +137,7 @@ public class BuildFramework extends JavaPlugin {
 
         List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
                                               "HUMAN");
+        List<String> raceColors = Arrays.asList("GREEN", "SILVER", "CYAN", "ORANGE", "RED", "GRAY", "BLACK", "WHITE");
 
         List<String> typeList = Arrays.asList("HOUSE", "BLACKSMITH", "TOWNHALL", "SAWMILL", "STABLE", "BARRACK",
                                               "WINDMILL", "HARBOR");
@@ -138,6 +150,7 @@ public class BuildFramework extends JavaPlugin {
         List<String> markerList = Arrays.asList("DOOR", "GROUND", "PATH");
 
         String racePath = "Races";
+        String raceColorsPath = "RaceColors";
         String typePath = "Types";
         String levelPath = "Levels";
         String markersPath = "Markers";
@@ -151,6 +164,7 @@ public class BuildFramework extends JavaPlugin {
                                               "Markers is a list of all the possible markers you can use.\n");
 
         templateFormatConfig.addDefault(racePath, raceList);
+        templateFormatConfig.addDefault(raceColorsPath, raceColors);
         templateFormatConfig.addDefault(typePath, typeList);
         templateFormatConfig.addDefault(levelPath, levelList);
         templateFormatConfig.addDefault(markersPath, markerList);

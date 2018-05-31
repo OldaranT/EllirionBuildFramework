@@ -11,9 +11,11 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
+import com.ellirion.buildframework.templateengine.util.FileUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
 
 public class CommandImportTemplate implements CommandExecutor {
 
@@ -27,6 +29,12 @@ public class CommandImportTemplate implements CommandExecutor {
 
         String templateName = String.join(" ", strings);
 
+        List<String> fileNames = FileUtil.getListOfNBTFileNames();
+
+        if (!fileNames.contains(templateName.toUpperCase())) {
+            player.sendMessage(ChatColor.DARK_RED + "This file does not exist.");
+            return true;
+        }
         // Load template
         String path = BuildFramework.getInstance().getConfig().getString("TemplateEngine.Path") + templateName + ".nbt";
         NBTTagCompound ntc;

@@ -181,7 +181,7 @@ public class PathChecker {
          *       OXXOO
          *       OOXOO
          *       OOOOO
-         *  Where O = visited (and therefore clear), X = our path and ? is unchecked
+         *  Where O = visited (and thus confirmed clear), X = our path and ? is unchecked
          *  Given dNext (left), we go the *opposite* direction (right) in combination with dCur (forward).
          *  We use a doubly nested for-loop with (width / 2) iterations to check the remaining area.
          * */

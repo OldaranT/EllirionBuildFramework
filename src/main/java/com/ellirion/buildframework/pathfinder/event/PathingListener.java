@@ -68,6 +68,12 @@ public class PathingListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
+
+        // Only debug when holding a stick
+        if (player.getItemOnCursor().getType() != Material.STICK) {
+            return;
+        }
+
         Point from = new Point(event.getFrom()).floor();
         Point to = new Point(event.getTo()).floor();
 

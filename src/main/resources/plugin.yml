@@ -40,6 +40,10 @@ commands:
     description: Remove the selected hologram
     usage: /RemoveHologram, /rh
     aliases: [rh]
+  LoadTemplate:
+    description: load a template
+    usage: /LoadTemplate, /lt
+    aliases: [lt]
   FindPath:
     description: find a path between two WorldEdit selections
     usage: /findpath, /fp
