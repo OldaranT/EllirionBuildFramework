@@ -2,232 +2,271 @@ package com.ellirion.buildframework.util;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
-public class Heap<TData, TScore extends Comparable<TScore>> {
+public class Heap<T extends Comparable> {
 
-    private Node<TData, TScore>[] arr;
-    private Function<TData, TScore> scorer;
-    private Map<TData, Integer> indices;
-    private int size;
+    private T[] arr;
+    private HashMap<T, Integer> indices;
+    private int length;
+    private boolean min;
 
     /**
-     * Construct a new heap.
-     * @param scorer The scoring function to use
+     * Create a min arr of type T.
      */
-    public Heap(final Function<TData, TScore> scorer) {
-        this.arr = (Node<TData, TScore>[]) new Node[8];
-        this.scorer = scorer;
-        this.indices = new HashMap<>();
-        this.size = 0;
+    public Heap() {
+        arr = (T[]) new Comparable[10];
+        indices = new HashMap<>();
+        length = 0;
+        min = true;
     }
 
     /**
-     * Insert an element into the heap.
-     * @param data The element
+     * Create a min arr from an array of elements.
+     * @param elements the array of elements to create a arr of
      */
-    public void insert(final TData data) {
-        if (size == arr.length - 1) {
-            grow();
+    public Heap(final T[] elements) {
+        arr = elements;
+        indices = new HashMap<>();
+        length = elements.length;
+        min = true;
+        heapify();
+    }
+
+    /**
+     * Add an element to the arr.
+     * @param element the element to add to the arr
+     */
+    public void add(T element) {
+        if (arr.length == length) {
+            resize();
         }
 
-        // Initially we assume the new element will be placed at
-        // the end of the array (at the bottom of the binary tree).
-        int index = ++size;
-        Node<TData, TScore> node = new Node<>(data, scorer.apply(data));
-        arr[index] = node;
-        indices.put(data, index);
-
-        // We insert the item and move the item upwards as many times as necessary.
-        percolateUp(node, index);
+        arr[length] = element;
+        indices.put(element, length);
+        bubbleUp(length);
+        length++;
     }
 
     /**
-     * Remove the top element of this heap.
-     * @return The removed element
+     * Take the top element of the arr.
+     * @return the top element of the arr
      */
-    public TData next() {
+    public T next() {
+        T data = peek();
 
-        // Don't do anything if there are no elements!
-        if (size == 0) {
+        swap(0, length - 1);
+        arr[length - 1] = null;
+        indices.remove(data);
+        length--;
+
+        bubbleDown(0);
+
+        return data;
+    }
+
+    /**
+     * Look at the top element of the arr.
+     * @return the top element of the arr
+     */
+    public T peek() {
+        if (length == 0) {
             return null;
         }
 
-        // Extract the result first and foremost
-        Node<TData, TScore> node = arr[1];
-        indices.remove(node.data);
-        arr[1] = arr[size];
-        arr[size--] = null;
-
-        if (arr[1] != null) {
-            indices.put(arr[1].data, 1);
-        }
-
-        // Shrink the array if necessary
-        //        if (size < arr.length / 2 && size > 8) {
-        //            shrink();
-        //         }
-
-        // Percolate down from the new top element
-        percolateDown(1);
-
-        // Shrink the array if necessary
-        return node.data;
+        return arr[0];
     }
 
     /**
-     * Remove the given element from this heap. If it was not present, nothing happens.
-     * @param data The element to remove
-     * @return Whether the element was removed
+     * Get the depth of the arr.
+     * @return the depth of the arr
      */
-    public boolean remove(final TData data) {
+    public int depth() {
+        int length = this.length;
+        int depth = 0;
+        while (length > 0) {
+            depth++;
+            length = length >> 1;
+        }
+
+        return depth;
+    }
+
+    /**
+     * Set the arr to be min or max arr.
+     * @param min whether the arr will be a min arr
+     */
+    public void setMinHeap(boolean min) {
+        this.min = min;
+        heapify();
+    }
+
+    /**
+     * Remove a specific element from the arr.
+     * @param data the element to remove from the arr
+     * @return Whether the remove was successful
+     */
+    public boolean remove(T data) {
         if (!indices.containsKey(data)) {
             return false;
         }
+        // Swap element to the end of the arr
+        // remove element from the arr
 
         int index = indices.get(data);
+        swap(index, length - 1);
+        bubbleDown(index);
+
+        arr[length - 1] = null;
+        length--;
         indices.remove(data);
-
-        // Remove it correctly if it was the last element
-        if (index == size) {
-            arr[size--] = null;
-            return true;
-        }
-
-        // Otherwise, we fill the empty space with the last item in the array
-        // and percolate down from there.
-        arr[index] = arr[size];
-        arr[size--] = null;
-        indices.put(arr[index].data, index);
-        percolateDown(index);
 
         return true;
     }
 
     /**
-     * Gets the element at index {@code i} in the array.
-     * @param i The index to get the element from
-     * @return The element at the given index
+     * Get element at specific index.
+     * @param index the index of the element to get
+     * @return the element at index {@code index}
      */
-    public TData get(final int i) {
-        return arr[i].data;
+    public T get(int index) {
+        return arr[index];
     }
 
     /**
-     * Gets the index of data {@code data} in the internal array.
-     * @param data The data to get the index of
-     * @return The index of the data in the array, or -1 if the
-     *         data is not contained in this heap.
+     * Checks whether {@code data} is stored in the heap.
+     * @param data the element whose membership to check
+     * @return whether the data is contained in this heap
      */
-    public int indexOf(final TData data) {
-        return indices.getOrDefault(data, -1);
+    public boolean contains(T data) {
+        return indices.containsKey(data);
     }
 
     /**
-     * Checks whether data {@code data} is stored in this heap.
-     * @param data The data whose membership to check
-     * @return Whether the data is contained in this heap
+     * Get the length of the arr.
+     * @return the length of the arr
      */
-    public boolean contains(final TData data) {
-        return indexOf(data) != -1;
+    public int getLength() {
+        return length;
     }
 
     /**
-     * Checks whether data {@code data} is stored in this heap.
-     * @param data The data whose membership to check
-     * @return Whether the data is contained in this heap
+     * Check if the heap is empty.
+     * @return whether the heap is empty
      */
-    public boolean arrayContains(final TData data) {
-        int i = indexOf(data);
-        if (i == -1) {
-            return false;
-        }
-        return arr[i].data.equals(data);
+    public boolean isEmpty() {
+        return length != 0;
     }
 
-    private int percolateUp(Node<TData, TScore> node, int cur) {
-        // Loop as long as we haven't reached the top element (cur > 1),
-        // and as long as the parent element is GREATER than the child element.
-        // In this loop we move the PARENT to the CHILD element. Only AFTER
-        // the loop as finished do we fill the last spot: the last PARENT.
-        for (; cur > 1 && node.score.compareTo(arr[cur / 2].score) < 0; cur /= 2) {
-            arr[cur] = arr[cur / 2];
-            indices.put(arr[cur].data, cur);
+    private void resize() {
+        if (length == Integer.MAX_VALUE) {
+            throw new IllegalStateException("Heap cannot be larger than Integer.MAX_VALUE elements");
         }
 
-        // Lastly, we insert the new item in the resulting cur.
-        arr[cur] = node;
-        indices.put(arr[cur].data, cur);
-        return cur;
+        int newLength = length * 2;
+
+        if (newLength < 0) {
+            newLength = Integer.MAX_VALUE;
+        }
+
+        arr = Arrays.copyOf(arr, newLength);
     }
 
-    private void percolateDown(int cur) {
-        Node<TData, TScore> temp;
-        int left, right, diff, lower;
+    private void heapify() {
+        // Start at last parent node (length / 2)
+        // Go backwards along the arr
+        // And bubble down each element
+        int i = length / 2;
+        while (i > 0) {
+            bubbleDown(i);
+            i--;
+        }
+        bubbleDown(0);
+    }
 
-        // As long as at least the left child of the current item
-        // is in range, we can keep percolating down.
-        while (size >= cur * 2) {
+    private void bubbleUp(int i) {
+        if (i == 0) {
+            // Stop bubbling up, since we've reached the root
+            return;
+        }
 
-            // Grab the compare scores of the left and the right child.
-            // Note that if the right child does not exist, we just
-            // say that the right child is greater than the parent.
-            left = arr[cur].score.compareTo(arr[cur * 2].score);
-            right = (size >= cur * 2 + 1)
-                    ? arr[cur].score.compareTo(arr[cur * 2 + 1].score)
-                    : -1;
+        if (min) {
+            // If current is smaller than parent
+            // Swap current and parent
+            // BubbleUp parent
+            if (arr[i].compareTo(arr[i / 2]) < 0) {
+                swap(i, i / 2);
+                bubbleUp(i / 2);
+            }
+        } else {
+            // If current is greater than parent
+            // Swapcurrent and parent
+            // BubbleUp parent
+            if (arr[i].compareTo(arr[i / 2]) > 0) {
+                swap(i, i / 2);
+                bubbleUp(i / 2);
+            }
+        }
+    }
 
-            // Both left and right are greater than or equal to the current item.
-            // This means we've put this item in the correct location.
-            if (left <= 0 && right <= 0) {
-                break;
+    private void bubbleDown(int i) {
+        if (i * 2 >= length) {
+            return;
+        }
+
+        if (arr[i * 2] != null) {
+            if (arr[i * 2 + 1] != null) {
+                // Depending on min, swap with one of the two children
+                if (min) {
+                    // Swap with child if child is lower
+                    int lowest = (arr[i * 2].compareTo(arr[i * 2 + 1]) < 0) ? i * 2 : i * 2 + 1;
+                    if (arr[i].compareTo(arr[lowest]) > 0) {
+                        swap(i, lowest);
+                        bubbleDown(lowest);
+                    }
+                } else {
+                    // Swap with child if child is greater
+                    int highest = (arr[i * 2].compareTo(arr[i * 2 + 1]) > 0) ? i * 2 : i * 2 + 1;
+                    if (arr[i].compareTo(arr[highest]) < 0) {
+                        swap(i, highest);
+                        bubbleDown(highest);
+                    }
+                }
             }
 
-            // In the event that one or two children are smaller than the
-            // parent, we need to pick whichever is smallest.
-            diff = (size >= cur * 2 + 1)
-                   ? arr[cur * 2].score.compareTo(arr[cur * 2 + 1].score)
-                   : -1;
-
-            // Swap cur with the lower child, or the left one if they are equal
-            lower = diff <= 0 ? cur * 2 : cur * 2 + 1;
-            temp = arr[cur];
-            arr[cur] = arr[lower];
-            arr[lower] = temp;
-            indices.put(arr[cur].data, cur);
-            indices.put(arr[lower].data, lower);
-
-            // Continue percolating down as the lower child
-            cur = lower;
+            // Depending on min, swap with only child
+            if (min) {
+                // Swap with child if child is lower
+                if (arr[i].compareTo(arr[i * 2]) > 0) {
+                    swap(i, i * 2);
+                    bubbleDown(i * 2);
+                }
+            } else {
+                // Swap with child if child is greater
+                if (arr[i].compareTo(arr[i * 2]) < 0) {
+                    swap(i, i * 2);
+                    bubbleDown(i * 2);
+                }
+            }
         }
+
+        // No children means we're done bubbling down
     }
 
-    private void grow() {
-        arr = Arrays.copyOf(arr, arr.length * 2);
+    private void swap(int a, int b) {
+        T temp = arr[a];
+        arr[a] = arr[b];
+        arr[b] = temp;
+
+        indices.put(arr[a], a);
+        indices.put(arr[b], b);
     }
 
     /**
-     * Get the amount of elements in the heap.
-     * @return The size of the heap
+     * Gets the index of a certain element within this Heap.
+     * @param element The element to find the index of
+     * @return The index, or -1 if it is not found
      */
-    public int getSize() {
-        return size;
-    }
-
-    private class Node<TData, TScore> {
-
-        private TData data;
-        private TScore score;
-
-        Node(final TData data, final TScore score) {
-            this.data = data;
-            this.score = score;
-        }
-
-        @Override
-        public String toString() {
-            return this.score.toString();
-        }
+    public int indexOf(T element) {
+        return indices.getOrDefault(element, -1);
     }
 }

@@ -8,89 +8,89 @@ public class HeapTest {
 
     @Test
     public void insert_whenEmpty_shouldInsert() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
-        heap.insert(1);
-        assertEquals(1, heap.getSize());
+        heap.add(1);
+        assertEquals(1, (int) heap.get(0));
     }
 
     @Test
     public void insert_whenNotEmpty_shouldInsertSorted() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
         for (int i = 0; i < 10; i++) {
-            heap.insert(i + 2);
+            heap.add(i + 2);
         }
-        heap.insert(1);
+        heap.add(1);
 
-        assertEquals(1, (int) heap.get(1));
+        assertEquals(1, (int) heap.get(heap.indexOf(1)));
     }
 
     @Test
     public void insert_whenInMiddle_shouldPercolateCorrectly() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
         // Begin with 4 layers
         for (int i = 0; i < Math.pow(2, 4) - 1; i++) {
-            heap.insert(i * 2);
+            heap.add(i * 2);
         }
 
         // Insert in layer 2, which should update
         // indices for other currently stored values.
-        heap.insert(3);
+        heap.add(3);
 
         // Assert the resulting tree is as expected.
-        assertEquals(2, (int) heap.get(2));
-        assertEquals(4, (int) heap.get(3));
-        assertEquals(3, (int) heap.get(4));
-        assertEquals(8, (int) heap.get(5));
-        assertEquals(10, (int) heap.get(6));
-        assertEquals(12, (int) heap.get(7));
-        assertEquals(6, (int) heap.get(8));
-        assertEquals(16, (int) heap.get(9));
-        assertEquals(18, (int) heap.get(10));
-        assertEquals(20, (int) heap.get(11));
-        assertEquals(22, (int) heap.get(12));
-        assertEquals(24, (int) heap.get(13));
-        assertEquals(26, (int) heap.get(14));
-        assertEquals(28, (int) heap.get(15));
-        assertEquals(14, (int) heap.get(16));
+        assertEquals(2, (int) heap.get(heap.indexOf(2)));
+        assertEquals(4, (int) heap.get(heap.indexOf(4)));
+        assertEquals(3, (int) heap.get(heap.indexOf(3)));
+        assertEquals(8, (int) heap.get(heap.indexOf(8)));
+        assertEquals(10, (int) heap.get(heap.indexOf(10)));
+        assertEquals(12, (int) heap.get(heap.indexOf(12)));
+        assertEquals(6, (int) heap.get(heap.indexOf(6)));
+        assertEquals(16, (int) heap.get(heap.indexOf(16)));
+        assertEquals(18, (int) heap.get(heap.indexOf(18)));
+        assertEquals(20, (int) heap.get(heap.indexOf(20)));
+        assertEquals(22, (int) heap.get(heap.indexOf(22)));
+        assertEquals(24, (int) heap.get(heap.indexOf(24)));
+        assertEquals(26, (int) heap.get(heap.indexOf(26)));
+        assertEquals(28, (int) heap.get(heap.indexOf(28)));
+        assertEquals(14, (int) heap.get(heap.indexOf(14)));
     }
 
     @Test
     public void insert_whenInMiddle1_shouldKeepHashmapCorrect() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
         // Begin with 4 layers
         for (int i = 0; i < Math.pow(2, 4) - 1; i++) {
-            heap.insert(i * 2);
+            heap.add(i * 2);
         }
 
         // Insert in layer 2, which should update
         // indices for other currently stored values.
-        heap.insert(3);
+        heap.add(3);
 
         // Assert that the indices in the internal hashmap are as expected.
-        assertEquals(1, heap.indexOf(0));
-        assertEquals(2, heap.indexOf(2));
-        assertEquals(3, heap.indexOf(4));
-        assertEquals(4, heap.indexOf(3));
-        assertEquals(5, heap.indexOf(8));
-        assertEquals(6, heap.indexOf(10));
-        assertEquals(7, heap.indexOf(12));
-        assertEquals(8, heap.indexOf(6));
-        assertEquals(9, heap.indexOf(16));
-        assertEquals(10, heap.indexOf(18));
-        assertEquals(11, heap.indexOf(20));
-        assertEquals(12, heap.indexOf(22));
-        assertEquals(13, heap.indexOf(24));
-        assertEquals(14, heap.indexOf(26));
-        assertEquals(15, heap.indexOf(28));
-        assertEquals(16, heap.indexOf(14));
+        assertEquals(0, (int) heap.get(heap.indexOf(0)));
+        assertEquals(2, (int) heap.get(heap.indexOf(2)));
+        assertEquals(3, (int) heap.get(heap.indexOf(3)));
+        assertEquals(4, (int) heap.get(heap.indexOf(4)));
+        assertEquals(6, (int) heap.get(heap.indexOf(6)));
+        assertEquals(8, (int) heap.get(heap.indexOf(8)));
+        assertEquals(10, (int) heap.get(heap.indexOf(10)));
+        assertEquals(12, (int) heap.get(heap.indexOf(12)));
+        assertEquals(14, (int) heap.get(heap.indexOf(14)));
+        assertEquals(16, (int) heap.get(heap.indexOf(16)));
+        assertEquals(18, (int) heap.get(heap.indexOf(18)));
+        assertEquals(20, (int) heap.get(heap.indexOf(20)));
+        assertEquals(22, (int) heap.get(heap.indexOf(22)));
+        assertEquals(24, (int) heap.get(heap.indexOf(24)));
+        assertEquals(26, (int) heap.get(heap.indexOf(26)));
+        assertEquals(28, (int) heap.get(heap.indexOf(28)));
     }
 
     @Test
     public void insert_whenInMiddle2_shouldKeepHashmapCorrect() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
         int[] data = new int[] {
                 18, 44, 37, 78, 82, 27, 0, 56, 71, 28, 10, 68, 2, 59, 13, 92, 83, 32, 72, 40, 3, 46, 99, 9, 61, 16, 8,
@@ -99,94 +99,90 @@ public class HeapTest {
         };
 
         for (int i : data) {
-            heap.insert(i);
+            heap.add(i);
         }
 
         // Assert that the indices in the internal hashmap are as expected beforehand.
 
         // Layer 3
-        assertEquals(8, heap.indexOf(32));
+        assertEquals(32, (int) heap.get(heap.indexOf(32)));
 
         // Layer 4
-        assertEquals(16, heap.indexOf(92));
-        assertEquals(17, heap.indexOf(49));
+        assertEquals(92, (int) heap.get(heap.indexOf(92)));
+        assertEquals(49, (int) heap.get(heap.indexOf(49)));
 
         // Layer 5
-        assertEquals(32, heap.indexOf(93));
-        assertEquals(33, heap.indexOf(98));
-        assertEquals(34, heap.indexOf(83));
-        assertEquals(35, heap.indexOf(78));
+        assertEquals(93, (int) heap.get(heap.indexOf(93)));
+        assertEquals(98, (int) heap.get(heap.indexOf(98)));
+        assertEquals(83, (int) heap.get(heap.indexOf(83)));
+        assertEquals(78, (int) heap.get(heap.indexOf(78)));
 
         // Layer 6 does not exist yet.
 
         // Insert somewhere in layer 3 which should update
         // indices for other currently stored values.
-        heap.insert(31);
+        heap.add(31);
 
         // Assert that the indices in the internal hashmap are as expected afterwards.
 
         // Layer 3
-        assertEquals(8, heap.indexOf(31));
-        assertEquals(31, (int) heap.get(8));
+        assertEquals(31, (int) heap.get(heap.indexOf(31)));
 
         // Layer 4
-        assertEquals(16, heap.indexOf(32));
-        assertEquals(32, (int) heap.get(16));
+        assertEquals(32, (int) heap.get(heap.indexOf(32)));
 
         // Layer 5
-        assertEquals(32, heap.indexOf(92));
-        assertEquals(92, (int) heap.get(32));
+        assertEquals(92, (int) heap.get(heap.indexOf(92)));
 
         // Layer 6
-        assertEquals(64, heap.indexOf(93));
-        assertEquals(93, (int) heap.get(64));
+        assertEquals(93, (int) heap.get(heap.indexOf(93)));
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void next_whenEmpty_shouldReturnNull() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
-        assertNull(heap.next());
+        heap.next();
     }
 
     @Test
     public void next_whenHasOneElement_shouldRemoveElement() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
-        heap.insert(1);
+        Heap<Integer> heap = new Heap<>();
+        heap.add(1);
 
         assertEquals(1, (int) heap.next());
     }
 
     @Test
     public void next_whenHasMultipleElements_shouldRemoveElementAndPercolate() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
         for (int i = 0; i < 10; i++) {
-            heap.insert(i);
+            heap.add(i);
         }
 
         heap.next();
 
-        assertEquals(1, (int) heap.get(1));
-        assertEquals(3, (int) heap.get(2));
-        assertEquals(2, (int) heap.get(3));
-        assertEquals(7, (int) heap.get(4));
-        assertEquals(4, (int) heap.get(5));
-        assertEquals(5, (int) heap.get(6));
-        assertEquals(6, (int) heap.get(7));
+        assertEquals(1, (int) heap.get(0));
+        assertEquals(2, (int) heap.get(1));
+        assertEquals(4, (int) heap.get(2));
+        assertEquals(3, (int) heap.get(3));
+        assertEquals(8, (int) heap.get(4));
+        assertEquals(5, (int) heap.get(5));
+        assertEquals(6, (int) heap.get(6));
+        assertEquals(7, (int) heap.get(7));
         assertEquals(9, (int) heap.get(8));
-        assertEquals(8, (int) heap.get(9));
-        assertEquals(9, heap.getSize());
+        assertEquals(null, heap.get(9));
     }
 
     @Test
     public void next_whenHasManyElements_shouldNotThrowException() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
         int j = 0;
-        for (int i = 0; i < 64; i++) {
-            while (heap.getSize() < i) {
-                heap.insert(j++);
+        for (int i = 1; i < 64; i++) {
+            while (heap.getLength() < i) {
+                heap.add(j++);
             }
             heap.next();
         }
@@ -194,69 +190,69 @@ public class HeapTest {
 
     @Test
     public void next_whenHasManyElements_shouldAlwaysReturnLowest() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
         for (int i = 0; i < 512; i++) {
-            heap.insert(512 - i);
+            heap.add(512 - i);
         }
 
         int last = 0;
         int cur;
-        while (heap.getSize() > 0) {
+        while (!heap.isEmpty()) {
             cur = heap.next();
             assertTrue(cur >= last);
             last = cur;
         }
-        assertEquals(0, heap.getSize());
+        assertTrue(heap.isEmpty());
     }
 
     @Test
     public void next_whenHasHashCollisions_shouldAlwaysReturnLowest() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
         for (int i = 0; i < 512; i++) {
-            heap.insert(i / 2);
+            heap.add(i / 2);
         }
 
         int last = 0;
         int cur;
-        while (heap.getSize() > 0) {
+        while (!heap.isEmpty()) {
             cur = heap.next();
             assertTrue(cur >= last);
             last = cur;
         }
-        assertEquals(0, heap.getSize());
+        assertTrue(heap.isEmpty());
     }
 
     @Test
     public void remove_whenNotContained_shouldDoNothing() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
         for (int i = 0; i < 10; i++) {
-            heap.insert(i);
+            heap.add(i);
         }
 
-        assertEquals(10, heap.getSize());
+        assertEquals(10, heap.getLength());
         assertFalse(heap.remove(11));
-        assertEquals(10, heap.getSize());
+        assertEquals(10, heap.getLength());
     }
 
     @Test
     public void remove_whenContained_shouldRemove() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
         for (int i = 0; i < 10; i++) {
-            heap.insert(i);
+            heap.add(i);
         }
 
-        assertEquals(10, heap.getSize());
+        assertEquals(10, heap.getLength());
         assertTrue(heap.remove(3));
-        assertEquals(9, heap.getSize());
+        assertEquals(9, heap.getLength());
     }
 
     @Test
     public void remove_whenFromMiddle_shouldKeepHashmapCorrect() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
         // Begin with 4 layers
         for (int i = 0; i < Math.pow(2, 4) - 1; i++) {
-            heap.insert(i * 2);
+            heap.add(i * 2);
         }
 
         // Remove from layer 2, which should update
@@ -264,36 +260,36 @@ public class HeapTest {
         heap.remove(2);
 
         // Assert that the indices in the internal hashmap are as expected.
-        assertEquals(1, heap.indexOf(0));
-        assertEquals(2, heap.indexOf(6));
-        assertEquals(3, heap.indexOf(4));
-        assertEquals(4, heap.indexOf(14));
-        assertEquals(5, heap.indexOf(8));
-        assertEquals(6, heap.indexOf(10));
-        assertEquals(7, heap.indexOf(12));
-        assertEquals(8, heap.indexOf(28));
-        assertEquals(9, heap.indexOf(16));
-        assertEquals(10, heap.indexOf(18));
-        assertEquals(11, heap.indexOf(20));
-        assertEquals(12, heap.indexOf(22));
-        assertEquals(13, heap.indexOf(24));
-        assertEquals(14, heap.indexOf(26));
+        assertEquals(0, (int) heap.get(heap.indexOf(0)));
+        assertEquals(4, (int) heap.get(heap.indexOf(4)));
+        assertEquals(6, (int) heap.get(heap.indexOf(6)));
+        assertEquals(8, (int) heap.get(heap.indexOf(8)));
+        assertEquals(10, (int) heap.get(heap.indexOf(10)));
+        assertEquals(12, (int) heap.get(heap.indexOf(12)));
+        assertEquals(14, (int) heap.get(heap.indexOf(14)));
+        assertEquals(16, (int) heap.get(heap.indexOf(16)));
+        assertEquals(18, (int) heap.get(heap.indexOf(18)));
+        assertEquals(20, (int) heap.get(heap.indexOf(20)));
+        assertEquals(22, (int) heap.get(heap.indexOf(22)));
+        assertEquals(24, (int) heap.get(heap.indexOf(24)));
+        assertEquals(26, (int) heap.get(heap.indexOf(26)));
+        assertEquals(28, (int) heap.get(heap.indexOf(28)));
     }
 
     @Test
     public void getSize_whenEmpty_shouldReturnZero() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
-        assertEquals(0, heap.getSize());
+        assertEquals(0, heap.getLength());
     }
 
     @Test
     public void getSize_whenNotEmpty_shouldReturnSize() {
-        Heap<Integer, Integer> heap = new Heap<>(a -> a);
+        Heap<Integer> heap = new Heap<>();
 
         for (int i = 0; i < 10; i++) {
-            heap.insert(i);
-            assertEquals(i + 1, heap.getSize());
+            heap.add(i);
+            assertEquals(i + 1, heap.getLength());
         }
     }
 }

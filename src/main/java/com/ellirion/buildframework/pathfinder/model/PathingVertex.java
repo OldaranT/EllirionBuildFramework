@@ -9,7 +9,7 @@ import com.ellirion.buildframework.model.graph.IVertex;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PathingVertex implements IVertex<Point> {
+public class PathingVertex implements IVertex<Point>, Comparable<PathingVertex> {
 
     private PathingGraph graph;
     private Point point;
@@ -162,5 +162,10 @@ public class PathingVertex implements IVertex<Point> {
     @Override
     public int hashCode() {
         return point.hashCode();
+    }
+
+    @Override
+    public int compareTo(PathingVertex v) {
+        return Double.compare(fScore, v.fScore);
     }
 }
