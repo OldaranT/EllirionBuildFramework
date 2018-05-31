@@ -142,6 +142,7 @@ public class TemplateHologram {
      */
     public void moveHologram(int amount, BlockFace blockFace) {
 
+        hologramBlocks.clear();
         switch (blockFace) {
             case UP:
                 this.location.setY((double) (location.getBlockY() + amount));
@@ -164,6 +165,7 @@ public class TemplateHologram {
             default:
                 break;
         }
+        fillHologramBlocks();
     }
 
     /**
@@ -181,5 +183,36 @@ public class TemplateHologram {
         }
 
         return FACES[Math.round(yaw / 90f) & 0x3].getOppositeFace();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TemplateHologram)) {
+            return false;
+        }
+        TemplateHologram other = (TemplateHologram) obj;
+
+        if (!location.equals(other.location)) {
+            return false;
+        }
+
+        if (!template.equals(other.template)) {
+            return false;
+        }
+
+        if (!box.equals(other.box)) {
+            return false;
+        }
+
+        if (!hologramBlocks.equals(other.hologramBlocks)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

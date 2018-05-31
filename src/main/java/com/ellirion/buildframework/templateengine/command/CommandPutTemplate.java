@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
+import com.ellirion.buildframework.templateengine.util.PlayerTemplateGuiSession;
 
 public class CommandPutTemplate implements CommandExecutor {
 
@@ -29,8 +30,7 @@ public class CommandPutTemplate implements CommandExecutor {
         }
 
         ts.getTemplate().putTemplateInWorld(th.getLocation());
-        th.remove(player);
-        TemplateManager.getSelectedHolograms().remove(player);
+        PlayerTemplateGuiSession.quitSession(th, player);
         return true;
     }
 }

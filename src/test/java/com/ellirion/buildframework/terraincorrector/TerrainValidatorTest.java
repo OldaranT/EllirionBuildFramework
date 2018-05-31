@@ -451,7 +451,7 @@ public class TerrainValidatorTest {
         }
     }
 
-    private static World createDefaultWorld() {
+    private World createDefaultWorld() {
         final World mockWorld = mock(World.class);
         when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_AIR);
         return mockWorld;

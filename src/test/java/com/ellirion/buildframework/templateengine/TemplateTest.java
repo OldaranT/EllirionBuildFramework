@@ -14,10 +14,10 @@ import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.stubbing.Answer;
 import org.mockito.verification.VerificationMode;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -28,7 +28,6 @@ import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
-import com.ellirion.buildframework.terraincorrector.TerrainValidatorTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,18 +35,41 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doAnswer;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(Enclosed.class)
 public class TemplateTest {
 
+    @Ignore
+    public static class UtilClass {
+
+        public static final Block mockAirBlock = createMockBlock(true, false, Material.AIR);
+
+        public static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
+            final Block mockBlock = mock(Block.class);
+            final BlockState state = mock(BlockState.class);
+
+            when(mockBlock.getType()).thenReturn(material);
+            when(mockBlock.getState()).thenReturn(state);
+
+            return mockBlock;
+        }
+
+        public static World createDefaultWorld() {
+            final World mockWorld = mock(CraftWorld.class);
+            final WorldServer mockHandle = mock(WorldServer.class);
+
+            when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockAirBlock);
+            when(((CraftWorld) mockWorld).getHandle()).thenReturn(mockHandle);
+
+            return mockWorld;
+        }
+    }
+
     @RunWith(PowerMockRunner.class)
     @PrepareForTest({BuildFramework.class})
     @PowerMockIgnore("javax.management.*")
     public static class MovementTest {
-
-        private final Block mockAirBlock = createMockBlock(true, false, Material.AIR);
 
         @Before
         public void setup() {
@@ -60,101 +82,6 @@ public class TemplateTest {
             when(BuildFramework.getInstance()).thenReturn(mockPlugin);
             when(mockPlugin.getTemplateFormatConfig()).thenReturn(mockConfig);
         }
-
-        private static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
-            final Block mockBlock = mock(Block.class);
-            final BlockState state = mock(BlockState.class);
-
-            when(mockBlock.getType()).thenReturn(material);
-            when(mockBlock.getState()).thenReturn(state);
-
-            return mockBlock;
-        }
-
-        private World createDefaultWorld() {
-            final World mockWorld = mock(CraftWorld.class);
-            final WorldServer mockHandle = mock(WorldServer.class);
-
-            when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockAirBlock);
-            when(((CraftWorld) mockWorld).getHandle()).thenReturn(mockHandle);
-
-            return mockWorld;
-        }
-
-        private void catchSetMethodOfLocation(Location mockLocation) {
-
-            doAnswer((Answer) invocation -> {
-                double x = invocation.getArgument(0);
-                Location l = (Location) invocation.getMock();
-                when(l.getX()).thenReturn(x);
-                when(l.getBlockX()).thenReturn((int) x);
-                return null;
-            }).when(mockLocation).setX(anyDouble());
-            doAnswer((Answer) invocation -> {
-                double y = invocation.getArgument(0);
-                Location l = (Location) invocation.getMock();
-                when(l.getY()).thenReturn(y);
-                when(l.getBlockY()).thenReturn((int) y);
-                return null;
-            }).when(mockLocation).setY(anyDouble());
-            doAnswer((Answer) invocation -> {
-                double z = invocation.getArgument(0);
-                Location l = (Location) invocation.getMock();
-                when(l.getZ()).thenReturn(z);
-                when(l.getBlockZ()).thenReturn((int) z);
-                return null;
-            }).when(mockLocation).setZ(anyDouble());
-        }
-
-        //        private Location createDefaultLocation() {
-        //            final Location mockLocation = TerrainValidatorTest.createDefaultLocation();
-        //            World w = TerrainValidatorTest.createDefaultWorld();
-        //            when(mockLocation.getWorld()).thenReturn(w);
-        //            when(mockLocation.getBlockX()).thenReturn(0);
-        //            when(mockLocation.getBlockY()).thenReturn(0);
-        //            when(mockLocation.getBlockZ()).thenReturn(0);
-        //            when(mockLocation.clone()).thenReturn(mockLocation);
-        //            catchSetMethodOfLocation(mockLocation);
-        //            return mockLocation;
-        //        }
-
-        //        private Location createMovedToFacingpLocation(BlockFace blockFace) {
-        //            final Location mockLocation = mock(Location.class);
-        //            World w = createDefaultWorld();
-        //            when(mockLocation.getWorld()).thenReturn(w);
-        //            int x = 0;
-        //            int y = 0;
-        //            int z = 0;
-        //
-        //            switch (blockFace) {
-        //                case UP:
-        //                    y++;
-        //                    break;
-        //                case DOWN:
-        //                    y--;
-        //                    break;
-        //                case EAST:
-        //                    x++;
-        //                    break;
-        //                case WEST:
-        //                    x--;
-        //                    break;
-        //                case NORTH:
-        //                    z--;
-        //                    break;
-        //                case SOUTH:
-        //                    z++;
-        //                    break;
-        //                default:
-        //                    break;
-        //            }
-        //            when(mockLocation.getBlockX()).thenReturn(x);
-        //            when(mockLocation.getBlockY()).thenReturn(y);
-        //            when(mockLocation.getBlockZ()).thenReturn(z);
-        //            when(mockLocation.clone()).thenReturn(mockLocation);
-        //            catchSetMethodOfLocation(mockLocation);
-        //            return mockLocation;
-        //        }
 
         private Template createTemplate() {
             Template template = new Template();
@@ -182,20 +109,53 @@ public class TemplateTest {
         }
 
         @Test
-        public void moveHologram_whenMovingHologramIsCalled_ShouldUpdateLocation() {
+        public void moveHologram_whenMoveHologramIsCalled_shouldUpdateLocation() {
+            World w = UtilClass.createDefaultWorld();
             //arrange
-            Location toCheckLocation = new Location(TerrainValidatorTest.createDefaultWorld(), 0, 0, 0);
-            Location resultLocation = new Location(TerrainValidatorTest.createDefaultWorld(), 1, 0, 0);
 
-            Template template = createTemplate();
+            for (BlockFace bf : BlockFace.values()) {
+                int x = 0;
+                int y = 0;
+                int z = 0;
 
-            TemplateHologram toCheckHologram = createTemplateHologram(template, toCheckLocation);
-            TemplateHologram resultHologram = createTemplateHologram(template, resultLocation);
-            //act
-            toCheckHologram.moveHologram(1, BlockFace.EAST);
+                if (bf == BlockFace.UP) {
+                    y++;
+                }
 
-            //assert
-            Assert.assertEquals(resultHologram, toCheckHologram);
+                if (bf == BlockFace.DOWN) {
+                    y--;
+                }
+
+                if (bf == BlockFace.EAST) {
+                    x++;
+                }
+
+                if (bf == BlockFace.WEST) {
+                    x--;
+                }
+
+                if (bf == BlockFace.NORTH) {
+                    z--;
+                }
+
+                if (bf == BlockFace.SOUTH) {
+                    z++;
+                }
+
+                Location toCheckLocation = new Location(w, 0, 0, 0);
+                Location resultLocation = new Location(w, x, y, z);
+
+                Template template = createTemplate();
+
+                TemplateHologram toCheckHologram = createTemplateHologram(template, toCheckLocation);
+                TemplateHologram resultHologram = createTemplateHologram(template, resultLocation);
+
+                //act
+                toCheckHologram.moveHologram(1, bf);
+
+                //assert
+                Assert.assertEquals(resultHologram, toCheckHologram);
+            }
         }
     }
 
@@ -492,7 +452,6 @@ public class TemplateTest {
     @PowerMockIgnore("javax.management.*")
     public static class TemplatePutTests {
 
-        private final Block mockAirBlock = createMockBlock(true, false, Material.AIR);
         private List<String> markers = new ArrayList<>();
 
         @Before
@@ -512,16 +471,6 @@ public class TemplateTest {
             when(mockConfig.getStringList("Markers")).thenReturn(markers);
         }
 
-        private static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
-            final Block mockBlock = mock(Block.class);
-            final BlockState state = mock(BlockState.class);
-
-            when(mockBlock.getType()).thenReturn(material);
-            when(mockBlock.getState()).thenReturn(state);
-
-            return mockBlock;
-        }
-
         @Test
         public void putTemplateInWorld_whenCorrect_shouldSetBlocksCorrectAmountOfTimes() {
             Template t = createTemplate();
@@ -532,7 +481,7 @@ public class TemplateTest {
             int invocationCount = blocks.length * blocks[0].length * blocks[0][0].length;
 
             VerificationMode mode = times(invocationCount);
-            verify(mockAirBlock, mode).setType(any(), eq(false));
+            verify(UtilClass.mockAirBlock, mode).setType(any(), eq(false));
         }
 
         private Template createTemplate() {
@@ -555,19 +504,9 @@ public class TemplateTest {
             return template;
         }
 
-        private World createDefaultWorld() {
-            final World mockWorld = mock(CraftWorld.class);
-            final WorldServer mockHandle = mock(WorldServer.class);
-
-            when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockAirBlock);
-            when(((CraftWorld) mockWorld).getHandle()).thenReturn(mockHandle);
-
-            return mockWorld;
-        }
-
         private Location createDefaultLocation() {
             final Location mockLocation = mock(Location.class);
-            World w = createDefaultWorld();
+            World w = UtilClass.createDefaultWorld();
             when(mockLocation.getWorld()).thenReturn(w);
             return mockLocation;
         }

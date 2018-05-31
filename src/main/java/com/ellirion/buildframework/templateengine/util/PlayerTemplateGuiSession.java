@@ -73,6 +73,15 @@ public class PlayerTemplateGuiSession {
     }
 
     /**
+     * Reset player inventory back before he started to use template loader.
+     * @param player current player.
+     */
+    public static void resetInventory(Player player) {
+        player.getInventory().setContents(PlayerTemplateGuiSession.getOLD_PLAYER_INVENTORY().getContents());
+        player.updateInventory();
+    }
+
+    /**
      * Create tools for template engine.
      * @param material that is being used as holder.
      * @param itemName display name of the tool.
