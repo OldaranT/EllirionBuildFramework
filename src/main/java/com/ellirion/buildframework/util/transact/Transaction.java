@@ -1,6 +1,8 @@
 package com.ellirion.buildframework.util.transact;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import com.ellirion.buildframework.util.async.Counter;
 import com.ellirion.buildframework.util.async.Promise;
 
@@ -9,14 +11,23 @@ import java.util.function.Supplier;
 public abstract class Transaction {
 
     private Counter latch;
-    @Getter private boolean applied;
+    @Getter @Setter(AccessLevel.PROTECTED) private boolean applied;
 
     /**
-     * Construct a new Transaction.
+     * Construct a new unapplied Transaction.
      */
     protected Transaction() {
-        this.latch = new Counter(0);
-        this.applied = false;
+        this(false);
+    }
+
+    /**
+     * Construct a new Transaction that may already have been applied,
+     * depending on the {@code applied} parameter.
+     * @param applied Whether this Transaction has been applied
+     */
+    protected Transaction(final boolean applied) {
+        this.latch = new Counter(applied ? 1 : 0);
+        this.applied = applied;
     }
 
     /**

@@ -27,10 +27,18 @@ public class Promise<TResult> {
     private final List<Promise> children;
 
     private final IPromiseBody<TResult> runner;
-    private final IPromiseFinisher<TResult> finisher;
+    @Getter private final IPromiseFinisher<TResult> finisher;
 
     private final Counter latch;
     private final boolean async;
+
+    /**
+     * Construct a Promise that will not be scheduled and must
+     * be manually resolved or rejected using {@link #getFinisher()}.
+     */
+    public Promise() {
+        this(null, false, false);
+    }
 
     /**
      * Construct a Promise with the given runner as function body.
@@ -290,7 +298,10 @@ public class Promise<TResult> {
         } catch (Exception ex) {
             throw new RuntimeException("Promise.await() was interrupted", ex);
         }
-        return state == RESOLVED;
+
+        synchronized (this) {
+            return state == RESOLVED;
+        }
     }
 
     /**
@@ -304,8 +315,9 @@ public class Promise<TResult> {
     }
 
     private synchronized void schedule(Runnable r) {
-        // Only schedule if we haven't been scheduled yet!
-        if (scheduled || state != PENDING) {
+        // Only schedule if we haven't been scheduled yet,
+        // and we actually have a body to run.
+        if (runner == null || scheduled || state != PENDING) {
             return;
         }
         scheduled = true;

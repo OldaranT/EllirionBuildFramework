@@ -28,7 +28,21 @@ public class SequenceTransaction extends Transaction {
      */
     public SequenceTransaction(final Transaction... transactions) {
         this.children = Arrays.asList(transactions);
-        this.finalized = false;
+
+        boolean isFirst = true;
+        boolean applied = false;
+        for (Transaction child : transactions) {
+            if (isFirst) {
+                applied = child.isApplied();
+                isFirst = false;
+            } else {
+                if (child.isApplied() != applied) {
+                    throw new IllegalArgumentException("Child transactions have varying applied states");
+                }
+            }
+        }
+        setApplied(applied);
+        this.finalized = applied;
     }
 
     /**

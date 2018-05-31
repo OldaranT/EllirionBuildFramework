@@ -18,6 +18,7 @@ import com.ellirion.buildframework.templateengine.util.TabCompletionMarkerNameLi
 import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import com.ellirion.buildframework.util.EventListener;
+import com.ellirion.buildframework.util.WorldHelper;
 import com.ellirion.buildframework.util.async.Promise;
 
 import java.io.File;
@@ -66,6 +67,8 @@ public class BuildFramework extends JavaPlugin {
 
         Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
         Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
+
+        Bukkit.getScheduler().runTaskTimer(this, WorldHelper::run, 0L, -1L);
     }
 
     /**

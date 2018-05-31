@@ -1,64 +1,59 @@
 package com.ellirion.buildframework.util;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BlockChange;
-import com.ellirion.buildframework.util.async.IPromiseFinisher;
 import com.ellirion.buildframework.util.async.Promise;
-import com.ellirion.buildframework.util.transact.BlockChangeTransaction;
+import com.ellirion.buildframework.util.transact.Transaction;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class WorldHelper {
 
-    private static final Object LOCK = new Object();
-    private static final int THROTTLE = BuildFramework.getInstance().getConfig().getInt(
-            "WorldHelper.MaximumAmountOfBlocks", 10000);
-    private static final BlockingQueue<PendingBlockChange> QUEUE = new LinkedBlockingQueue<>();
-    private static boolean STARTED = false;
+    private static final BlockingQueue<PendingBlockChange> PENDING
+            = new LinkedBlockingQueue<>();
 
-    public static Promise setBlockTo(final Block block, Material material, byte metaData, Player sender) {
-        BlockChangeTransaction trans = new BlockChangeTransaction(block, new BlockChange(material,
-                                                                                         metaData,
-                                                                                         block.getLocation()));
-        return TransactionManager.performTransaction(sender, trans);
+    /**
+     * Safely set a block in the world at the given coordinates to the given material and metadata.
+     * @param world The world to set the block in
+     * @param x The X coordinate of the block
+     * @param y The Y coordinate of the block
+     * @param z The Z coordinate of the block
+     * @param mat The Material of the block
+     * @param meta The metadata of the block
+     * @return A {@link BlockChangeTransaction} that has been applied
+     */
+    public static Transaction setBlock(World world, int x, int y, int z, Material mat, byte meta) {
+        return setBlock(new Location(world, x, y, z), mat, meta);
     }
 
     /**
-     * Get the block at the given coordinates and load the chunk using a synchronous promise if necessary.
-     * @param world the world
-     * @param x the x coordinate
-     * @param y the y coordinate
-     * @param z the z coordinate
-     * @return the block at the specified coordinates
+     * Safely set a block in the world at the given location to the given material and metadata.
+     * @param loc The Location of the block
+     * @param mat The Material of the block
+     * @param meta The metadata of the block
+     * @return A {@link BlockChangeTransaction} that has been applied
      */
-    public static Block getBlockAt(final World world, final int x, final int y, final int z) {
-        loadChunk(world, x, z);
-        return world.getBlockAt(x, y, z);
+    public static Transaction setBlock(Location loc, Material mat, byte meta) {
+        Transaction t = new BlockChangeTransaction(new BlockChange(loc, mat, meta));
+        t.apply();
+        return t;
     }
 
     /**
-     * Get the block at the given location and load the chunk using a synchronous promise if necessary.
-     * @param location the location of the block
-     * @return the block at the given location
+     * Safely get a block from the world at the given coordinates.
+     * @param world The World to get the block from
+     * @param x The X coordinate of the block
+     * @param y The Y coordinate of the block
+     * @param z The Z coordinate of the block
+     * @return The Block
      */
-    public static Block getBlockAt(Location location) {
-        return getBlockAt(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
-    }
-
-    private static void loadChunk(World world, int x, int z) {
+    public static Block getBlock(World world, int x, int y, int z) {
+        // Load chunk if necessary
         int chunkX = Math.floorDiv(x, 16);
         int chunkZ = Math.floorDiv(z, 16);
-
         if (!world.isChunkLoaded(chunkX, chunkZ)) {
             Promise p = new Promise<>(finisher -> {
                 world.loadChunk(chunkX, chunkZ);
@@ -67,99 +62,115 @@ public class WorldHelper {
 
             p.await();
         }
+
+        // Get the block
+        return world.getBlockAt(x, y, z);
     }
 
     /**
-     * Add blocks to the queue that is used to change the world.
-     * @param change the block change that needs to be executed
-     * @return the promise that the block will be changed
+     * Safely get a block from the world at the given location.
+     * @param loc The Location of the block
+     * @return The Block
      */
+    public static Block getBlock(Location loc) {
+        return getBlock(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+    }
 
-    public static Promise<Boolean> queueBlockChange(BlockChange change) {
+    private static Promise<BlockChange> scheduleSetBlock(BlockChange change) {
         PendingBlockChange pending = new PendingBlockChange(change);
-
-        return new Promise<>(finisher -> {
-            // Pass the finisher along so the Promise can be resolved once the change has been executed
-            pending.setFinisher(finisher);
-            QUEUE.add(pending);
-            startExecutingIfNotStarted();
-        });
+        PENDING.add(pending);
+        return pending.promise;
     }
 
     /**
-     * Add multiple blocks to the queue that is used to change the world
-     * @param changes the changes that will be executed
-     * @return a list of promises for each block that will be changed
+     * Run scheduled block changes.
      */
-    public static List<Promise<Boolean>> queueBlockChanges(List<BlockChange> changes) {
-        List<Promise<Boolean>> list = new ArrayList<>();
-        for (BlockChange change : changes) {
-            list.add(queueBlockChange(change));
-        }
-        return list;
-    }
-
-    private static void startExecutingIfNotStarted() {
-        synchronized (LOCK) {
-            if (!STARTED) {
-                executeChanges();
-                STARTED = true;
+    public static void run() {
+        for (int i = 0; i < 50; i++) {
+            PendingBlockChange pending = PENDING.poll();
+            if (pending == null) {
+                return;
             }
+
+            pending.apply();
         }
     }
 
-    private static void executeChanges() {
-        new Promise<>(finisher -> {
-            long startTime = System.currentTimeMillis();
-            long wantVisited;
-            long haveVisited = 0;
+    private static class BlockChange {
 
-            while (!QUEUE.isEmpty()) {
-                wantVisited = (long) THROTTLE * ((System.currentTimeMillis() - startTime) / 1000L);
-                sendUpdates(QUEUE.poll());
-                haveVisited++;
+        private Location location;
+        private Material material;
+        private byte data;
 
-                long deltaVisited = haveVisited - wantVisited;
+        BlockChange(final Location loc, final Material mat, final byte data) {
+            this.location = loc;
+            this.material = mat;
+            this.data = data;
+        }
 
-                // Keep our pace correct (throttle)
-                try {
-                    Thread.sleep((deltaVisited / THROTTLE) * 1000L);
-                } catch (InterruptedException ignore) {
-                }
-            }
-            finisher.resolve(null);
-        }, true).then(next -> {
-            synchronized (LOCK) {
-                //this does not work
-                STARTED = false;
-            }
-        }, true);
+        BlockChange apply() {
+            Block block = getBlock(location);
+            BlockChange change = new BlockChange(location, block.getType(), block.getData());
+            block.setType(material);
+            block.setData(data);
+            return change;
+        }
     }
 
-    private static void sendUpdates(PendingBlockChange pendingChange) {
-        new Promise<>(finisher -> {
+    private static class PendingBlockChange {
 
-            // Execute the change
-            BlockChange change = pendingChange.getChange();
-            Block block = change.getLocation().getWorld().getBlockAt(change.getLocation());
-            block.setType(change.getMaterial());
-            block.setData(change.getMetaData());
+        private BlockChange change;
+        private Promise<BlockChange> promise;
 
-            // Notify the promise that the change has been executed
-            pendingChange.getFinisher().resolve(true);
+        PendingBlockChange(final BlockChange change) {
+            this.change = change;
+            this.promise = new Promise<>();
+        }
 
-            finisher.resolve(null);
-        }, false);
+        BlockChange apply() {
+            BlockChange previous = change.apply();
+            promise.getFinisher().resolve(previous);
+            return previous;
+        }
+    }
+
+    private static class BlockChangeTransaction extends Transaction {
+
+        private Promise<BlockChange> promise;
+        private BlockChange before;
+        private BlockChange after;
+
+        BlockChangeTransaction(final BlockChange change) {
+            this.promise = null;
+            this.before = null;
+            this.after = change;
+        }
+
+        @Override
+        protected Promise<Boolean> applier() {
+            if (promise != null) {
+                promise.await();
+            }
+            promise = scheduleSetBlock(after);
+            promise.then(change -> {
+                before = change;
+            });
+
+            // Here we arrogantly proclaim that the block change will succeed without exception.
+            // We do however store the Promise to ensure that we don't revert before we've finished
+            // applying our block change.
+            return Promise.resolve(true);
+        }
+
+        @Override
+        protected Promise<Boolean> reverter() {
+            promise.await();
+            promise = scheduleSetBlock(before);
+
+            // Here we arrogantly proclaim that the block change will succeed without exception.
+            // We do however store the Promise to ensure that we don't apply before we've finished
+            // reverting our block change.
+            return Promise.resolve(true);
+        }
     }
 }
-
-class PendingBlockChange {
-
-    @Getter private BlockChange change;
-    @Getter @Setter private IPromiseFinisher<Boolean> finisher;
-
-    PendingBlockChange(final BlockChange change) {
-        this.change = change;
-    }
-}
-

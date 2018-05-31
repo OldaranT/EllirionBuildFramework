@@ -8,6 +8,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.util.async.Counter;
 import com.ellirion.buildframework.util.async.Promise;
+import com.ellirion.buildframework.util.transact.SimpleTransaction;
+import com.ellirion.buildframework.util.transact.Transaction;
 
 import java.util.function.Supplier;
 
