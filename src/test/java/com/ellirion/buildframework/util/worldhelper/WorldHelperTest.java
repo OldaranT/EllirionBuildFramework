@@ -10,13 +10,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BlockChange;
+import com.ellirion.buildframework.util.WorldHelper;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({BuildFramework.class})
@@ -32,7 +35,6 @@ public class WorldHelperTest {
         when(buildFramework.getConfig()).thenReturn(config);
         when(config.getInt(anyString(), anyInt())).thenReturn(1000);
     }
-
 
     @Test
     public void getBlockAt_whenCalledOnUnloadedChunk_shouldLoadChunkAndReturnBlock() {
@@ -101,5 +103,4 @@ public class WorldHelperTest {
         verify(block, times(1)).setType(material);
         verify(block, times(1)).setData(metaData);
     }
-
 }

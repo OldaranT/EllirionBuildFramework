@@ -1,23 +1,37 @@
-package com.ellirion.buildframework.util.worldhelper;
+package com.ellirion.buildframework.util;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BlockChange;
+import com.ellirion.buildframework.util.async.IPromiseFinisher;
 import com.ellirion.buildframework.util.async.Promise;
+import com.ellirion.buildframework.util.transact.BlockChangeTransaction;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class WorldHelper {
 
-    @SuppressWarnings("PMD.SuspiciousConstantFieldName")
-    private static boolean STARTED = false;
     private static final Object LOCK = new Object();
     private static final int THROTTLE = BuildFramework.getInstance().getConfig().getInt(
-            "WorldHelper.MaximumAmountOfBlocks", 1000);
+            "WorldHelper.MaximumAmountOfBlocks", 10000);
     private static final BlockingQueue<PendingBlockChange> QUEUE = new LinkedBlockingQueue<>();
+    private static boolean STARTED = false;
+
+    public static Promise setBlockTo(final Block block, Material material, byte metaData, Player sender) {
+        BlockChangeTransaction trans = new BlockChangeTransaction(block, new BlockChange(material,
+                                                                                         metaData,
+                                                                                         block.getLocation()));
+        return TransactionManager.performTransaction(sender, trans);
+    }
 
     /**
      * Get the block at the given coordinates and load the chunk using a synchronous promise if necessary.
@@ -72,6 +86,18 @@ public class WorldHelper {
         });
     }
 
+    /**
+     * Add multiple blocks to the queue that is used to change the world
+     * @param changes the changes that will be executed
+     * @return a list of promises for each block that will be changed
+     */
+    public static List<Promise<Boolean>> queueBlockChanges(List<BlockChange> changes) {
+        List<Promise<Boolean>> list = new ArrayList<>();
+        for (BlockChange change : changes) {
+            list.add(queueBlockChange(change));
+        }
+        return list;
+    }
 
     private static void startExecutingIfNotStarted() {
         synchronized (LOCK) {
@@ -89,7 +115,7 @@ public class WorldHelper {
             long haveVisited = 0;
 
             while (!QUEUE.isEmpty()) {
-                wantVisited = THROTTLE * (System.currentTimeMillis() - startTime) / 1000;
+                wantVisited = (long) THROTTLE * ((System.currentTimeMillis() - startTime) / 1000L);
                 sendUpdates(QUEUE.poll());
                 haveVisited++;
 
@@ -97,13 +123,14 @@ public class WorldHelper {
 
                 // Keep our pace correct (throttle)
                 try {
-                    Thread.sleep((deltaVisited / THROTTLE) * 1000);
+                    Thread.sleep((deltaVisited / THROTTLE) * 1000L);
                 } catch (InterruptedException ignore) {
                 }
             }
             finisher.resolve(null);
         }, true).then(next -> {
             synchronized (LOCK) {
+                //this does not work
                 STARTED = false;
             }
         }, true);
@@ -125,3 +152,14 @@ public class WorldHelper {
         }, false);
     }
 }
+
+class PendingBlockChange {
+
+    @Getter private BlockChange change;
+    @Getter @Setter private IPromiseFinisher<Boolean> finisher;
+
+    PendingBlockChange(final BlockChange change) {
+        this.change = change;
+    }
+}
+
