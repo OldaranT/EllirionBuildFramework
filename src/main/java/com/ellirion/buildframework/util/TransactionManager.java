@@ -41,7 +41,7 @@ public class TransactionManager {
     }
 
     /**
-     * Undo's the last {@link Transaction} of the given {@code player}.
+     * Undoes the last {@link Transaction} of the given {@code player}.
      * @param player The player whose transaction needs to be undone
      * @return The resulting promise
      */
@@ -60,7 +60,7 @@ public class TransactionManager {
     }
 
     /**
-     * Undo's the last undone {@link Transaction} of the given {@code player}.
+     * Redoes the last undone {@link Transaction} of the given {@code player}.
      * @param player The player whose transaction needs to be redone
      * @return The resulting promise
      */
