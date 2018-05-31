@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Wool;
@@ -188,6 +189,7 @@ public class TemplateLoadMenu implements Listener {
         ItemMeta im = i.getItemMeta();
         im.setDisplayName(name);
         im.setLore(lore);
+        im.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
         i.setItemMeta(im);
         return i;
     }

@@ -13,6 +13,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
+import com.ellirion.buildframework.templateengine.model.TemplateSession;
+import com.ellirion.buildframework.templateengine.util.PlayerTemplateGuiSession;
 
 public class TemplateMovementListener implements Listener {
 
@@ -26,13 +28,13 @@ public class TemplateMovementListener implements Listener {
             return;
         }
 
-        if (event.getItem().getType() != Material.DIAMOND_SWORD &&
-            event.getItem().getType() != Material.DIAMOND_SPADE &&
-            event.getItem().getType() != Material.DIAMOND_HOE) {
+        if (!event.getItem().getItemMeta().getLore().contains(Template.getTemplateTool())) {
             return;
         }
 
         Player player = event.getPlayer();
+
+        TemplateSession ts = TemplateManager.getTemplateSessions().get(player);
 
         TemplateHologram prevHologram = TemplateManager.getSelectedHolograms().get(player);
 
@@ -47,7 +49,14 @@ public class TemplateMovementListener implements Listener {
         prevHologram.remove(player);
 
         if (event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_AIR) {
-            if (event.getItem().getType() == Material.DIAMOND_SPADE) {
+            if (event.getItem().getType() == Material.WOOL && event.getItem().getDurability() == 13) {
+                ts.getTemplate().putTemplateInWorld(prevHologram.getLocation());
+                PlayerTemplateGuiSession.quitSession(prevHologram, player);
+                return;
+            } else if (event.getItem().getType() == Material.WOOL && event.getItem().getDurability() == 14) {
+                PlayerTemplateGuiSession.quitSession(prevHologram, player);
+                return;
+            } else if (event.getItem().getType() == Material.DIAMOND_SPADE) {
                 prevHologram.setLocation(new Location(player.getWorld(),
                                                       player.getTargetBlock(null, 35565).getX(),
                                                       player.getTargetBlock(null, 35565).getY(),

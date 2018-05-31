@@ -169,6 +169,7 @@ public class Template {
             };
 
     private static final String DATA = "data";
+    private static final String TEMPLATE_TOOL = "Template Tool";
     private static final List<String> POSSIBLE_MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
             "Markers");
     @Getter @Setter private String templateName;
@@ -221,6 +222,14 @@ public class Template {
                 }
             }
         }
+    }
+
+    /**
+     * Return key for tools as a string.
+     * @return key for tool.
+     */
+    public static String getTemplateTool() {
+        return TEMPLATE_TOOL;
     }
 
     /**

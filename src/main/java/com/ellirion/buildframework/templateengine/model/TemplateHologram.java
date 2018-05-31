@@ -16,6 +16,7 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.command.CommandHelper;
+import com.ellirion.buildframework.templateengine.util.PlayerTemplateGuiSession;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -70,6 +71,9 @@ public class TemplateHologram {
      * @param player the player for which to create the hologram
      */
     public void create(Player player) {
+        //Load hologram tools.
+        PlayerTemplateGuiSession.givePlayerTools(player);
+
         int[] coordinates = CommandHelper.getCoordinates(box, location);
         World w = getLocation().getWorld();
 
@@ -109,6 +113,10 @@ public class TemplateHologram {
      */
     // To remove the hologram, we simply need to update all blocks where the hologram is
     public void remove(Player player) {
+        //Give old inventory back to the player.
+        player.getInventory().setContents(PlayerTemplateGuiSession.getOLD_PLAYER_INVENTORY().getContents());
+        player.updateInventory();
+
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
         BoundingBox box = template.getBoundingBox();
         World w = location.getWorld();
