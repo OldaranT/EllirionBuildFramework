@@ -17,8 +17,8 @@ public class SequenceTransaction extends Transaction {
      * Construct a new SequenceTransaction.
      */
     public SequenceTransaction() {
-        children = new ArrayList<>();
-        finalized = false;
+        this.children = new ArrayList<>();
+        this.finalized = false;
     }
 
     /**
@@ -29,8 +29,7 @@ public class SequenceTransaction extends Transaction {
     public SequenceTransaction(final Transaction... transactions) {
         boolean isFirst = true;
         boolean applied = false;
-        for (int i = 0; i < transactions.length; i++) {
-            Transaction child = transactions[i];
+        for (Transaction child : transactions) {
             if (isFirst) {
                 applied = child.isApplied();
                 isFirst = false;
