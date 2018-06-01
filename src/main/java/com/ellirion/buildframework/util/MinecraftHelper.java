@@ -79,7 +79,7 @@ public class MinecraftHelper {
                 0, 1, 2, 3, 8, 5, 6, 7, 4, 0, 1, 2, 3, 8, 5, 6, 7, 4
         });
 
-        aMap.put(Material.CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
+        aMap.put(Material.CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
 
         aMap.put(Material.DETECTOR_RAIL, new int[] {
                 1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 6, 7, 9, 8, 12, 13, 11, 10
@@ -105,7 +105,7 @@ public class MinecraftHelper {
 
         aMap.put(Material.FENCE_GATE, new int[] {1, 2, 3, 0, 5, 6, 7, 4, 3, 0, 1, 2, 7, 4, 5, 6});
 
-        aMap.put(Material.FURNACE, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
+        aMap.put(Material.FURNACE, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
 
         aMap.put(Material.HAY_BLOCK, new int[] {
                 0, 1, 2, 3, 8, 5, 6, 7, 4, 0, 1, 2, 3, 8, 5, 6, 7, 4
@@ -122,7 +122,7 @@ public class MinecraftHelper {
                 1, 2, 3, 0, 3, 0, 1, 2
         });
 
-        aMap.put(Material.LADDER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
+        aMap.put(Material.LADDER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
 
         aMap.put(Material.LEVER, new int[] {
                 7, 3, 4, 3, 1, 6, 5, 0, 15, 11, 12, 10, 9, 14, 13, 8, 7, 4, 3, 1, 2, 6, 5, 0, 15, 12, 11, 9, 10, 14, 13,
@@ -188,16 +188,16 @@ public class MinecraftHelper {
                 12
         });
 
-        aMap.put(Material.TRAPPED_CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3});
+        aMap.put(Material.TRAPPED_CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
 
         aMap.put(Material.VINE, new int[] {
                 2, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15, 8, 8, 1, 9, 2, 10, 3, 11, 4, 12, 5, 13, 6, 14, 7,
                 15
         });
 
-        aMap.put(Material.WALL_BANNER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 2, 5, 3});
+        aMap.put(Material.WALL_BANNER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
 
-        aMap.put(Material.WALL_SIGN, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 2, 5, 3});
+        aMap.put(Material.WALL_SIGN, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
 
         aMap.put(Material.WOOD_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
 

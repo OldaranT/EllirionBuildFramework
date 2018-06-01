@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
@@ -163,13 +164,18 @@ public class PlayerTemplateGuiSession implements Listener {
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        event.setCancelled(true);
         if (event.getItem() == null || event.getHand() == EquipmentSlot.OFF_HAND) {
-            event.setCancelled(true);
             return;
         }
 
-        // First check if the tool used is a template control tool
-        if (!event.getItem().getItemMeta().getLore().contains(Template.getTemplateTool())) {
+        try {
+            // First check if the tool used is a template control tool
+            if (!event.getItem().getItemMeta().getLore().contains(Template.getTemplateTool())) {
+                return;
+            }
+        } catch (NullPointerException ex) {
+            BuildFramework.getInstance().getLogger().info("Item has does not have a lore tag.");
             return;
         }
 
@@ -197,6 +203,11 @@ public class PlayerTemplateGuiSession implements Listener {
                 // Depending on right/left click we want anticlockwise or clockwise rotation respectively
                 boolean clockwise = event.getAction().name().contains("LEFT_CLICK") ? false : true;
                 rotate(hologram.getTemplate(), clockwise);
+                if (clockwise) {
+                    player.sendMessage("Template has been rotated clockwise.");
+                    break;
+                }
+                player.sendMessage("Template has been rotated counter clockwise.");
                 break;
             case "Move Tool":
                 // If the right button was clicked, invert the BlockFace, otherwise not
@@ -212,19 +223,16 @@ public class PlayerTemplateGuiSession implements Listener {
                 Template t = hologram.getTemplate();
                 t.putTemplateInWorld(hologram.getLocation());
                 quitSession();
-                event.setCancelled(true);
                 return;
             case "Template Cancel":
                 // Quit the session
                 quitSession();
-                event.setCancelled(true);
                 return;
             default:
                 break;
         }
 
         hologram.create(player);
-        event.setCancelled(true);
     }
 
     /**

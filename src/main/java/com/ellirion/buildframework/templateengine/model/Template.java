@@ -127,7 +127,7 @@ public class Template {
             Material.ACACIA_DOOR,
             Material.BIRCH_DOOR,
             Material.DARK_OAK_DOOR,
-            Material.IRON_DOOR,
+            Material.IRON_DOOR_BLOCK,
             Material.JUNGLE_DOOR,
             Material.WOOD_DOOR,
             Material.WOODEN_DOOR,
@@ -548,9 +548,9 @@ public class Template {
 
     /**
      * Rotate the template 90 degrees in a direction.
-     * @param direction True = clockwise, false = counter clockwise
+     * @param clockwise True = clockwise, false = counter clockwise
      */
-    public void rotateTemplate(boolean direction) {
+    public void rotateTemplate(boolean clockwise) {
         int xDepth = templateBlocks.length;
         int yDepth = templateBlocks[0].length;
         int zDepth = templateBlocks[0][0].length;
@@ -562,7 +562,7 @@ public class Template {
             for (int x = 0; x < zDepth; x++) {
                 for (int z = 0; z < xDepth; z++) {
                     TemplateBlock block;
-                    if (direction) {
+                    if (clockwise) {
                         block = templateBlocks[z][y][zDepth - x - 1];
                     } else {
                         block = templateBlocks[xDepth - z - 1][y][x];
@@ -585,7 +585,7 @@ public class Template {
                         }
 
                         int newMetaData = MinecraftHelper.getMaterialRotationData(currentMaterial, currentMetaData,
-                                                                                  direction);
+                                                                                  clockwise);
                         block.getMetadata().setData((byte) newMetaData);
                     }
                     rotatedTemplateBlock[x][y][z] = block;
@@ -594,16 +594,25 @@ public class Template {
         }
 
         this.templateBlocks = rotatedTemplateBlock;
-        rotateMarkers();
+        rotateMarkers(clockwise);
     }
 
-    private void rotateMarkers() {
+    private void rotateMarkers(boolean clockwise) {
+
         int xDepth = templateBlocks.length;
+        int zDepth = templateBlocks[0][0].length;
 
         for (Map.Entry pair : getMarkers().entrySet()) {
             Point oldPoint = (Point) pair.getValue();
-            markers.put((String) pair.getKey(),
-                        new Point((xDepth - oldPoint.getBlockZ() - 1), oldPoint.getBlockY(), oldPoint.getBlockX()));
+            if (clockwise) {
+                Point clockwisePoint = new Point((xDepth - oldPoint.getBlockZ() - 1), oldPoint.getBlockY(),
+                                                 oldPoint.getBlockX());
+                markers.put((String) pair.getKey(), clockwisePoint);
+                continue;
+            }
+            Point counterClockwisePoint = new Point(oldPoint.getBlockZ(), oldPoint.getBlockY(),
+                                                    (zDepth - oldPoint.getBlockX() - 1));
+            markers.put((String) pair.getKey(), counterClockwisePoint);
         }
     }
 
