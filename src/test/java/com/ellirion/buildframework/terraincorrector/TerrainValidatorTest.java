@@ -37,14 +37,6 @@ public class TerrainValidatorTest {
     private TerrainValidator validator;
 
     public TerrainValidatorTest() {
-        initialSetup();
-    }
-
-    private static void setFloor(World world) {
-        when(world.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
-    }
-
-    private void initialSetup() {
         mockStatic(BuildFramework.class);
         mockStatic(TerrainManager.class);
         final BuildFramework mockPlugin = mock(BuildFramework.class);
@@ -410,6 +402,10 @@ public class TerrainValidatorTest {
 
         // Assert
         assertFalse(result);
+    }
+
+    private void setFloor(World world) {
+        when(world.getBlockAt(anyInt(), eq(0), anyInt())).thenReturn(MOCK_BLOCK_STONE);
     }
 
     private void replaceFloorWithSpecifiedBlock(final World world, final BoundingBox boundingBox, final int amount,

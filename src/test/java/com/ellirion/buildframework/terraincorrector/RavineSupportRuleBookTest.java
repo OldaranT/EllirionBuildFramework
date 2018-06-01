@@ -22,20 +22,6 @@ public class RavineSupportRuleBookTest {
     private static final FactMap facts = new FactMap();
     private RavineSupportsRuleBook ruleBook;
 
-    private void setKeysAndFacts(RavineSupportsRuleBook ruleBook, int hMinX, int xMin, int hMaxX, int xMax, int hMinZ,
-                                 int zMin, int hMaxZ, int zMax) {
-        ruleBook.setKeys(minHX, minX, maxHX, maxX, minHZ, minZ, maxHZ, maxZ);
-
-        facts.setValue(minHX, hMinX);
-        facts.setValue(minX, xMin);
-        facts.setValue(maxHX, hMaxX);
-        facts.setValue(maxX, xMax);
-        facts.setValue(minHZ, hMinZ);
-        facts.setValue(minZ, zMin);
-        facts.setValue(maxHZ, hMaxZ);
-        facts.setValue(maxZ, zMax);
-    }
-
     @Before
     public void setup() {
         ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
@@ -282,4 +268,19 @@ public class RavineSupportRuleBookTest {
         // Assert
         assertTrue(outcome == 9);
     }
+
+    private void setKeysAndFacts(RavineSupportsRuleBook ruleBook, int hMinX, int xMin, int hMaxX, int xMax, int hMinZ,
+                                 int zMin, int hMaxZ, int zMax) {
+        ruleBook.setKeys(minHX, minX, maxHX, maxX, minHZ, minZ, maxHZ, maxZ);
+
+        facts.setValue(minHX, hMinX);
+        facts.setValue(minX, xMin);
+        facts.setValue(maxHX, hMaxX);
+        facts.setValue(maxX, xMax);
+        facts.setValue(minHZ, hMinZ);
+        facts.setValue(minZ, zMin);
+        facts.setValue(maxHZ, hMaxZ);
+        facts.setValue(maxZ, zMax);
+    }
+
 }

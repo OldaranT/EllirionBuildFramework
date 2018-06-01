@@ -65,8 +65,6 @@ public class HoleUtil {
                                                      int offset, BoundingBox boundingBox, int depthOffset,
                                                      World world) {
 
-        //        final int offset = config.getInt(areaLimitOffsetConfigPath, 5);
-
         int minX = boundingBox.getX1();
         int maxX = boundingBox.getX2();
         int minZ = boundingBox.getZ1();
@@ -108,8 +106,6 @@ public class HoleUtil {
      * @return return the found block.
      */
     public static Block getRelativeBlock(int dir, Block block, World world) {
-        //        World world = block.getWorld();
-        //        BuildFramework.getInstance().getLogger().info("" + block);
         int x = block.getX();
         int y = block.getY();
         int z = block.getZ();

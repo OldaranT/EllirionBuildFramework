@@ -36,14 +36,19 @@ public class TerrainCorrectorTest {
 
     public TerrainCorrectorTest() {
         mockScheduler();
-        initialSetup();
+        mockStatic(BuildFramework.class);
+        when(BuildFramework.getInstance()).thenReturn(mockPlugin);
+
+        when(mockPlugin.getConfig()).thenReturn(mockConfig);
+
+        when(mockConfig.getInt("TerrainCorrector.MaxHoleDepth", 5)).thenReturn(5);
+        when(mockConfig.getInt("TerrainCorrector.AreaLimitOffset", 5)).thenReturn(1);
     }
 
     // TODO turn this into a global util.
     private void mockScheduler() {
         BukkitScheduler sched = mock(BukkitScheduler.class);
 
-        mockStatic(BuildFramework.class);
         mockStatic(Bukkit.class);
 
         //        when(BuildFramework.getInstance()).thenReturn(null);
@@ -58,16 +63,6 @@ public class TerrainCorrectorTest {
             r.run();
             return null;
         });
-    }
-
-    private void initialSetup() {
-
-        when(BuildFramework.getInstance()).thenReturn(mockPlugin);
-
-        when(mockPlugin.getConfig()).thenReturn(mockConfig);
-
-        when(mockConfig.getInt("TerrainCorrector.MaxHoleDepth", 5)).thenReturn(5);
-        when(mockConfig.getInt("TerrainCorrector.AreaLimitOffset", 5)).thenReturn(1);
     }
 
     @Before
