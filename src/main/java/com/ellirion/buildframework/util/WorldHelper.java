@@ -15,8 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class WorldHelper {
 
-    private static final BlockingQueue<PendingBlockChange> PENDING
-            = new LinkedBlockingQueue<>();
+    private static final BlockingQueue<PendingBlockChange> PENDING = new LinkedBlockingQueue<>();
 
     /**
      * Safely set a block in the world at the given coordinates to the given material and metadata.
@@ -139,9 +138,9 @@ public class WorldHelper {
             this(loc, mat, data, null);
         }
 
-        BlockChange(final Location loc, final Material mat, final byte data, NBTTagCompound nbt) {
-            location = loc;
-            material = mat;
+        BlockChange(final Location loc, final Material mat, final byte data, final NBTTagCompound nbt) {
+            this.location = loc;
+            this.material = mat;
             this.data = data;
             this.nbt = nbt;
         }
@@ -173,7 +172,7 @@ public class WorldHelper {
 
         PendingBlockChange(final BlockChange change) {
             this.change = change;
-            promise = new Promise<>();
+            this.promise = new Promise<>();
         }
 
         BlockChange apply() {
@@ -195,28 +194,15 @@ public class WorldHelper {
 
         @Override
         protected Promise<Boolean> applier() {
-            Promise<BlockChange> promise = scheduleSetBlock(after);
-            return promise.then(change -> {
+            return scheduleSetBlock(after).then(change -> {
                 before = change;
                 return true;
             });
-
-            // Here we arrogantly proclaim that the block change will succeed without exception.
-            // We do however store the Promise to ensure that we don't revert before we've finished
-            // applying our block change.
-            //return Promise.resolve(true);
         }
 
         @Override
         protected Promise<Boolean> reverter() {
-            //promise.await();
-            Promise<BlockChange> promise = scheduleSetBlock(before);
-            return promise.then(change -> true);
-
-            // Here we arrogantly proclaim that the block change will succeed without exception.
-            // We do however store the Promise to ensure that we don't apply before we've finished
-            // reverting our block change.
-            //return Promise.resolve(true);
+            return scheduleSetBlock(before).then(change -> true);
         }
     }
 }

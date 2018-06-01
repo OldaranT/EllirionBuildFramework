@@ -43,9 +43,8 @@ public class TransactionManager {
      * @return The resulting promise
      */
     public static Promise<Boolean> undoLastTransaction(Player player) {
-
         if (!DONE_TRANSACTIONS.containsKey(player)) {
-            Promise.reject(new RuntimeException("No transactions to be redone"));
+            return Promise.reject(new RuntimeException("No transactions to be redone"));
         }
 
         Transaction transaction = DONE_TRANSACTIONS.get(player).pollFirst();
@@ -67,7 +66,6 @@ public class TransactionManager {
      * @return The resulting promise
      */
     public static Promise<Boolean> redoLastTransaction(Player player) {
-
         if (!UNDONE_TRANSACTIONS.containsKey(player)) {
             return Promise.reject(new RuntimeException("No transactions to be redone"));
         }
