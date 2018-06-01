@@ -4,11 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
@@ -17,47 +16,22 @@ import com.ellirion.buildframework.model.BoundingBox;
 import static com.ellirion.buildframework.terraincorrector.TerrainTestUtil.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.*;
 
-@SuppressWarnings("Duplicates")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({BuildFramework.class, Bukkit.class})
 public class TerrainCorrectorTest {
 
     private static final Material stone = Material.STONE;
     private static final Material air = Material.AIR;
+    private static final Player player = mock(Player.class);
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
-    private World mockWorld;
-    private TerrainCorrector corrector;
     private final BuildFramework mockPlugin = mock(BuildFramework.class);
     private final FileConfiguration mockConfig = mock(FileConfiguration.class);
+    private World mockWorld;
+    private TerrainCorrector corrector;
 
     public TerrainCorrectorTest() {
-        mockScheduler();
         initialSetup();
-    }
-
-    // TODO turn this into a global util.
-    private void mockScheduler() {
-        BukkitScheduler sched = mock(BukkitScheduler.class);
-
-        mockStatic(BuildFramework.class);
-        mockStatic(Bukkit.class);
-
-        //        when(BuildFramework.getInstance()).thenReturn(null);
-        when(Bukkit.getScheduler()).thenReturn(sched);
-        when(sched.runTask(anyObject(), Mockito.any(Runnable.class))).thenAnswer((inv) -> {
-            Runnable r = (Runnable) inv.getArguments()[1];
-            r.run();
-            return null;
-        });
-        when(sched.runTaskAsynchronously(anyObject(), Mockito.any(Runnable.class))).thenAnswer((inv) -> {
-            Runnable r = (Runnable) inv.getArguments()[1];
-            r.run();
-            return null;
-        });
     }
 
     private void initialSetup() {
@@ -90,7 +64,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -114,7 +88,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -138,7 +112,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -162,7 +136,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -186,7 +160,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -212,7 +186,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -238,7 +212,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -264,7 +238,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -292,7 +266,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -321,7 +295,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int depth = 0; depth < 2; depth++) {
@@ -340,7 +314,7 @@ public class TerrainCorrectorTest {
         // Happens in the setup.
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int y = 1; y <= 2; y++) {
@@ -358,7 +332,7 @@ public class TerrainCorrectorTest {
         setBlockAtCoordinates(mockWorld, 2, 0, 2, air);
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         assertEquals(Material.BARRIER, mockWorld.getBlockAt(2, 0, 2).getType());
@@ -372,7 +346,7 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld);
+        corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
         for (int x = 2; x >= 0; x--) {

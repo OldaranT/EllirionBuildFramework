@@ -9,12 +9,17 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 import com.ellirion.buildframework.terraincorrector.rulebook.RavineSupportsRuleBook;
-import com.ellirion.buildframework.util.Promise;
+import com.ellirion.buildframework.util.TransactionManager;
+import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.async.Promise;
+import com.ellirion.buildframework.util.transact.SequenceTransaction;
+import com.ellirion.buildframework.util.transact.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,19 +54,24 @@ public class TerrainCorrector {
             .withDefaultResult(Integer.MAX_VALUE)
             .build();
     private static final FactMap ravineSupportsFacts = new FactMap();
+    private static List<Transaction> TRANSACTIONS;
 
     private BoundingBox boundingBox;
     private World world;
 
     /**
+     * Makes room for the object in the {@code boundingBox} by clearing out the terrain
+     * and makes the floor solid or builds supports.
      * @param boundingBox the BoundingBox that will be used for terrain smoothing.
-     * @param world The world in which
+     * @param world The world in which the changes need to happen
+     * @param player The player that wants to change the world
      */
 
-    public void correctTerrain(BoundingBox boundingBox, World world) {
+    public void correctTerrain(BoundingBox boundingBox, World world, Player player) {
         ravineSupportsRuleBook.setKeys(minHoleXFactKey, minXFactKey, maxHoleXFactKey, maxXFactKey, minHoleZFactKey,
                                        minZFactKey, maxHoleZFactKey, maxZFactKey);
         new Promise<>(finisher -> {
+            TRANSACTIONS = new ArrayList<>();
             this.boundingBox = boundingBox;
             this.world = world;
             List<Hole> holes = findHoles(world, boundingBox, offset, depthOffset);
@@ -72,7 +82,42 @@ public class TerrainCorrector {
 
             List<Block> toRemove = getBlocksInBoundingBox();
             setListToAir(toRemove);
+
+            TransactionManager.addDoneTransaction(player,
+                                                  new SequenceTransaction(TRANSACTIONS.toArray(new Transaction[0])));
         }, true);
+    }
+
+    private BlockData getFloorMaterial() {
+        Map<BlockData, Integer> materials = new HashMap<>();
+
+        for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
+            for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
+
+                Block b = WorldHelper.getBlock(world, x, boundingBox.getY1() - 1, z);
+                BlockData data = new BlockData(b.getType(), b.getData());
+
+                if (materials.containsKey(data)) {
+                    materials.replace(data, materials.get(data) + 1);
+                } else {
+                    materials.put(data, 1);
+                }
+            }
+        }
+
+        int max = 0;
+        BlockData data = null;
+        for (Map.Entry<BlockData, Integer> entry : materials.entrySet()) {
+            if (entry.getValue() > max && entry.getKey().material.isSolid()) {
+                max = entry.getValue();
+                data = entry.getKey();
+            }
+        }
+
+        if (data == null) {
+            return new BlockData(Material.DIRT, (byte) 0);
+        }
+        return data;
     }
 
     private void correctHole(Hole hole) {
@@ -94,13 +139,13 @@ public class TerrainCorrector {
     }
 
     private void fillHoleAtSidePartially(Hole hole) {
-        Material mat = getFloorMaterial();
+        BlockData data = getFloorMaterial();
 
         List<Block> blocks = hole.getTopBlocks();
 
         Map<Block, Integer> startingDepthMap = calculateStartingDepthMap(blocks);
 
-        placeBlocksAccordingToDepthMap(startingDepthMap, mat);
+        placeBlocksAccordingToDepthMap(startingDepthMap, data);
     }
 
     private Map<Block, Integer> calculateStartingDepthMap(List<Block> blocks) {
@@ -165,18 +210,18 @@ public class TerrainCorrector {
         }
     }
 
-    private void placeBlocksAccordingToDepthMap(Map<Block, Integer> map, Material mat) {
+    private void placeBlocksAccordingToDepthMap(Map<Block, Integer> map, BlockData data) {
         for (Map.Entry entry : map.entrySet()) {
 
-            fillDownwards((Block) entry.getKey(), mat, (int) entry.getValue());
+            fillDownwards((Block) entry.getKey(), data, (int) entry.getValue());
         }
     }
 
-    private void fillDownwards(Block block, Material mat, int startDepth) {
-        Block currentBlock = world.getBlockAt(block.getX(), block.getY() - startDepth, block.getZ());
+    private void fillDownwards(Block block, BlockData data, int startDepth) {
+        Block currentBlock = WorldHelper.getBlock(world, block.getX(), block.getY() - startDepth, block.getZ());
 
         while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
-            sendSyncBlockChanges(currentBlock, mat);
+            sendSyncBlockChanges(currentBlock, data);
             currentBlock = getRelativeBlock(5, currentBlock, world);
         }
     }
@@ -189,10 +234,10 @@ public class TerrainCorrector {
     }
 
     private void fillHoleAtSide(Hole hole) {
-        Material mat = getFloorMaterial();
+        BlockData data = getFloorMaterial();
 
         for (Block b : hole.getBlockList()) {
-            sendSyncBlockChanges(b, mat);
+            sendSyncBlockChanges(b, data);
         }
     }
 
@@ -200,34 +245,8 @@ public class TerrainCorrector {
         List<Block> topBlocks = hole.getTopBlocks();
 
         for (Block b : topBlocks) {
-            sendSyncBlockChanges(b, Material.BARRIER);
+            sendSyncBlockChanges(b, new BlockData(Material.BARRIER, (byte) 0));
         }
-    }
-
-    private Material getFloorMaterial() {
-        Map<Material, Integer> materials = new HashMap<>();
-
-        for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
-            for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
-                Material mat = world.getBlockAt(x, boundingBox.getY1() - 1, z).getType();
-                if (materials.containsKey(mat)) {
-                    materials.replace(mat, materials.get(mat) + 1);
-                } else {
-                    materials.put(mat, 1);
-                }
-            }
-        }
-
-        int max = 0;
-        Material material = null;
-        for (Map.Entry<Material, Integer> entry : materials.entrySet()) {
-            if (entry.getValue() > max && entry.getKey().isSolid()) {
-                max = entry.getValue();
-                material = entry.getKey();
-            }
-        }
-
-        return material;
     }
 
     private List<Block> getBlocksInBoundingBox() {
@@ -248,7 +267,7 @@ public class TerrainCorrector {
 
                 for (int z = bottomBlockZ; z <= topBlockZ; z++) {
 
-                    final Block b = world.getBlockAt(x, y, z);
+                    final Block b = WorldHelper.getBlock(world, x, y, z);
 
                     if (!b.isLiquid() && !b.isEmpty()) {
                         blocks.add(b);
@@ -262,7 +281,7 @@ public class TerrainCorrector {
 
     private void setListToAir(List<Block> blocks) {
         for (Block b : blocks) {
-            sendSyncBlockChanges(b, Material.AIR);
+            sendSyncBlockChanges(b, new BlockData(Material.AIR, (byte) 0));
         }
     }
 
@@ -329,21 +348,21 @@ public class TerrainCorrector {
             }
 
             for (Block b : toChange) {
-                sendSyncBlockChanges(b, Material.FENCE);
+                sendSyncBlockChanges(b, new BlockData(Material.FENCE, (byte) 0));
             }
         }
     }
 
     private List<Block> getBlocksBelow(Block b, int depth) {
         List<Block> result = new ArrayList<>();
-        Block current = world.getBlockAt(b.getX(), b.getY() - 1, b.getZ());
+        Block current = WorldHelper.getBlock(world, b.getX(), b.getY() - 1, b.getZ());
 
         for (int i = 0; i < depth; i++) {
             if (!current.isEmpty() && !current.isLiquid()) {
                 break;
             }
             result.add(current);
-            current = world.getBlockAt(current.getX(), current.getY() - 1, current.getZ());
+            current = WorldHelper.getBlock(world, current.getX(), current.getY() - 1, current.getZ());
         }
 
         return result;
@@ -404,7 +423,7 @@ public class TerrainCorrector {
 
     private List<Block> blocksToReplace(int x, int y, int z, int depth) {
         List<Block> toChange = new ArrayList<>();
-        Block b = world.getBlockAt(x, y, z);
+        Block b = WorldHelper.getBlock(world, x, y, z);
         if (blocksBelowBoundingBoxOrWithinOffset(b, 0) && (b.isLiquid() || b.isEmpty())) {
             if (!toChange.contains(b)) {
                 toChange.add(b);
@@ -443,7 +462,7 @@ public class TerrainCorrector {
                     // If it's a solid, this column is done
                     Location loc = new Point(x1 + x, baseY - offsetY,
                                              z1 + z).toLocation(world);
-                    Block block = world.getBlockAt(loc);
+                    Block block = WorldHelper.getBlock(loc);
                     if (block.getType().isSolid()) {
                         continue;
                     }
@@ -550,7 +569,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
-                            Block b = world.getBlockAt(x, y - i, z);
+                            Block b = WorldHelper.getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -564,7 +583,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
-                            Block b = world.getBlockAt(x, y - i, z);
+                            Block b = WorldHelper.getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -578,7 +597,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
-                            Block b = world.getBlockAt(x, y - i, z);
+                            Block b = WorldHelper.getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -592,7 +611,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
-                            Block b = world.getBlockAt(x, y - i, z);
+                            Block b = WorldHelper.getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -606,8 +625,8 @@ public class TerrainCorrector {
         }
     }
 
-    private void sendSyncBlockChanges(Block block, Material mat) {
-        new Promise<>(subFinisher -> block.setType(mat), false);
+    private void sendSyncBlockChanges(Block block, BlockData data) {
+        TRANSACTIONS.add(WorldHelper.setBlock(block.getLocation(), data.getMaterial(), data.getData()));
     }
 
     private List<Block> supportSelector(int method, int minHoleX, int maxHoleX,
@@ -652,20 +671,61 @@ public class TerrainCorrector {
                 return createSupportsLocationMap();
         }
     }
-}
 
-class ToDoEntry {
+    private static class ToDoEntry {
 
-    @Getter private Block block;
-    @Getter private int depth;
-    @Getter private int percentage;
-    @Getter private int maxDepthOffset;
+        @Getter private Block block;
+        @Getter private int depth;
+        @Getter private int percentage;
+        @Getter private int maxDepthOffset;
 
-    ToDoEntry(final Block block, final int depth, final int percentage, final int maxDepthOffset) {
-        this.block = block;
-        this.depth = depth;
-        this.percentage = percentage;
-        this.maxDepthOffset = maxDepthOffset;
+        ToDoEntry(final Block block, final int depth, final int percentage, final int maxDepthOffset) {
+            this.block = block;
+            this.depth = depth;
+            this.percentage = percentage;
+            this.maxDepthOffset = maxDepthOffset;
+        }
+    }
+
+    private static class BlockData {
+
+        @Getter private Material material;
+        @Getter private byte data;
+
+        BlockData(final Material material, final byte data) {
+            this.material = material;
+            this.data = data;
+        }
+
+        @Override
+        public int hashCode() {
+            return (material.getId() * 100) + data;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+
+            if (!(obj instanceof BlockData)) {
+                return false;
+            }
+
+            BlockData other = (BlockData) obj;
+
+            if (!material.equals(other.getMaterial())) {
+                return false;
+            }
+
+            if (data != other.getData()) {
+                return false;
+            }
+
+            return true;
+        }
     }
 }
+
+
 

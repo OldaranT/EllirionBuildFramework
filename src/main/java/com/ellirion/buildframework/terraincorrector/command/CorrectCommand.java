@@ -37,7 +37,7 @@ public class CorrectCommand implements CommandExecutor {
         BoundingBox bb = new BoundingBox(start, end);
 
         TerrainCorrector corrector = new TerrainCorrector();
-        corrector.correctTerrain(bb, player.getWorld());
+        corrector.correctTerrain(bb, player.getWorld(), player);
 
         return true;
     }
