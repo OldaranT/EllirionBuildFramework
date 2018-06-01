@@ -27,7 +27,6 @@ public class SequenceTransaction extends Transaction {
      * @param transactions The initial children
      */
     public SequenceTransaction(final Transaction... transactions) {
-
         boolean isFirst = true;
         boolean applied = false;
         for (int i = 0; i < transactions.length; i++) {
@@ -41,10 +40,10 @@ public class SequenceTransaction extends Transaction {
                 }
             }
         }
-        children = Arrays.asList(transactions);
 
-        setApplied(applied);
+        children = Arrays.asList(transactions);
         finalized = applied;
+        setApplied(applied);
     }
 
     /**

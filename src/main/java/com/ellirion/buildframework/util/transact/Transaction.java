@@ -97,8 +97,4 @@ public abstract class Transaction {
         // And we return the Promise to the callee.
         return p;
     }
-
-    public boolean isPending() {
-        return latch.get() > 0;
-    }
 }
