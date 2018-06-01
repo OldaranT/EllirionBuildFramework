@@ -1,9 +1,12 @@
 package com.ellirion.buildframework;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.command.PlayerRedoCommand;
+import com.ellirion.buildframework.command.PlayerUndoCommand;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
@@ -18,6 +21,8 @@ import com.ellirion.buildframework.templateengine.util.TabCompletionMarkerNameLi
 import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import com.ellirion.buildframework.util.EventListener;
+import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.async.Promise;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,29 +47,6 @@ public class BuildFramework extends JavaPlugin {
         INSTANCE = this;
     }
 
-    @Override
-    public void onEnable() {
-        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
-        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
-        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
-        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
-        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
-        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
-        getCommand("Validate").setExecutor(new ValidateCommand());
-        getCommand("AddMarker").setExecutor(new CommandAddMarker());
-        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
-        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
-        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
-        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
-        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
-        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
-        getServer().getPluginManager().registerEvents(new EventListener(), this);
-        createConfig();
-        createBlockValueConfig();
-        createTemplateFormatConfig();
-        getLogger().info("BuildFramework is enabled.");
-    }
-
     /**
      * @return BuildFramework instance
      */
@@ -83,6 +65,36 @@ public class BuildFramework extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("BuildFramework is disabled.");
+    }
+
+    @Override
+    public void onEnable() {
+        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
+        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
+        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
+        getCommand("Validate").setExecutor(new ValidateCommand());
+        getCommand("AddMarker").setExecutor(new CommandAddMarker());
+        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
+        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
+        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
+        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
+        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
+        getCommand("Undo").setExecutor(new PlayerUndoCommand());
+        getCommand("Redo").setExecutor(new PlayerRedoCommand());
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
+        createConfig();
+        createBlockValueConfig();
+        createTemplateFormatConfig();
+        getLogger().info("BuildFramework is enabled.");
+
+        Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
+        Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
+
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, WorldHelper::run, 1L, 1L);
     }
 
     private void createConfig() {
