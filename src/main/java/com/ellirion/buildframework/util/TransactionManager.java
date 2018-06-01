@@ -1,6 +1,5 @@
 package com.ellirion.buildframework.util;
 
-import lombok.Getter;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.Transaction;
@@ -12,8 +11,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class TransactionManager {
 
-    @Getter private static final Map<Player, BlockingDeque<Transaction>> DONE_TRANSACTIONS = new ConcurrentHashMap<>();
-    @Getter private static final Map<Player, BlockingDeque<Transaction>> UNDONE_TRANSACTIONS = new ConcurrentHashMap<>();
+    private static final Map<Player, BlockingDeque<Transaction>> DONE_TRANSACTIONS = new ConcurrentHashMap<>();
+    private static final Map<Player, BlockingDeque<Transaction>> UNDONE_TRANSACTIONS = new ConcurrentHashMap<>();
 
     /**
      * Add a transaction that has already been applied.
@@ -47,6 +46,10 @@ public class TransactionManager {
      */
     public static Promise<Boolean> undoLastTransaction(Player player) {
 
+        if (!DONE_TRANSACTIONS.containsKey(player)) {
+            Promise.reject(new RuntimeException("No transactions to be redone"));
+        }
+
         Transaction transaction = DONE_TRANSACTIONS.get(player).pollFirst();
         if (transaction == null) {
             return Promise.reject(new RuntimeException("No transactions to be undone"));
@@ -66,15 +69,15 @@ public class TransactionManager {
      */
     public static Promise<Boolean> redoLastTransaction(Player player) {
 
+        if (!UNDONE_TRANSACTIONS.containsKey(player)) {
+            Promise.reject(new RuntimeException("No transactions to be redone"));
+        }
+
         Transaction transaction = UNDONE_TRANSACTIONS.get(player).pollFirst();
         if (transaction == null) {
             return Promise.reject(new RuntimeException("No transactions to be redone"));
         }
-        Promise<Boolean> promise = transaction.apply();
-        promise.await();
-
-        addToUndone(player, transaction);
-        return promise;
+        return performTransaction(player, transaction);
     }
 
     private static void addToDone(Player player, Transaction transaction) {
