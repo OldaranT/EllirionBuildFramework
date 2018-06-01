@@ -24,7 +24,9 @@ public class Promise<TResult> {
 
     private final List<Consumer<TResult>> onResolve;
     private final List<Consumer<Exception>> onReject;
-    private final List<Promise> children;
+
+    private Counter parentLatch;
+    private final Counter childLatch;
 
     private final IPromiseBody<TResult> runner;
     @Getter private final IPromiseFinisher<TResult> finisher;
@@ -71,7 +73,9 @@ public class Promise<TResult> {
 
         this.onResolve = new ArrayList<>();
         this.onReject = new ArrayList<>();
-        this.children = new ArrayList<>();
+
+        this.parentLatch = new Counter(1);
+        this.childLatch = new Counter(0);
 
         this.runner = runner;
         this.finisher = new IPromiseFinisher<TResult>() {
@@ -115,9 +119,12 @@ public class Promise<TResult> {
                 finisher.reject(ex);
             }
         }, async, false);
-        synchronized (children) {
-            children.add(next);
-        }
+
+        // When the next Promise finishes execution of itself and all it's children,
+        // it will inform us by decrementing our childLatch. We can be certain all our
+        // children have executed by waiting for our childLatch to reach zero.
+        childLatch.increment();
+        next.parentLatch = childLatch;
 
         // If we have already been resolved, schedule the next Promise for execution.
         if (state == RESOLVED) {
@@ -131,6 +138,7 @@ public class Promise<TResult> {
         // exception. What we WILL do is straight away set the next Promise to a failed
         // state without running the handlers.
         if (state == REJECTED) {
+            childLatch.decrement();
             next.state = REJECTED;
             next.latch.decrement();
             next.exception = exception;
@@ -196,13 +204,17 @@ public class Promise<TResult> {
                 finisher.reject(ex);
             }
         }, async, false);
-        synchronized (children) {
-            children.add(next);
-        }
+
+        // When the next Promise finishes execution of itself and all it's children,
+        // it will inform us by decrementing our childLatch. We can be certain all our
+        // children have executed by waiting for our childLatch to reach zero.
+        childLatch.increment();
+        next.parentLatch = childLatch;
 
         // If we have already been resolved, just return the
         // next Promise. It will never be executed.
         if (state == RESOLVED) {
+            childLatch.decrement();
             return next;
         }
 
@@ -276,18 +288,14 @@ public class Promise<TResult> {
      * @return The PromiseState of this Promise after awaiting
      */
     public boolean await() {
-        // Wait for all our child Promises to finish
-        synchronized (children) {
-            for (int i = 0; i < children.size(); i++) {
-                children.get(i).await();
-            }
-        }
-
-        // Wait for the countdown to reach zero.
         try {
-            latch.await();
+            // Wait for this Promise to finish executing.
+            latch.await(0);
+
+            // Wait for our child Promises (if any) to finish executing.
+            childLatch.await(0);
         } catch (Exception ex) {
-            throw new RuntimeException("Promise.await() was interrupted", ex);
+            throw new RuntimeException("await() was interrupted", ex);
         }
 
         synchronized (this) {
@@ -355,6 +363,9 @@ public class Promise<TResult> {
             next.accept(t);
         }
 
+        // Inform our parent we've finished execution.
+        parentLatch.decrement();
+
         // Only notify waiting threads after all handlers have been ran.
         latch.decrement();
     }
@@ -378,6 +389,9 @@ public class Promise<TResult> {
         for (Consumer<Exception> next : onReject) {
             next.accept(ex);
         }
+
+        // Inform our parent we've finished execution.
+        parentLatch.decrement();
 
         // Only notify waiting threads after all handlers have been ran.
         latch.decrement();
@@ -526,6 +540,26 @@ public class Promise<TResult> {
 
     public static void setAsyncRunner(Consumer<Runnable> c) {
         ASYNC_RUNNER = c;
+    }
+
+    private static class PromiseHandler {
+
+        private Promise<?> promise;
+        private boolean onResolve;
+        private boolean onReject;
+
+        PromiseHandler(final Promise<?> promise, final boolean onResolve, final boolean onReject) {
+            this.promise = promise;
+            this.onResolve = onResolve;
+            this.onReject = onReject;
+        }
+
+        public boolean await(boolean resolved) {
+            if (resolved == onResolve || !resolved == onReject) {
+                return promise.await();
+            }
+            return true;
+        }
     }
 
     static {

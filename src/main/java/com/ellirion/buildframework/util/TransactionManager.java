@@ -30,12 +30,10 @@ public class TransactionManager {
      * @return The resulting {@link Promise}
      */
     public static Promise<Boolean> performTransaction(Player player, Transaction transaction) {
-
         Promise<Boolean> promise = transaction.apply();
-        promise.await();
-
-        addToDone(player, transaction);
-
+        promise.then(bool -> {
+            addToDone(player, transaction);
+        });
         return promise;
     }
 
@@ -56,9 +54,10 @@ public class TransactionManager {
         }
 
         Promise<Boolean> promise = transaction.revert();
-        promise.await();
+        promise.then(result -> {
+            addToUndone(player, transaction);
+        });
 
-        addToUndone(player, transaction);
         return promise;
     }
 
@@ -70,7 +69,7 @@ public class TransactionManager {
     public static Promise<Boolean> redoLastTransaction(Player player) {
 
         if (!UNDONE_TRANSACTIONS.containsKey(player)) {
-            Promise.reject(new RuntimeException("No transactions to be redone"));
+            return Promise.reject(new RuntimeException("No transactions to be redone"));
         }
 
         Transaction transaction = UNDONE_TRANSACTIONS.get(player).pollFirst();
@@ -88,9 +87,9 @@ public class TransactionManager {
     }
 
     private static void addToUndone(Player player, Transaction transaction) {
-        if (!DONE_TRANSACTIONS.containsKey(player)) {
-            DONE_TRANSACTIONS.put(player, new LinkedBlockingDeque<>());
+        if (!UNDONE_TRANSACTIONS.containsKey(player)) {
+            UNDONE_TRANSACTIONS.put(player, new LinkedBlockingDeque<>());
         }
-        DONE_TRANSACTIONS.get(player).addFirst(transaction);
+        UNDONE_TRANSACTIONS.get(player).addFirst(transaction);
     }
 }

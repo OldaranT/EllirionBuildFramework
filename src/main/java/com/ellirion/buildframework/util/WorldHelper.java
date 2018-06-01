@@ -86,7 +86,7 @@ public class WorldHelper {
      * Run scheduled block changes.
      */
     public static void run() {
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 125; i++) {
             PendingBlockChange pending = PENDING.poll();
             if (pending == null) {
                 return;
@@ -136,41 +136,38 @@ public class WorldHelper {
 
     private static class BlockChangeTransaction extends Transaction {
 
-        private Promise<BlockChange> promise;
         private BlockChange before;
         private BlockChange after;
 
         BlockChangeTransaction(final BlockChange change) {
-            this.promise = null;
             this.before = null;
             this.after = change;
         }
 
         @Override
         protected Promise<Boolean> applier() {
-            if (promise != null) {
-                promise.await();
-            }
-            promise = scheduleSetBlock(after);
-            promise.then(change -> {
+            Promise<BlockChange> promise = scheduleSetBlock(after);
+            return promise.then(change -> {
                 before = change;
+                return true;
             });
 
             // Here we arrogantly proclaim that the block change will succeed without exception.
             // We do however store the Promise to ensure that we don't revert before we've finished
             // applying our block change.
-            return Promise.resolve(true);
+            //return Promise.resolve(true);
         }
 
         @Override
         protected Promise<Boolean> reverter() {
-            promise.await();
-            promise = scheduleSetBlock(before);
+            //promise.await();
+            Promise<BlockChange> promise = scheduleSetBlock(before);
+            return promise.then(change -> true);
 
             // Here we arrogantly proclaim that the block change will succeed without exception.
             // We do however store the Promise to ensure that we don't apply before we've finished
             // reverting our block change.
-            return Promise.resolve(true);
+            //return Promise.resolve(true);
         }
     }
 }
