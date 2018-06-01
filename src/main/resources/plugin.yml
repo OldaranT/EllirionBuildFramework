@@ -44,3 +44,11 @@ commands:
     description: load a template
     usage: /LoadTemplate, /lt
     aliases: [lt]
+  Undo:
+    description: Undo the last action
+    usage: /Undo
+    aliases:
+  Redo:
+    description: Redo the last undone action
+    usage: /Redo
+    aliases:

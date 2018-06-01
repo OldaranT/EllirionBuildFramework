@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.command.PlayerRedoCommand;
+import com.ellirion.buildframework.command.PlayerUndoCommand;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
@@ -81,6 +83,8 @@ public class BuildFramework extends JavaPlugin {
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
         getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
+        getCommand("Undo").setExecutor(new PlayerUndoCommand());
+        getCommand("Redo").setExecutor(new PlayerRedoCommand());
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createBlockValueConfig();
