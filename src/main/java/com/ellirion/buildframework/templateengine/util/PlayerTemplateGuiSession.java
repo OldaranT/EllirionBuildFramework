@@ -139,8 +139,7 @@ public class PlayerTemplateGuiSession implements Listener {
         TemplateManager.removeAll(player);
 
         // Give old inventory back to the player.
-        player.getInventory().setContents(PlayerTemplateGuiSession.getOLD_PLAYER_INVENTORY().getContents());
-        player.updateInventory();
+        resetInventory();
 
         HandlerList.unregisterAll(this);
     }
@@ -165,7 +164,9 @@ public class PlayerTemplateGuiSession implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         event.setCancelled(true);
-        if (event.getItem() == null || event.getHand() == EquipmentSlot.OFF_HAND) {
+
+        if ((event.getItem() == null || event.getHand() == EquipmentSlot.OFF_HAND) &&
+            event.getPlayer().equals(player)) {
             return;
         }
 
@@ -241,7 +242,7 @@ public class PlayerTemplateGuiSession implements Listener {
      */
     @EventHandler
     public void onPlayerInteractWithBlock(PlayerInteractEvent event) {
-        if (event.getItem() == null) {
+        if (event.getItem() == null && event.getPlayer().equals(player)) {
             return;
         }
 
