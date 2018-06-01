@@ -570,6 +570,7 @@ public class Template {
                     if (Arrays.asList(TO_ROTATE).contains(block.getMaterial())) {
                         Material currentMaterial = block.getMaterial();
                         int currentMetaData = (int) block.getMetadata().getData();
+                        // Some materials have the same array, so to prevent copying and pasting of the same array 16 times, we get other arrays that are the same
                         if (currentMaterial.toString().contains("GLAZED_TERRACOTTA")) {
                             currentMaterial = Material.BLACK_GLAZED_TERRACOTTA;
                         }
