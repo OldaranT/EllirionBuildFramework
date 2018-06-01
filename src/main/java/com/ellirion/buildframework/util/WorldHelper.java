@@ -1,9 +1,12 @@
 package com.ellirion.buildframework.util;
 
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import net.minecraft.server.v1_12_R1.TileEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.Transaction;
 
@@ -40,6 +43,35 @@ public class WorldHelper {
         Transaction t = new BlockChangeTransaction(new BlockChange(loc, mat, meta));
         t.apply();
         return t;
+    }
+
+    /**
+     * Safely set a block in the world at the given location to the given material, metadata and nbtdata.
+     * @param loc The Location of the block
+     * @param mat The Material of the block
+     * @param data The metadata of the block
+     * @param nbt The nbtdata of the block
+     * @return A {@link BlockChangeTransaction} that has been applied
+     */
+    public static Transaction setBlock(Location loc, Material mat, byte data, NBTTagCompound nbt) {
+        Transaction t = new BlockChangeTransaction(new BlockChange(loc, mat, data, nbt));
+        t.apply();
+        return t;
+    }
+
+    /**
+     * Safely set a block in the world at the given coordinates to the given material, metadata and nbtdata.
+     * @param world The world to set the block in
+     * @param x The X coordinate of the block
+     * @param y The Y coordinate of the block
+     * @param z The Z coordinate of the block
+     * @param mat The Material of the block
+     * @param meta The metadata of the block
+     * @param nbt The nbtdata of the Block
+     * @return A {@link BlockChangeTransaction} that has been applied
+     */
+    public static Transaction setBlock(World world, int x, int y, int z, Material mat, byte meta, NBTTagCompound nbt) {
+        return setBlock(new Location(world, x, y, z), mat, meta, nbt);
     }
 
     /**
@@ -101,18 +133,35 @@ public class WorldHelper {
         private Location location;
         private Material material;
         private byte data;
+        private NBTTagCompound nbt;
 
         BlockChange(final Location loc, final Material mat, final byte data) {
-            this.location = loc;
-            this.material = mat;
+            this(loc, mat, data, null);
+        }
+
+        BlockChange(final Location loc, final Material mat, final byte data, NBTTagCompound nbt) {
+            location = loc;
+            material = mat;
             this.data = data;
+            this.nbt = nbt;
         }
 
         BlockChange apply() {
             Block block = getBlock(location);
-            BlockChange change = new BlockChange(location, block.getType(), block.getData());
+            BlockChange change;
             block.setType(material);
             block.setData(data);
+
+            TileEntity te = ((CraftWorld) location.getWorld()).getTileEntityAt(location.getBlockX(),
+                                                                               location.getBlockY(),
+                                                                               location.getBlockZ());
+            if (te != null) {
+                change = new BlockChange(location, block.getType(), block.getData(), te.save(new NBTTagCompound()));
+                te.load(nbt);
+            } else {
+                change = new BlockChange(location, block.getType(), block.getData());
+            }
+
             return change;
         }
     }
@@ -124,7 +173,7 @@ public class WorldHelper {
 
         PendingBlockChange(final BlockChange change) {
             this.change = change;
-            this.promise = new Promise<>();
+            promise = new Promise<>();
         }
 
         BlockChange apply() {
