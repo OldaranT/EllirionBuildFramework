@@ -30,9 +30,9 @@ public class TransactionManager {
      * @param transaction The transaction that needs to be performed
      * @return The resulting {@link Promise}
      */
-    public static Promise performTransaction(Player player, Transaction transaction) {
+    public static Promise<Boolean> performTransaction(Player player, Transaction transaction) {
 
-        Promise promise = transaction.apply();
+        Promise<Boolean> promise = transaction.apply();
         promise.await();
 
         addToDone(player, transaction);
@@ -45,14 +45,14 @@ public class TransactionManager {
      * @param player The player whose transaction needs to be undone
      * @return The resulting promise
      */
-    public static Promise undoLastTransaction(Player player) {
+    public static Promise<Boolean> undoLastTransaction(Player player) {
 
         Transaction transaction = DONE_TRANSACTIONS.get(player).pollFirst();
         if (transaction == null) {
             return Promise.reject(new RuntimeException("No transactions to be undone"));
         }
 
-        Promise promise = transaction.revert();
+        Promise<Boolean> promise = transaction.revert();
         promise.await();
 
         addToUndone(player, transaction);
@@ -64,13 +64,13 @@ public class TransactionManager {
      * @param player The player whose transaction needs to be redone
      * @return The resulting promise
      */
-    public static Promise redoLastTransaction(Player player) {
+    public static Promise<Boolean> redoLastTransaction(Player player) {
 
         Transaction transaction = UNDONE_TRANSACTIONS.get(player).pollFirst();
         if (transaction == null) {
             return Promise.reject(new RuntimeException("No transactions to be redone"));
         }
-        Promise promise = transaction.apply();
+        Promise<Boolean> promise = transaction.apply();
         promise.await();
 
         addToUndone(player, transaction);

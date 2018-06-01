@@ -6,7 +6,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.util.TransactionManager;
-import com.ellirion.buildframework.util.async.Promise;
 
 public class PlayerUndoCommand implements CommandExecutor {
 
@@ -19,11 +18,10 @@ public class PlayerUndoCommand implements CommandExecutor {
 
         Player player = (Player) commandSender;
 
-        Promise p = TransactionManager.undoLastTransaction(player);
+        TransactionManager.undoLastTransaction(player).except(ex -> {
+            player.sendMessage(ChatColor.DARK_RED + ex.toString());
+        });
 
-        if (!p.await()) {
-            player.sendMessage(ChatColor.DARK_RED + p.getException().toString());
-        }
         return true;
     }
 }
