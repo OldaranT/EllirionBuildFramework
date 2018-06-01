@@ -163,13 +163,15 @@ public class PlayerTemplateGuiSession implements Listener {
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getItem() == null || event.getHand() == EquipmentSlot.OFF_HAND) {
+        if ((event.getItem() == null || event.getHand() == EquipmentSlot.OFF_HAND) &&
+            event.getPlayer().equals(player)) {
             event.setCancelled(true);
             return;
         }
 
         // First check if the tool used is a template control tool
         if (!event.getItem().getItemMeta().getLore().contains(Template.getTemplateTool())) {
+            event.setCancelled(true);
             return;
         }
 
@@ -233,7 +235,7 @@ public class PlayerTemplateGuiSession implements Listener {
      */
     @EventHandler
     public void onPlayerInteractWithBlock(PlayerInteractEvent event) {
-        if (event.getItem() == null) {
+        if (event.getItem() == null && event.getPlayer().equals(player)) {
             return;
         }
 
