@@ -41,7 +41,7 @@ public class CommandCreateTemplateHologram implements CommandExecutor {
 
         hologram.create(player);
 
-        new PlayerTemplateGuiSession(BuildFramework.getInstance(), player);
+        new PlayerTemplateGuiSession(BuildFramework.getInstance(), player, hologram);
 
         player.sendMessage(ChatColor.GREEN + "Template hologram successfully created");
 

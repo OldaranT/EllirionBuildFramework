@@ -33,22 +33,26 @@ public class PlayerTemplateGuiSession implements Listener {
 
     @SuppressWarnings("PMD.SuspiciousConstantFieldName")
     @Getter @Setter private static Inventory OLD_PLAYER_INVENTORY;
+    private TemplateHologram hologram;
+    private Player player;
 
     /**
      * Constructor.
      * @param p plugin
      * @param player player
+     * @param hologram the TemplateHologram in this session
      */
-    public PlayerTemplateGuiSession(final Plugin p, final Player player) {
-        givePlayerTools(player);
+    public PlayerTemplateGuiSession(final Plugin p, final Player player, final TemplateHologram hologram) {
+        this.player = player;
+        this.hologram = hologram;
+        givePlayerTools();
         Bukkit.getServer().getPluginManager().registerEvents(this, p);
     }
 
     /**
      * Give a player the tools to control a hologram.
-     * @param player player that create's a hologram.
      */
-    public static void givePlayerTools(Player player) {
+    public void givePlayerTools() {
         OLD_PLAYER_INVENTORY = Bukkit.getServer().createInventory(null, InventoryType.PLAYER);
         OLD_PLAYER_INVENTORY.setContents(player.getInventory().getContents());
 
@@ -96,9 +100,8 @@ public class PlayerTemplateGuiSession implements Listener {
 
     /**
      * Reset player inventory back before he started to use template loader.
-     * @param player current player.
      */
-    public static void resetInventory(Player player) {
+    public void resetInventory() {
         player.getInventory().setContents(PlayerTemplateGuiSession.getOLD_PLAYER_INVENTORY().getContents());
         player.updateInventory();
     }
@@ -129,11 +132,9 @@ public class PlayerTemplateGuiSession implements Listener {
 
     /**
      * To quit the player hologram session.
-     * @param templateHologram current selected hologram.
-     * @param player current player.
      */
-    public void quitSession(TemplateHologram templateHologram, Player player) {
-        templateHologram.remove(player);
+    public void quitSession() {
+        hologram.remove(player);
         TemplateManager.removeAll(player);
 
         // Give old inventory back to the player.
@@ -149,6 +150,7 @@ public class PlayerTemplateGuiSession implements Listener {
 
     private void rotate(Template t, boolean clockwise) {
         t.rotateTemplate(clockwise);
+        hologram = new TemplateHologram(t, hologram.getLocation());
     }
 
     private void move(TemplateHologram hologram, BlockFace direction, int amount) {
@@ -173,14 +175,12 @@ public class PlayerTemplateGuiSession implements Listener {
 
         Player player = event.getPlayer();
 
-        TemplateHologram prevHologram = TemplateManager.getSelectedHolograms().get(player);
-
-        if (prevHologram == null) {
+        if (hologram == null) {
             player.sendMessage(ChatColor.RED + "Create a hologram first.");
             return;
         }
 
-        prevHologram.remove(player);
+        hologram.remove(player);
 
         // Depending on what tool was used, do a different transformation
         switch (event.getItem().getItemMeta().getDisplayName()) {
@@ -191,39 +191,39 @@ public class PlayerTemplateGuiSession implements Listener {
                 Location l = event.getAction().name().contains("LEFT_CLICK")
                              ? new Point(targetLoc).floor().toLocation(player.getWorld())
                              : new Point(playerLoc).floor().toLocation(player.getWorld());
-                setLocation(prevHologram, l);
+                setLocation(hologram, l);
                 break;
             case "Rotate Tool":
                 // Depending on right/left click we want anticlockwise or clockwise rotation respectively
                 boolean clockwise = event.getAction().name().contains("LEFT_CLICK") ? false : true;
-                rotate(prevHologram.getTemplate(), clockwise);
+                rotate(hologram.getTemplate(), clockwise);
                 break;
             case "Move Tool":
                 // If the right button was clicked, invert the BlockFace, otherwise not
-                BlockFace blockFace = prevHologram.rotationToFace(player.getLocation().getYaw(),
-                                                                  player.getLocation().getPitch());
+                BlockFace blockFace = hologram.rotationToFace(player.getLocation().getYaw(),
+                                                              player.getLocation().getPitch());
                 if (event.getAction().name().contains("RIGHT_CLICK")) {
                     blockFace = blockFace.getOppositeFace();
                 }
-                move(prevHologram, blockFace, 1);
+                move(hologram, blockFace, 1);
                 break;
             case "Template Confirm":
                 // Place the template
-                Template t = prevHologram.getTemplate();
-                t.putTemplateInWorld(prevHologram.getLocation());
-                quitSession(prevHologram, player);
+                Template t = hologram.getTemplate();
+                t.putTemplateInWorld(hologram.getLocation());
+                quitSession();
                 event.setCancelled(true);
                 return;
             case "Template Cancel":
                 // Quit the session
-                quitSession(prevHologram, player);
+                quitSession();
                 event.setCancelled(true);
                 return;
             default:
                 break;
         }
 
-        prevHologram.create(player);
+        hologram.create(player);
         event.setCancelled(true);
     }
 

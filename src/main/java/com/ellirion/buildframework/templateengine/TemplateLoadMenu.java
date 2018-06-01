@@ -245,7 +245,7 @@ public class TemplateLoadMenu implements Listener {
             TemplateHologram hologram = new TemplateHologram(t, hologramLocation);
             TemplateManager.getSelectedHolograms().put(player, hologram);
             hologram.create(player);
-            new PlayerTemplateGuiSession(BuildFramework.getInstance(), player);
+            new PlayerTemplateGuiSession(BuildFramework.getInstance(), player, hologram);
         } catch (Exception e) {
             BuildFramework.getInstance().getLogger().severe(e.getMessage());
             player.sendMessage(ChatColor.DARK_RED + "Something went wrong when trying to load this template");
