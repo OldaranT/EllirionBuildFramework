@@ -163,9 +163,9 @@ public class MinecraftHelper {
                 1, 0, 5, 4, 2, 3, 7, 8, 9, 6, 1, 0, 4, 5, 3, 2, 9, 6, 7, 8
         });
 
-        aMap.put(Material.REDSTONE_TORCH_OFF, new int[] {0, 3, 4, 2, 1, 5, 6, 4, 3, 1, 2, 11});
+        aMap.put(Material.REDSTONE_TORCH_OFF, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
 
-        aMap.put(Material.REDSTONE_TORCH_ON, new int[] {0, 3, 4, 2, 1, 5, 6, 4, 3, 1, 2, 11});
+        aMap.put(Material.REDSTONE_TORCH_ON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
 
         aMap.put(Material.SIGN_POST, new int[] {
                 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -181,7 +181,7 @@ public class MinecraftHelper {
 
         aMap.put(Material.STONE_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
 
-        aMap.put(Material.TORCH, new int[] {0, 3, 4, 2, 1, 5, 6, 4, 3, 1, 2, 11});
+        aMap.put(Material.TORCH, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
 
         aMap.put(Material.TRAP_DOOR, new int[] {
                 3, 2, 0, 1, 7, 6, 4, 5, 11, 10, 8, 9, 15, 14, 12, 13, 2, 3, 1, 0, 6, 7, 5, 4, 10, 11, 9, 8, 14, 15, 13,
