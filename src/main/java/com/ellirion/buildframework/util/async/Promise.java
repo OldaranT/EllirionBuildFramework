@@ -132,6 +132,7 @@ public class Promise<TResult> {
         // state without running the handlers.
         if (state == REJECTED) {
             next.state = REJECTED;
+            next.latch.decrement();
             next.exception = exception;
             return next;
         }

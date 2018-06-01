@@ -133,7 +133,7 @@ public class SequenceTransaction extends Transaction {
     protected Promise<Boolean> reverter() {
         return new Promise<>(finisher -> {
 
-            // From the front, start going through our child transactions.
+            // From the back, start going through our child transactions.
             revertFrom(finisher, children.size() - 1);
 
             // We succeeded in reverting all our actions.
