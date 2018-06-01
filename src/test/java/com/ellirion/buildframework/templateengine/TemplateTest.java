@@ -2,19 +2,14 @@ package com.ellirion.buildframework.templateengine;
 
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.NBTTagList;
-import net.minecraft.server.v1_12_R1.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.material.MaterialData;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -28,6 +23,7 @@ import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
+import com.ellirion.buildframework.util.MockAssist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,32 +35,6 @@ import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(Enclosed.class)
 public class TemplateTest {
-
-    @Ignore
-    public static class UtilClass {
-
-        public static final Block mockAirBlock = createMockBlock(true, false, Material.AIR);
-
-        public static Block createMockBlock(final boolean isEmpty, final boolean isLiquid, final Material material) {
-            final Block mockBlock = mock(Block.class);
-            final BlockState state = mock(BlockState.class);
-
-            when(mockBlock.getType()).thenReturn(material);
-            when(mockBlock.getState()).thenReturn(state);
-
-            return mockBlock;
-        }
-
-        public static World createDefaultWorld() {
-            final World mockWorld = mock(CraftWorld.class);
-            final WorldServer mockHandle = mock(WorldServer.class);
-
-            when(mockWorld.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(mockAirBlock);
-            when(((CraftWorld) mockWorld).getHandle()).thenReturn(mockHandle);
-
-            return mockWorld;
-        }
-    }
 
     @RunWith(PowerMockRunner.class)
     @PrepareForTest({BuildFramework.class})
@@ -110,7 +80,7 @@ public class TemplateTest {
 
         @Test
         public void moveHologram_whenMoveHologramIsCalled_shouldUpdateLocation() {
-            World w = UtilClass.createDefaultWorld();
+            World w = MockAssist.createDefaultWorld();
             //arrange
 
             for (BlockFace bf : BlockFace.values()) {
@@ -481,7 +451,7 @@ public class TemplateTest {
             int invocationCount = blocks.length * blocks[0].length * blocks[0][0].length;
 
             VerificationMode mode = times(invocationCount);
-            verify(UtilClass.mockAirBlock, mode).setType(any(), eq(false));
+            verify(MockAssist.MOCK_AIR_BLOCK, mode).setType(any(), eq(false));
         }
 
         private Template createTemplate() {
@@ -506,7 +476,7 @@ public class TemplateTest {
 
         private Location createDefaultLocation() {
             final Location mockLocation = mock(Location.class);
-            World w = UtilClass.createDefaultWorld();
+            World w = MockAssist.createDefaultWorld();
             when(mockLocation.getWorld()).thenReturn(w);
             return mockLocation;
         }
