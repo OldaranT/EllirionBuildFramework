@@ -158,7 +158,8 @@ public class TemplateLoadMenu implements Listener {
     }
 
     private void createBuildingsInventory(String level) {
-        List<String> buildings = FileUtil.getListOfNBTFileNames();
+        List<String> buildings = FileUtil.getListOfNBTFileNamesWithPrefix(
+                currentSelectedRace + "-" + currentSelectedBuildingType + "-" + level);
         items = new ItemStack[buildings.size()];
 
         // This will get a string along the lines of "RACE-TYPE-LEVEL"
