@@ -27,8 +27,6 @@ public class SequenceTransaction extends Transaction {
      * @param transactions The initial children
      */
     public SequenceTransaction(final Transaction... transactions) {
-        this.children = Arrays.asList(transactions);
-
         boolean isFirst = true;
         boolean applied = false;
         for (Transaction child : transactions) {
@@ -41,8 +39,10 @@ public class SequenceTransaction extends Transaction {
                 }
             }
         }
+
+        children = Arrays.asList(transactions);
+        finalized = applied;
         setApplied(applied);
-        this.finalized = applied;
     }
 
     /**

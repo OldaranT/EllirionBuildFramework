@@ -99,7 +99,7 @@ public class Promise<TResult> {
      * When this Promise is resolved, the {@code continuer} is invoked with the result.
      * @param continuer The function body that is invoked upon resolving
      * @param async Whether to run the {@code continuer} asynchronously or not
-     * @param <TNext> The return type the {@code continuer}
+     * @param <TNext> The return type of the {@code continuer}
      * @return The resulting Promise with type {@code TNext}.
      */
     public synchronized <TNext> Promise<TNext> then(
@@ -147,7 +147,7 @@ public class Promise<TResult> {
      * When this Promise is resolved, the {@code continuer} is invoked with the result.
      * The {@code continuer} is ran with the same synchronicity as this Promise.
      * @param continuer The function body that is invoked upon resolving
-     * @param <TNext> The return type the {@code continuer}
+     * @param <TNext> The return type of the {@code continuer}
      * @return The resulting Promise with type {@code TNext}.
      */
     public <TNext> Promise<TNext> then(IPromiseContinuer<TResult, TNext> continuer) {
@@ -182,7 +182,7 @@ public class Promise<TResult> {
      * When this Promise is rejected, the {@code continuer} is invoked with the exception.
      * @param continuer The function body that is invoked upon rejection
      * @param async Whether to run the {@code continuer} asynchronously or not
-     * @param <TNext> The return type the {@code continuer}
+     * @param <TNext> The return type of the {@code continuer}
      * @return The resulting Promise with type {@code TNext}.
      */
     public synchronized <TNext> Promise<TNext> except(
@@ -221,7 +221,7 @@ public class Promise<TResult> {
      * When this Promise is rejected, the {@code continuer} is invoked with the exception.
      * The {@code continuer} is ran with the same synchronicity as this Promise.
      * @param continuer The function body that is invoked upon rejection
-     * @param <TNext> The return type the {@code continuer}
+     * @param <TNext> The return type of the {@code continuer}
      * @return The resulting Promise with type {@code TNext}.
      */
     public <TNext> Promise<TNext> except(IPromiseContinuer<Exception, TNext> continuer) {
@@ -253,31 +253,21 @@ public class Promise<TResult> {
     }
 
     /**
-     * When this Promise is finished in any way, the {@code runnable} is invoked.
-     * The {@code runnable} is ran with with the given synchronicity.
+     * When this Promise is finished in any way, the {@code runnable} is IMMEDIATELY invoked.
+     * The {@code runnable} is therefore ran from the same synchronicity as this Promise.
      * @param runnable The function body that is invoked upon finishing
-     * @param async Whether to run the {@code runnable} asynchronously or not
      */
-    public synchronized void always(Runnable runnable, boolean async) {
+    public synchronized void always(Runnable runnable) {
         // If we have already finished, just run the consumer-
         // but be careful to run it with the correct synchronicity!
         if (state != PENDING) {
-            schedule(runnable, async);
+            runnable.run();
             return;
         }
 
         // Otherwise, we add it to the queues.
-        onResolve.add(result -> schedule(runnable, async));
-        onReject.add(ex -> schedule(runnable, async));
-    }
-
-    /**
-     * When this Promise is finished in any way, the {@code runnable} is invoked.
-     * The {@code runnable} is ran with the same synchronicity as this Promise.
-     * @param runnable The function body that is invoked upon finishing
-     */
-    public void always(Runnable runnable) {
-        always(runnable, async);
+        onResolve.add(result -> runnable.run());
+        onReject.add(ex -> runnable.run());
     }
 
     /**
@@ -510,6 +500,7 @@ public class Promise<TResult> {
     public static <TResult> Promise<TResult> resolve(TResult t) {
         Promise<TResult> p = new Promise<>(null, false, false);
         p.state = RESOLVED;
+        p.latch.decrement();
         p.result = t;
         return p;
     }
@@ -523,6 +514,7 @@ public class Promise<TResult> {
     public static <TResult> Promise<TResult> reject(Exception ex) {
         Promise<TResult> p = new Promise<>(null, false, false);
         p.state = REJECTED;
+        p.latch.decrement();
         p.exception = ex;
         return p;
     }

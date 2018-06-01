@@ -58,7 +58,7 @@ public class CounterTest {
     @Test
     public void await_whenAtCorrectCount_shouldReturnImmediately() {
         Counter c = new Counter(2);
-
+        
         c.await(2);
     }
 

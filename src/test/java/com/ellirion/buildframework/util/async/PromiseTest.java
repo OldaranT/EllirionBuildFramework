@@ -584,6 +584,33 @@ public class PromiseTest {
     }
 
     @Test
+    public void resolve_whenInvoked_shouldNotBlockUponWait() {
+        Promise<Boolean> p = Promise.resolve(true);
+        Counter c = new Counter(1);
+
+        Thread t = new Thread(() -> {
+            p.await();
+            c.decrement();
+        });
+        t.start();
+
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
+            fail();
+        }
+
+        t.interrupt();
+        try {
+            t.join();
+        } catch (Exception ex) {
+            fail();
+        }
+
+        assertEquals(0, c.get());
+    }
+
+    @Test
     public void reject_whenGivenException_shouldReturnPromiseRejectedToException() {
         Exception e = new Exception();
         Promise<Boolean> p = Promise.reject(e);
@@ -608,6 +635,33 @@ public class PromiseTest {
             return 0;
         });
         p.schedule();
+
+        assertEquals(0, c.get());
+    }
+
+    @Test
+    public void reject_whenInvoked_shouldNotBlockUponWait() {
+        Promise<Boolean> p = Promise.reject(new Exception());
+        Counter c = new Counter(1);
+
+        Thread t = new Thread(() -> {
+            p.await();
+            c.decrement();
+        });
+        t.start();
+
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
+            fail();
+        }
+
+        t.interrupt();
+        try {
+            t.join();
+        } catch (Exception ex) {
+            fail();
+        }
 
         assertEquals(0, c.get());
     }
