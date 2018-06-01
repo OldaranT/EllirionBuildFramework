@@ -105,20 +105,20 @@ public class TerrainCorrector {
 
     private Map<Block, Integer> calculateStartingDepthMap(List<Block> blocks) {
         int minimalFillingWidth = 2;
-        int maxDepth = 5;
-        int percentage = 10;
+        int maxDepth = CONFIG.getInt("TerrainCorrector.HoleFillerMaxDepth", 5);
+        int chancePercentage = CONFIG.getInt("TerrainCorrector.HoleFillerChanceToChangeDepth", 10);
 
         Map<Block, Integer> result = new HashMap<>();
         LinkedList<ToDoEntry> todo = new LinkedList<>();
 
         Block block = blocks.stream().filter(x -> blocksBelowBoundingBoxOrWithinOffset(x, 0)).findAny().get();
 
-        ToDoEntry entry = new ToDoEntry(block, 0, percentage, 0);
+        ToDoEntry entry = new ToDoEntry(block, 0, chancePercentage, 0);
 
         todo.add(entry);
 
         while ((entry = todo.poll()) != null) {
-            exploreDepthOfAdjacentBlocks(entry, result, todo, minimalFillingWidth, maxDepth, percentage);
+            exploreDepthOfAdjacentBlocks(entry, result, todo, minimalFillingWidth, maxDepth, chancePercentage);
         }
 
         return result;
