@@ -282,5 +282,4 @@ public class RavineSupportRuleBookTest {
         facts.setValue(maxHZ, hMaxZ);
         facts.setValue(maxZ, zMax);
     }
-
 }

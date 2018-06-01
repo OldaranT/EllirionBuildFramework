@@ -29,6 +29,7 @@
         <exclude name="VariableNamingConventions"/>
         <exclude name="ShortClassName"/>
         <exclude name="GenericsNaming"/>
+        <exclude name="SuspiciousConstantFieldName"/>
         <exclude name="AvoidFieldNameMatchingMethodName"/>
     </rule>
 

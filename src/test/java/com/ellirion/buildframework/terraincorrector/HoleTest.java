@@ -21,7 +21,7 @@ public class HoleTest {
     }
 
     @Test
-    public void containsLiquid_whenDoesNotContainALiquidBlock_shouldReturnFalse() {
+    public void containsLiquid_whenDoesNotContainAnLiquidBlock_shouldReturnFalse() {
         // Arrange
         Block mockBlock1 = mock(Block.class);
         Block mockBlock2 = mock(Block.class);

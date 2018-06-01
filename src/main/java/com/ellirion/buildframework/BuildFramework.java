@@ -1,9 +1,12 @@
 package com.ellirion.buildframework;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.command.PlayerRedoCommand;
+import com.ellirion.buildframework.command.PlayerUndoCommand;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
@@ -21,6 +24,8 @@ import com.ellirion.buildframework.terraincorrector.command.CorrectCommand;
 import com.ellirion.buildframework.terraincorrector.command.GetBoundingBoxesCommand;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import com.ellirion.buildframework.util.EventListener;
+import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.async.Promise;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +50,26 @@ public class BuildFramework extends JavaPlugin {
         INSTANCE = this;
     }
 
+    /**
+     * @return BuildFramework instance
+     */
+    public static BuildFramework getInstance() {
+        return INSTANCE;
+    }
+
+    public FileConfiguration getBlockValueConfig() {
+        return blockValueConfig;
+    }
+
+    public FileConfiguration getTemplateFormatConfig() {
+        return templateFormatConfig;
+    }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("BuildFramework is disabled.");
+    }
+
     @Override
     public void onEnable() {
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
@@ -64,31 +89,18 @@ public class BuildFramework extends JavaPlugin {
         getCommand("GetBoundingboxes").setExecutor(new GetBoundingBoxesCommand());
         getCommand("AddBoundingBox").setExecutor(new AddBoundingBoxCommand());
         getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
+        getCommand("Undo").setExecutor(new PlayerUndoCommand());
+        getCommand("Redo").setExecutor(new PlayerRedoCommand());
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createBlockValueConfig();
         createTemplateFormatConfig();
         getLogger().info("BuildFramework is enabled.");
-    }
 
-    /**
-     * @return BuildFramework instance
-     */
-    public static BuildFramework getInstance() {
-        return INSTANCE;
-    }
+        Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
+        Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
 
-    public FileConfiguration getBlockValueConfig() {
-        return blockValueConfig;
-    }
-
-    public FileConfiguration getTemplateFormatConfig() {
-        return templateFormatConfig;
-    }
-
-    @Override
-    public void onDisable() {
-        getLogger().info("BuildFramework is disabled.");
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, WorldHelper::run, 1L, 1L);
     }
 
     private void createConfig() {
