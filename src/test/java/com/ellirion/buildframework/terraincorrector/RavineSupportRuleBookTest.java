@@ -3,6 +3,7 @@ package com.ellirion.buildframework.terraincorrector;
 import com.deliveredtechnologies.rulebook.FactMap;
 import com.deliveredtechnologies.rulebook.Result;
 import com.deliveredtechnologies.rulebook.lang.RuleBookBuilder;
+import org.junit.Before;
 import org.junit.Test;
 import com.ellirion.buildframework.terraincorrector.rulebook.RavineSupportsRuleBook;
 
@@ -19,6 +20,7 @@ public class RavineSupportRuleBookTest {
     private static final String maxHZ = "maxHoleZ";
     private static final String maxZ = "maxZ";
     private static final FactMap facts = new FactMap();
+    private RavineSupportsRuleBook ruleBook;
 
     private void setKeysAndFacts(RavineSupportsRuleBook ruleBook, int hMinX, int xMin, int hMaxX, int xMax, int hMinZ,
                                  int zMin, int hMaxZ, int zMax) {
@@ -34,15 +36,18 @@ public class RavineSupportRuleBookTest {
         facts.setValue(maxZ, zMax);
     }
 
-    @Test
-    public void ruleBook_whenRavineOnXAxis_shouldReturnZero() {
-        // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
+    @Before
+    public void setup() {
+        ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
                 .create(RavineSupportsRuleBook.class)
                 .withResultType(Integer.class)
                 .withDefaultResult(Integer.MAX_VALUE)
                 .build();
+    }
 
+    @Test
+    public void ruleBook_whenRavineOnXAxis_shouldReturnZero() {
+        // Arrange
         setKeysAndFacts(ruleBook, 0, 0, 3, 3, 1, 0, 2, 3);
 
         // Act
@@ -60,12 +65,6 @@ public class RavineSupportRuleBookTest {
     @Test
     public void ruleBook_whenRavineOnZAxis_shouldReturnOne() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 1, 0, 2, 3, 0, 0, 3, 3);
 
         // Act
@@ -81,14 +80,8 @@ public class RavineSupportRuleBookTest {
     }
 
     @Test
-    public void ruleBook_whenHoleFacingNorth_shouldReturnTwo() {
+    public void ruleBook_whenHoleFacingNorthAndBothSidesEmpty_shouldReturnTwo() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 0, 0, 3, 3, 0, 0, 2, 3);
 
         // Act
@@ -101,13 +94,16 @@ public class RavineSupportRuleBookTest {
 
         // Assert
         assertTrue(outcome == 2);
+    }
 
+    @Test
+    public void ruleBook_whenHoleFacingNorthAndSidesAreSolid_shouldReturnTwo() {
         // Arrange
         setKeysAndFacts(ruleBook, 1, 0, 2, 3, 0, 0, 2, 3);
 
         // Act
         ruleBook.run(facts);
-        outcome = Integer.MAX_VALUE;
+        int outcome = Integer.MAX_VALUE;
         if (ruleBook.getResult().isPresent()) {
             Result result = ruleBook.getResult().get();
             outcome = (int) result.getValue();
@@ -118,14 +114,8 @@ public class RavineSupportRuleBookTest {
     }
 
     @Test
-    public void ruleBook_whenHoleOnEastSide_shouldReturnThree() {
+    public void ruleBook_whenHoleOnEastSideAndBothSidesAreEmpty_shouldReturnThree() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 1, 0, 3, 3, 0, 0, 3, 3);
 
         // Act
@@ -138,13 +128,16 @@ public class RavineSupportRuleBookTest {
 
         // Assert
         assertTrue(outcome == 3);
+    }
 
+    @Test
+    public void ruleBook_whenHoleOnEastSideAndBothSideAreSolid_shouldReturnThree() {
         // Arrange
         setKeysAndFacts(ruleBook, 1, 0, 3, 3, 1, 0, 2, 3);
 
         // Act
         ruleBook.run(facts);
-        outcome = Integer.MAX_VALUE;
+        int outcome = Integer.MAX_VALUE;
         if (ruleBook.getResult().isPresent()) {
             Result result = ruleBook.getResult().get();
             outcome = (int) result.getValue();
@@ -155,14 +148,8 @@ public class RavineSupportRuleBookTest {
     }
 
     @Test
-    public void ruleBook_whenHoleOnSouthSide_shouldReturnFour() {
+    public void ruleBook_whenHoleOnSouthSideAndBothSidesEmpty_shouldReturnFour() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 0, 0, 3, 3, 1, 0, 3, 3);
 
         // Act
@@ -175,13 +162,16 @@ public class RavineSupportRuleBookTest {
 
         // Assert
         assertTrue(outcome == 4);
+    }
 
+    @Test
+    public void ruleBook_whenHoleOnSouthSideAndBothSidesAreSolid_shouldReturnFour() {
         // Arrange
         setKeysAndFacts(ruleBook, 1, 0, 2, 3, 1, 0, 3, 3);
 
         // Act
         ruleBook.run(facts);
-        outcome = Integer.MAX_VALUE;
+        int outcome = Integer.MAX_VALUE;
         if (ruleBook.getResult().isPresent()) {
             Result result = ruleBook.getResult().get();
             outcome = (int) result.getValue();
@@ -192,14 +182,8 @@ public class RavineSupportRuleBookTest {
     }
 
     @Test
-    public void ruleBook_whenHoleOnWestSide_shouldReturnFive() {
+    public void ruleBook_whenHoleOnWestSideAndBothSidesAreEmpty_shouldReturnFive() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 0, 0, 2, 3, 0, 0, 3, 3);
 
         // Act
@@ -212,13 +196,16 @@ public class RavineSupportRuleBookTest {
 
         // Assert
         assertTrue(outcome == 5);
+    }
 
+    @Test
+    public void ruleBook_whenHoleOnWestSideAndBothSidesAreSolid_shouldReturnFive() {
         // Arrange
         setKeysAndFacts(ruleBook, 0, 0, 2, 3, 1, 0, 2, 3);
 
         // Act
         ruleBook.run(facts);
-        outcome = Integer.MAX_VALUE;
+        int outcome = Integer.MAX_VALUE;
         if (ruleBook.getResult().isPresent()) {
             Result result = ruleBook.getResult().get();
             outcome = (int) result.getValue();
@@ -231,12 +218,6 @@ public class RavineSupportRuleBookTest {
     @Test
     public void ruleBook_whenHoleOnNorthEastCorner_shouldReturnSix() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 1, 0, 3, 3, 0, 0, 2, 3);
 
         // Act
@@ -254,12 +235,6 @@ public class RavineSupportRuleBookTest {
     @Test
     public void ruleBook_whenHoleOnSouthEastCorner_shouldReturnSeven() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 1, 0, 3, 3, 1, 0, 3, 3);
 
         // Act
@@ -277,12 +252,6 @@ public class RavineSupportRuleBookTest {
     @Test
     public void ruleBook_whenHoleOnSouthWestCorner_shouldReturnEight() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 0, 0, 2, 3, 1, 0, 3, 3);
 
         // Act
@@ -300,12 +269,6 @@ public class RavineSupportRuleBookTest {
     @Test
     public void ruleBook_whenHoleOnNorthWestCorner_shouldReturnNine() {
         // Arrange
-        RavineSupportsRuleBook ruleBook = (RavineSupportsRuleBook) RuleBookBuilder
-                .create(RavineSupportsRuleBook.class)
-                .withResultType(Integer.class)
-                .withDefaultResult(Integer.MAX_VALUE)
-                .build();
-
         setKeysAndFacts(ruleBook, 0, 0, 2, 3, 0, 0, 2, 3);
 
         // Act

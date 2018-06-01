@@ -1,6 +1,7 @@
 package com.ellirion.buildframework.terraincorrector;
 
 import org.bukkit.block.Block;
+import org.junit.Before;
 import org.junit.Test;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 
@@ -12,25 +13,32 @@ import static org.powermock.api.mockito.PowerMockito.*;
 
 public class HoleTest {
 
+    private Hole h;
+
+    @Before
+    public void setup() {
+        h = new Hole();
+    }
+
     @Test
     public void containsLiquid_whenDoesNotContainALiquidBlock_shouldReturnFalse() {
-        Hole h = new Hole();
-
+        // Arrange
         Block mockBlock1 = mock(Block.class);
         Block mockBlock2 = mock(Block.class);
 
         h.getBlockList().add(mockBlock1);
         h.getBlockList().add(mockBlock2);
 
+        // Act
         boolean result = h.containsLiquid();
 
+        //Assert
         assertFalse(result);
     }
 
     @Test
     public void containsLiquid_whenListContainsAnLiquidBlock_shouldReturnTrue() {
-        Hole h = new Hole();
-
+        // Arrange
         Block mockBlock1 = mock(Block.class);
         Block mockBlock2 = mock(Block.class);
 
@@ -39,21 +47,25 @@ public class HoleTest {
         h.getBlockList().add(mockBlock1);
         h.getBlockList().add(mockBlock2);
 
+        // Act
         boolean result = h.containsLiquid();
 
+        // Assert
         assertTrue(result);
     }
 
     @Test
     public void add_whenGivenBlockNotInList_shouldAddBlockAndReturnTrue() {
-        Hole h = new Hole();
-
+        // Arrange
         Block mockBlock1 = mock(Block.class);
         Block mockBlock2 = mock(Block.class);
 
         h.add(mockBlock1);
+
+        // Act
         boolean result = h.add(mockBlock2);
 
+        // Assert
         assertTrue(result);
         assertTrue(h.getBlockList().contains(mockBlock1));
         assertTrue(h.getBlockList().contains(mockBlock2));
@@ -61,37 +73,41 @@ public class HoleTest {
 
     @Test
     public void add_whenGivenBlockIsInList_shouldReturnFalse() {
-        Hole h = new Hole();
-
+        // Arrange
         Block mockBlock1 = mock(Block.class);
 
         h.add(mockBlock1);
+
+        // Act
         boolean result = h.add(mockBlock1);
 
+        // Assert
         assertFalse(result);
         assertTrue(h.getBlockList().contains(mockBlock1));
     }
 
     @Test
     public void geTopBlocks_whenOneTopBlockIsGiven_shouldReturnTheTopBlock() {
-        Hole h = new Hole();
+        // Arrange
         List<Block> expected = new ArrayList<>();
         Block mockBlock = mock(Block.class);
 
         when(mockBlock.getY()).thenReturn(1);
 
+        // Act
         h.add(mockBlock);
         expected.add(mockBlock);
 
         List<Block> result = h.getTopBlocks();
 
+        // Assert
         assertEquals(expected, result);
     }
 
     @Test
     public void geTopBlocks_whenMoreTopBlockAreGiven_shouldReturnTheTopBlocks() {
+        // Arrange
         List<Block> expected = new ArrayList<>();
-        Hole h = new Hole();
 
         Block mockBlock1 = mock(Block.class);
         Block mockBlock2 = mock(Block.class);
@@ -101,16 +117,18 @@ public class HoleTest {
         expected.add(mockBlock1);
         expected.add(mockBlock2);
 
+        // Act
         h.add(mockBlock1);
         h.add(mockBlock2);
         List<Block> result = h.getTopBlocks();
 
+        // Assert
         assertEquals(expected, result);
     }
 
     @Test
     public void geTopBlocks_whenMoreTopAndMoreBlocksBelowBlockAreGiven_shouldReturnTheTopBlocks() {
-        Hole h = new Hole();
+        // Arrange
         List<Block> expected = new ArrayList<>();
 
         Block mockBlock1 = mock(Block.class);
@@ -126,6 +144,7 @@ public class HoleTest {
         expected.add(mockBlock1);
         expected.add(mockBlock2);
 
+        // Act
         h.add(mockBlock1);
         h.add(mockBlock2);
         h.add(mockBlock3);
@@ -133,6 +152,7 @@ public class HoleTest {
 
         List<Block> result = h.getTopBlocks();
 
+        // Assert
         assertEquals(expected, result);
     }
 }
