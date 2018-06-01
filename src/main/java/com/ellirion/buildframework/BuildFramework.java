@@ -44,6 +44,26 @@ public class BuildFramework extends JavaPlugin {
         INSTANCE = this;
     }
 
+    /**
+     * @return BuildFramework instance
+     */
+    public static BuildFramework getInstance() {
+        return INSTANCE;
+    }
+
+    public FileConfiguration getBlockValueConfig() {
+        return blockValueConfig;
+    }
+
+    public FileConfiguration getTemplateFormatConfig() {
+        return templateFormatConfig;
+    }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("BuildFramework is disabled.");
+    }
+
     @Override
     public void onEnable() {
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
@@ -67,26 +87,7 @@ public class BuildFramework extends JavaPlugin {
 
         Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
         Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
-    }
 
-    /**
-     * @return BuildFramework instance
-     */
-    public static BuildFramework getInstance() {
-        return INSTANCE;
-    }
-
-    public FileConfiguration getBlockValueConfig() {
-        return blockValueConfig;
-    }
-
-    public FileConfiguration getTemplateFormatConfig() {
-        return templateFormatConfig;
-    }
-
-    @Override
-    public void onDisable() {
-        getLogger().info("BuildFramework is disabled.");
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, WorldHelper::run, 1L, 1L);
     }
 
