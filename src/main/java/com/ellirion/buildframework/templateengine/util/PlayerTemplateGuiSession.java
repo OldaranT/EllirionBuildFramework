@@ -10,15 +10,18 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
@@ -129,9 +132,15 @@ public class PlayerTemplateGuiSession implements Listener {
      * @param templateHologram current selected hologram.
      * @param player current player.
      */
-    public static void quitSession(TemplateHologram templateHologram, Player player) {
+    public void quitSession(TemplateHologram templateHologram, Player player) {
         templateHologram.remove(player);
         TemplateManager.removeAll(player);
+
+        // Give old inventory back to the player.
+        player.getInventory().setContents(PlayerTemplateGuiSession.getOLD_PLAYER_INVENTORY().getContents());
+        player.updateInventory();
+
+        HandlerList.unregisterAll(this);
     }
 
     private void setLocation(TemplateHologram hologram, Location loc) {
@@ -152,12 +161,12 @@ public class PlayerTemplateGuiSession implements Listener {
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getItem() == null) {
+        if (event.getItem() == null || event.getHand() == EquipmentSlot.OFF_HAND) {
+            event.setCancelled(true);
             return;
         }
 
         // First check if the tool used is a template control tool
-
         if (!event.getItem().getItemMeta().getLore().contains(Template.getTemplateTool())) {
             return;
         }
@@ -174,20 +183,22 @@ public class PlayerTemplateGuiSession implements Listener {
         prevHologram.remove(player);
 
         // Depending on what tool was used, do a different transformation
-        switch (event.getItem().getType()) {
-            case DIAMOND_SPADE:
+        switch (event.getItem().getItemMeta().getDisplayName()) {
+            case "Move to Tool":
                 // Depending on right click/left click we want either targetblock or player location respectively
+                Location targetLoc = player.getTargetBlock(null, 35565).getLocation();
+                Location playerLoc = player.getLocation();
                 Location l = event.getAction().name().contains("LEFT_CLICK")
-                             ? player.getTargetBlock(null, 35565).getLocation()
-                             : player.getLocation();
+                             ? new Point(targetLoc).floor().toLocation(player.getWorld())
+                             : new Point(playerLoc).floor().toLocation(player.getWorld());
                 setLocation(prevHologram, l);
                 break;
-            case DIAMOND_HOE:
+            case "Rotate Tool":
                 // Depending on right/left click we want anticlockwise or clockwise rotation respectively
                 boolean clockwise = event.getAction().name().contains("LEFT_CLICK") ? false : true;
                 rotate(prevHologram.getTemplate(), clockwise);
                 break;
-            case DIAMOND_SWORD:
+            case "Move Tool":
                 // If the right button was clicked, invert the BlockFace, otherwise not
                 BlockFace blockFace = prevHologram.rotationToFace(player.getLocation().getYaw(),
                                                                   player.getLocation().getPitch());
@@ -196,6 +207,18 @@ public class PlayerTemplateGuiSession implements Listener {
                 }
                 move(prevHologram, blockFace, 1);
                 break;
+            case "Template Confirm":
+                // Place the template
+                Template t = prevHologram.getTemplate();
+                t.putTemplateInWorld(prevHologram.getLocation());
+                quitSession(prevHologram, player);
+                event.setCancelled(true);
+                return;
+            case "Template Cancel":
+                // Quit the session
+                quitSession(prevHologram, player);
+                event.setCancelled(true);
+                return;
             default:
                 break;
         }
