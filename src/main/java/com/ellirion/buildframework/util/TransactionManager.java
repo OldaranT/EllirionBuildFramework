@@ -49,7 +49,7 @@ public class TransactionManager {
 
         Transaction transaction = DONE_TRANSACTIONS.get(player).pollFirst();
         if (transaction == null) {
-            throw new RuntimeException("No transactions to be undone");
+            return Promise.reject(new RuntimeException("No transactions to be undone"));
         }
 
         Promise promise = transaction.revert();
@@ -68,7 +68,7 @@ public class TransactionManager {
 
         Transaction transaction = UNDONE_TRANSACTIONS.get(player).pollFirst();
         if (transaction == null) {
-            throw new RuntimeException("No transactions to be redone");
+            return Promise.reject(new RuntimeException("No transactions to be redone"));
         }
         Promise promise = transaction.apply();
         promise.await();
