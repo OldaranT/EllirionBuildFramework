@@ -86,7 +86,7 @@ public class WorldHelper {
      * Run scheduled block changes.
      */
     public static void run() {
-        for (int i = 0; i < 125; i++) {
+        for (int i = 0; i < 50; i++) {
             PendingBlockChange pending = PENDING.poll();
             if (pending == null) {
                 return;
@@ -103,8 +103,8 @@ public class WorldHelper {
         private byte data;
 
         BlockChange(final Location loc, final Material mat, final byte data) {
-            location = loc;
-            material = mat;
+            this.location = loc;
+            this.material = mat;
             this.data = data;
         }
 
@@ -124,7 +124,7 @@ public class WorldHelper {
 
         PendingBlockChange(final BlockChange change) {
             this.change = change;
-            promise = new Promise<>();
+            this.promise = new Promise<>();
         }
 
         BlockChange apply() {
@@ -141,9 +141,9 @@ public class WorldHelper {
         private BlockChange after;
 
         BlockChangeTransaction(final BlockChange change) {
-            promise = null;
-            before = null;
-            after = change;
+            this.promise = null;
+            this.before = null;
+            this.after = change;
         }
 
         @Override

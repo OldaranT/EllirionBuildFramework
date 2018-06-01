@@ -44,6 +44,31 @@ public class BuildFramework extends JavaPlugin {
         INSTANCE = this;
     }
 
+    @Override
+    public void onEnable() {
+        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
+        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
+        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
+        getCommand("Validate").setExecutor(new ValidateCommand());
+        getCommand("AddMarker").setExecutor(new CommandAddMarker());
+        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
+        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
+        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
+        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
+        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
+        createConfig();
+        createBlockValueConfig();
+        createTemplateFormatConfig();
+        getLogger().info("BuildFramework is enabled.");
+
+        Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
+        Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
+    }
+
     /**
      * @return BuildFramework instance
      */
@@ -62,33 +87,6 @@ public class BuildFramework extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("BuildFramework is disabled.");
-    }
-
-    @Override
-    public void onEnable() {
-        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
-        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
-        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
-        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
-        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
-        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
-        getCommand("Validate").setExecutor(new ValidateCommand());
-        getCommand("AddMarker").setExecutor(new CommandAddMarker());
-        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
-        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
-        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
-        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
-        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
-        getCommand("Test").setExecutor(new TestCommand());
-        getServer().getPluginManager().registerEvents(new EventListener(), this);
-        createConfig();
-        createBlockValueConfig();
-        createTemplateFormatConfig();
-        getLogger().info("BuildFramework is enabled.");
-
-        Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
-        Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
-
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, WorldHelper::run, 1L, 1L);
     }
 
