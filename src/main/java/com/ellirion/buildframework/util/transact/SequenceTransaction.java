@@ -27,21 +27,19 @@ public class SequenceTransaction extends Transaction {
      * @param transactions The initial children
      */
     public SequenceTransaction(final Transaction... transactions) {
-        boolean isFirst = true;
-        boolean applied = false;
-        for (Transaction child : transactions) {
-            if (isFirst) {
-                applied = child.isApplied();
-                isFirst = false;
-            } else {
-                if (child.isApplied() != applied) {
-                    throw new IllegalArgumentException("Child transactions have varying applied states");
-                }
-            }
-        }
-
         children = Arrays.asList(transactions);
-        finalized = applied;
+        finalized = false;
+    }
+
+    /**
+     * Construct a new SequenceTransaction using {@code transactions}
+     * as the initial children, specifying if this SequenceTransaction is
+     * applied or not.
+     * @param applied Whether this SequenceTransaction is applied or not
+     * @param transactions The initial children
+     */
+    public SequenceTransaction(final boolean applied, final Transaction... transactions) {
+        this(transactions);
         setApplied(applied);
     }
 
@@ -88,6 +86,11 @@ public class SequenceTransaction extends Transaction {
         }
 
         return new Promise<>(finisher -> {
+
+            // Before we start applying our child transactions, we need to wait for
+            // them all be finished executing whatever they were doing.
+            awaitChildren();
+
             int index;
             boolean failed = false;
 
@@ -133,12 +136,25 @@ public class SequenceTransaction extends Transaction {
     protected Promise<Boolean> reverter() {
         return new Promise<>(finisher -> {
 
+            // Before we start reverting our child transactions, we need to wait for
+            // them all be finished executing whatever they were doing.
+            awaitChildren();
+
             // From the back, start going through our child transactions.
             revertFrom(finisher, children.size() - 1);
 
             // We succeeded in reverting all our actions.
             finisher.resolve(true);
         }, true);
+    }
+
+    private void awaitChildren() {
+        for (Transaction child : children) {
+            child.await();
+            if (child.isApplied() != isApplied()) {
+                throw new RuntimeException("While awaiting children, a child ended in an unexpected state");
+            }
+        }
     }
 
     private void revertFrom(IPromiseFinisher<Boolean> finisher, int index) {
