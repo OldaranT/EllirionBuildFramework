@@ -117,6 +117,8 @@ public class WorldHelper {
      * Run scheduled block changes.
      */
     public static void run() {
+        // 125 is the "magic value" of block updates that can be applied
+        // per tick without having a noticeable performance impact.
         for (int i = 0; i < 125; i++) {
             PendingBlockChange pending = PENDING.poll();
             if (pending == null) {
