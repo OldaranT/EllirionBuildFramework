@@ -21,6 +21,7 @@ public class PathingSession {
     @Getter @Setter private Point point1;
     @Getter @Setter private Point point2;
     @Getter @Setter private NBTTagCompound config;
+    @Getter private long lastConfigUpdate;
 
     /**
      * Construct a new PathingSession for the Player {@code player}.
@@ -34,17 +35,21 @@ public class PathingSession {
         this.point1 = null;
         this.point2 = null;
         this.config = new NBTTagCompound();
+        this.lastConfigUpdate = System.currentTimeMillis();
 
         config.setDouble("v-step", 1);
         config.setDouble("v-grounded", 0.5);
         config.setDouble("v-flying", 2.5);
         config.setDouble("v-exp", 1.3);
+        config.setDouble("v-fac", 1);
 
         config.setDouble("g-horiz", 1.0);
         config.setDouble("g-vert", Math.sqrt(2) - 1);
 
         config.setDouble("f-goal-fac", 2);
         config.setDouble("f-goal-exp", 1.1);
+
+        config.setInt("b-height", 2);
 
         config.setInt("turn-short-threshold", 1);
         config.setInt("turn-short-length", 3);
@@ -88,5 +93,12 @@ public class PathingSession {
             player.sendBlockChange(l, Material.CONCRETE,
                                    world.getBlockAt(l).getType().isSolid() ? (byte) 1 : (byte) 5);
         }
+    }
+
+    /**
+     * Resets the lastConfigUpdate to the current time in milliseconds.
+     */
+    public void resetLastConfigUpdate() {
+        lastConfigUpdate = System.currentTimeMillis();
     }
 }

@@ -70,7 +70,7 @@ public class PathingListener implements Listener {
         Player player = event.getPlayer();
 
         // Only debug when holding a stick
-        if (player.getItemOnCursor().getType() != Material.STICK) {
+        if (player.getInventory().getItemInMainHand().getType() != Material.STICK) {
             return;
         }
 

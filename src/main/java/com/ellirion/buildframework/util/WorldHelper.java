@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.util;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -7,13 +8,15 @@ import org.bukkit.block.Block;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.Transaction;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class WorldHelper {
 
-    private static final BlockingQueue<PendingBlockChange> PENDING
-            = new LinkedBlockingQueue<>();
+    private static final Map<Chunk, Long> CHUNK_ACTIVITY = new HashMap<>();
+    private static final BlockingQueue<PendingBlockChange> PENDING = new LinkedBlockingQueue<>();
 
     /**
      * Safely set a block in the world at the given coordinates to the given material and metadata.
@@ -54,9 +57,11 @@ public class WorldHelper {
         // Load chunk if necessary
         int chunkX = Math.floorDiv(x, 16);
         int chunkZ = Math.floorDiv(z, 16);
+
         if (!world.isChunkLoaded(chunkX, chunkZ)) {
             Promise p = new Promise<>(finisher -> {
                 world.loadChunk(chunkX, chunkZ);
+                markChunkActive(world.getChunkAt(chunkX, chunkZ));
                 finisher.resolve(null);
             }, false);
 
@@ -65,6 +70,31 @@ public class WorldHelper {
 
         // Get the block
         return world.getBlockAt(x, y, z);
+    }
+
+    /**
+     * Marks the given Chunk as active.
+     * @param c The Chunk to mark as active
+     */
+    public static void markChunkActive(Chunk c) {
+        CHUNK_ACTIVITY.put(c, System.currentTimeMillis());
+    }
+
+    /**
+     * Marks the given Chunk as inactive.
+     * @param c The Chunk to mark as inactive
+     */
+    public static void markChunkInactive(Chunk c) {
+        CHUNK_ACTIVITY.remove(c);
+    }
+
+    /**
+     * Check if the Chunk {@code c} is marked 'active' (has been accessed recently).
+     * @param c The Chunk to check
+     * @return Whether this Chunk is marked active or not
+     */
+    public static boolean isChunkActive(Chunk c) {
+        return System.currentTimeMillis() - CHUNK_ACTIVITY.getOrDefault(c, 0L) < 5000;
     }
 
     /**

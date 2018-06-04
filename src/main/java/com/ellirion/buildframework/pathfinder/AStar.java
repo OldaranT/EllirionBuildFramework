@@ -10,7 +10,7 @@ import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.model.PathingGraph;
 import com.ellirion.buildframework.pathfinder.model.PathingSession;
 import com.ellirion.buildframework.pathfinder.model.PathingVertex;
-import com.ellirion.buildframework.util.Promise;
+import com.ellirion.buildframework.util.async.Promise;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +18,7 @@ import java.util.List;
 public class AStar {
 
     private Player player;
+    private PathingSession session;
     private Point start;
     private Point goal;
 
@@ -56,11 +57,22 @@ public class AStar {
      */
     public AStar(final Player player, final Point start, final Point goal) {
         this.player = player;
+        this.session = PathingManager.getSession(player);
         this.start = start;
         this.goal = goal;
 
-        // Load the config
-        PathingSession session = PathingManager.getSession(player);
+        // Initialize objects.
+        checker = new PathChecker(player.getWorld());
+        graph = new PathingGraph();
+        PathingVertex startVert = graph.findOrCreate(this.start);
+        startVert.setGScore(0);
+        startVert.setFScore(0);
+
+        // Load the configuration.
+        configure();
+    }
+
+    private void configure() {
         NBTTagCompound config = session.getConfig();
 
         vStep = config.getDouble("v-step");
@@ -87,15 +99,9 @@ public class AStar {
         visualEnable = config.getBoolean("visual-enable");
         visualThrottle = config.getInt("visual-throttle");
 
-        // Initialize objects
-        checker = new PathChecker(player.getWorld(),
-                                  pathWidth, pathHeight, pathLength,
-                                  new int[] {turnShortThreshold, turnLongThreshold},
-                                  new int[] {turnShortLength, turnLongLength});
-        graph = new PathingGraph();
-        PathingVertex startVert = graph.findOrCreate(this.start);
-        startVert.setGScore(0);
-        startVert.setFScore(0);
+        checker.configure(pathWidth, pathHeight, pathLength,
+                          new int[] {turnShortThreshold, turnLongThreshold},
+                          new int[] {turnShortLength, turnLongLength});
     }
 
     /**
@@ -103,12 +109,9 @@ public class AStar {
      * @return A Promise that is resolved or rejected depending on whether a path is found.
      */
     public Promise<List<Point>> searchAsync() {
-        // - lijst met blokken die sinds altijd gevisit zijn (oranje)
-        // - lijst met blokken die gevisit zijn deze tick (groen)
-        return new Promise<>((finisher) -> {
+        return new Promise<>(finisher -> {
 
             long before = System.currentTimeMillis();
-
             PathingVertex cur;
 
             // Async client-side updates
@@ -117,11 +120,21 @@ public class AStar {
             long startTime = System.currentTimeMillis();
             long wantVisited;
             long haveVisited = 0;
+            long lastConfigChange = session.getLastConfigUpdate();
 
             int visitIndex = 0;
             int seenIndex = 0;
 
+            // Loop until we run out of options
             while ((cur = graph.next()) != null) {
+
+                // Update config if necessary
+                if (lastConfigChange != session.getLastConfigUpdate()) {
+                    lastConfigChange = session.getLastConfigUpdate();
+                    configure();
+                }
+
+                // Track index for debugging
                 cur.setVisitIndex(visitIndex++);
 
                 // Check if we reached the goal

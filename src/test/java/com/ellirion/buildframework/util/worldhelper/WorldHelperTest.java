@@ -60,7 +60,7 @@ public class WorldHelperTest {
         // Act
         Block result = WorldHelper.getBlock(world, x, y, z);
 
-        //Assert
+        // Assert
         verify(world, times(0)).loadChunk(chunkX, chunkY);
         assertEquals(result, block);
     }

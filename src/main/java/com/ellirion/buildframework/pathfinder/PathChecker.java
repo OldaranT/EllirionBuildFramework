@@ -9,6 +9,7 @@ import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.model.Direction;
 import com.ellirion.buildframework.pathfinder.model.DirectionChange;
 import com.ellirion.buildframework.pathfinder.model.PathingVertex;
+import com.ellirion.buildframework.util.WorldHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,9 +22,9 @@ public class PathChecker {
     private World world;
     private Map<Point, PointInfo> points;
 
-    private int width;
-    private int height;
-    private int length;
+    private int pathWidth;
+    private int pathHeight;
+    private int pathLength;
 
     private int[] turnThresholds;
     private int[] turnLengths;
@@ -31,20 +32,25 @@ public class PathChecker {
     /**
      * Construct a new PathChecker that uses World {@code world}.
      * @param world The world to use for checking
-     * @param width The width of the path
-     * @param height The height of the path
-     * @param length The length of the path before permitting Y-changes
+     */
+    public PathChecker(final World world) {
+        this.world = world;
+        this.points = new HashMap<>();
+    }
+
+    /**
+     * Reconfigures this PathChecker to use the given settings.
+     * @param width The pathWidth of the path
+     * @param height The pathHeight of the path
+     * @param length The pathLength of the path before permitting Y-changes
      * @param turnThresholds The thresholds for the turn checker
      * @param turnLengths The lenghts for the turn checker
      */
-    public PathChecker(final World world, final int width, final int height, final int length,
-                       final int[] turnThresholds, final int[] turnLengths) {
-        this.world = world;
-        this.points = new HashMap<>();
-
-        this.width = width;
-        this.height = height;
-        this.length = length;
+    public void configure(final int width, final int height, final int length,
+                          final int[] turnThresholds, final int[] turnLengths) {
+        this.pathWidth = width;
+        this.pathHeight = height;
+        this.pathLength = length;
 
         this.turnThresholds = turnThresholds;
         this.turnLengths = turnLengths;
@@ -114,7 +120,7 @@ public class PathChecker {
         }
 
         // Seek left and right until a point is not clear or we have enough clear points.
-        List<Point> clear = new ArrayList<>(width);
+        List<Point> clear = new ArrayList<>(pathWidth);
         clear.add(pNext); // We already checked this.
 
         LinkedList<Tuple<Point, Direction>> remaining = new LinkedList<>();
@@ -139,13 +145,13 @@ public class PathChecker {
             }
 
             // Stop checking if we have sufficient space
-            if (clear.size() > width) {
+            if (clear.size() > pathWidth) {
                 break;
             }
         }
 
         // If there are not enough clear blocks, we failed.
-        if (clear.size() < width) {
+        if (clear.size() < pathWidth) {
             return false;
         }
 
@@ -183,12 +189,12 @@ public class PathChecker {
          *       OOOOO
          *  Where O = visited (and thus confirmed clear), X = our path and ? is unchecked
          *  Given dNext (left), we go the *opposite* direction (right) in combination with dCur (forward).
-         *  We use a doubly nested for-loop with (width / 2) iterations to check the remaining area.
+         *  We use a doubly nested for-loop with (pathWidth / 2) iterations to check the remaining area.
          * */
 
         // We reverse dNext to go towards the corner (right) instead of the path (left).
         dNext = dNext.getReverse();
-        int width = this.width / 2;
+        int width = this.pathWidth / 2;
 
         // Now we check the corner area. We actually start at (0,0), but we apply the directions
         // first so we effectively start at (1,1) as intended.
@@ -231,13 +237,13 @@ public class PathChecker {
         Direction dNext;
         DirectionChange dChange;
 
-        // Get the maximum length to check for
+        // Get the maximum pathLength to check for
         int maxLength = 0;
         for (int len : turnLengths) {
             maxLength = Math.max(maxLength, len);
         }
 
-        // Keep looping until we run out of length
+        // Keep looping until we run out of pathLength
         int balance = 0;
         for (int curLength = 0; curLength < maxLength; curLength++) {
 
@@ -246,7 +252,7 @@ public class PathChecker {
             dNext = dCur;
             vCur = vCur.getCameFrom();
 
-            // If the path is shorter than length, the turn is legal.
+            // If the path is shorter than pathLength, the turn is legal.
             if (vCur == null) {
                 return true;
             }
@@ -263,7 +269,7 @@ public class PathChecker {
                 int length = turnLengths[j];
                 int threshold = turnThresholds[j];
 
-                // If the current length is still relevant for this particular
+                // If the current pathLength is still relevant for this particular
                 // combination, and the balance exceeded the threshold, then
                 // we have failed.
                 if (curLength <= length && Math.abs(balance) > threshold) {
@@ -282,7 +288,7 @@ public class PathChecker {
         }
 
         // Create a PointInfo object by checking surroundings
-        Block b = world.getBlockAt(p.toLocation(world));
+        Block b = WorldHelper.getBlock(p.toLocation(world));
         Material m = b.getType();
 
         boolean isSolid = checkSolid(m);
@@ -305,9 +311,9 @@ public class PathChecker {
         Material m;
 
         // Check for air above the ground
-        for (int i = 0; i < height - 1; i++) {
+        for (int i = 0; i < pathHeight - 1; i++) {
             p = p.up();
-            b = world.getBlockAt(p.toLocation(world));
+            b = WorldHelper.getBlock(p.toLocation(world));
             m = b.getType();
             if (checkSolid(m) || b.isLiquid()) {
                 return false;
@@ -318,7 +324,7 @@ public class PathChecker {
 
     private boolean checkGrounded(Point p) {
         for (Direction d : Direction.values()) {
-            if (world.getBlockAt(d.apply(p).toLocation(world)).getType().isSolid()) {
+            if (WorldHelper.getBlock(d.apply(p).toLocation(world)).getType().isSolid()) {
                 return true;
             }
         }
@@ -331,7 +337,7 @@ public class PathChecker {
 
         // Loop backwards along the known path to assert that a
         // vertical move is valid.
-        while (count < length) {
+        while (count < pathLength) {
             from = to.getCameFrom();
             if (from == null) {
                 break;
@@ -343,7 +349,7 @@ public class PathChecker {
             count++;
         }
 
-        return count >= length;
+        return count >= pathLength;
     }
 
     private static class PointInfo {

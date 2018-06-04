@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.pathfinder.PathingManager;
 import com.ellirion.buildframework.pathfinder.model.PathingConfigAccessor;
+import com.ellirion.buildframework.pathfinder.model.PathingSession;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class CommandPathConfig implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
+        PathingSession session = PathingManager.getSession(player);
 
         // Check usage
         if (args.length > 2) {
@@ -38,7 +40,7 @@ public class CommandPathConfig implements CommandExecutor {
         }
 
         // Get the config
-        NBTTagCompound config = PathingManager.getSession(player).getConfig();
+        NBTTagCompound config = session.getConfig();
         NBTBase base;
         PathingConfigAccessor accessor;
 
@@ -70,6 +72,7 @@ public class CommandPathConfig implements CommandExecutor {
             player.sendMessage(accessor.get(base, args[0]));
         } else {
             player.sendMessage(accessor.set(config, base, args[0], args[1]));
+            session.resetLastConfigUpdate();
         }
 
         return true;
