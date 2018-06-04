@@ -542,26 +542,6 @@ public class Promise<TResult> {
         ASYNC_RUNNER = c;
     }
 
-    private static class PromiseHandler {
-
-        private Promise<?> promise;
-        private boolean onResolve;
-        private boolean onReject;
-
-        PromiseHandler(final Promise<?> promise, final boolean onResolve, final boolean onReject) {
-            this.promise = promise;
-            this.onResolve = onResolve;
-            this.onReject = onReject;
-        }
-
-        public boolean await(boolean resolved) {
-            if (resolved == onResolve || !resolved == onReject) {
-                return promise.await();
-            }
-            return true;
-        }
-    }
-
     static {
         SYNC_RUNNER = r -> r.run();
         ASYNC_RUNNER = r -> new Thread(r).start();
