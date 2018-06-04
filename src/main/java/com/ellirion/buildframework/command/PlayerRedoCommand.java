@@ -17,9 +17,11 @@ public class PlayerRedoCommand implements CommandExecutor {
         }
 
         Player player = (Player) commandSender;
-
-        TransactionManager.redoLastTransaction(player).except(ex -> {
-            player.sendMessage(ChatColor.DARK_RED + ex.toString());
+        TransactionManager.redoLastTransaction(player).then(bool -> {
+            player.sendMessage(ChatColor.GREEN + "Redo completed.");
+            return bool;
+        }).except(ex -> {
+            player.sendMessage(ChatColor.RED + ex.toString());
         });
 
         return true;
