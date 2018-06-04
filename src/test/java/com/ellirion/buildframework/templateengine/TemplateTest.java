@@ -42,7 +42,6 @@ public class TemplateTest {
 
         @Before
         public void setup() {
-
             mockStatic(BuildFramework.class);
 
             final BuildFramework mockPlugin = mock(BuildFramework.class);
@@ -134,7 +133,6 @@ public class TemplateTest {
 
         @Before
         public void setup() {
-
             mockStatic(BuildFramework.class);
 
             final BuildFramework mockPlugin = mock(BuildFramework.class);

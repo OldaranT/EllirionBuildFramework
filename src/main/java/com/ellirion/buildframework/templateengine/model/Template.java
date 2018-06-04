@@ -104,11 +104,12 @@ public class Template {
 
         HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
         List<DoorWrapper> doors = new ArrayList<>();
+        List<Material> toPlaceLate = Arrays.asList(MinecraftHelper.getPlaceLate());
 
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    if (Arrays.asList(MinecraftHelper.getPlaceLate()).contains(templateBlocks[x][y][z].getMaterial())) {
+                    if (toPlaceLate.contains(templateBlocks[x][y][z].getMaterial())) {
                         if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
                                 doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
@@ -408,8 +409,9 @@ public class Template {
 
         TemplateBlock[][][] rotatedTemplateBlock = new TemplateBlock[zDepth][yDepth][xDepth];
 
+        List<Material> toRotate = Arrays.asList(MinecraftHelper.getToRotate());
+
         for (int y = 0; y < yDepth; y++) {
-            // For each Y rotate x and z.
             for (int x = 0; x < zDepth; x++) {
                 for (int z = 0; z < xDepth; z++) {
                     TemplateBlock block;
@@ -418,7 +420,7 @@ public class Template {
                     } else {
                         block = templateBlocks[xDepth - z - 1][y][x];
                     }
-                    if (Arrays.asList(MinecraftHelper.getToRotate()).contains(block.getMaterial())) {
+                    if (toRotate.contains(block.getMaterial())) {
                         Material currentMaterial = block.getMaterial();
                         int currentMetaData = (int) block.getMetadata().getData();
                         // Some materials have the same array, so to prevent copying and pasting of the same array 16 times, we get other arrays that are the same
@@ -449,7 +451,6 @@ public class Template {
     }
 
     private void rotateMarkers(boolean clockwise) {
-
         int xDepth = templateBlocks.length;
         int zDepth = templateBlocks[0][0].length;
 

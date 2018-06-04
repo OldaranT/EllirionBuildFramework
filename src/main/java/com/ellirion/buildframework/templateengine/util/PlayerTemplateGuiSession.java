@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class PlayerTemplateGuiSession implements Listener {
 
     @Getter @Setter private static Inventory OLD_PLAYER_INVENTORY;
-    private static Map<ItemStack, ToolHandler> TOOLS;
+    @Getter @Setter private Map<ItemStack, ToolHandler> tools;
     private TemplateHologram hologram;
     private Player player;
 
@@ -45,18 +46,14 @@ public class PlayerTemplateGuiSession implements Listener {
     public PlayerTemplateGuiSession(final Plugin p, final Player player, final TemplateHologram hologram) {
         this.player = player;
         this.hologram = hologram;
-        TOOLS = new HashMap<>();
+        this.tools = new HashMap<>();
         this.givePlayerTools();
         Bukkit.getServer().getPluginManager().registerEvents(this, p);
         TemplateManager.getTemplateGuiSessions().put(player, this);
     }
 
-    public static Map<ItemStack, ToolHandler> getTools() {
-        return TOOLS;
-    }
-
     /**
-     * Give a player the TOOLS to control a hologram.
+     * Give a player the tools to control a hologram.
      */
     private void givePlayerTools() {
         OLD_PLAYER_INVENTORY = Bukkit.getServer().createInventory(null, InventoryType.PLAYER);
@@ -90,7 +87,7 @@ public class PlayerTemplateGuiSession implements Listener {
     }
 
     /**
-     * Create TOOLS for template engine.
+     * Create tools for template engine.
      * @param material define what material the item stack needs to be made of.
      * @param itemName display name of the tool.
      * @param lore the lore that the item needs to have.
@@ -115,7 +112,7 @@ public class PlayerTemplateGuiSession implements Listener {
         newTool.setItemMeta(meta);
 
         player.getInventory().setItem(slot, newTool);
-        TOOLS.put(newTool, handler);
+        tools.put(newTool, handler);
     }
 
     /**
@@ -141,24 +138,24 @@ public class PlayerTemplateGuiSession implements Listener {
         ItemStack stack = event.getItem();
 
         // Check if the item is not null and not in the off-hand slot.
-        if (stack == null || event.getHand() == EquipmentSlot.OFF_HAND) {
-            return;
-        }
-
-        // Next, we check if the tool used is a template control tool.
-        if (!TOOLS.containsKey(stack)) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND || !this.player.equals(player)) {
             return;
         }
 
         // Cancel normal event effect.
         event.setCancelled(true);
 
+        // Next, we check if the tool used is a template control tool.
+        if (!tools.containsKey(stack)) {
+            return;
+        }
+
         // Delete the hologram as it is now, since we're changing it.
         hologram.remove(player);
 
         // Apply the corresponding transformation. If the handler returns false, it means we do not
         // need to re-create the template hologram.
-        if (!TOOLS.get(stack).apply(player, hologram, event.getAction().name().contains("RIGHT_CLICK"))) {
+        if (!tools.get(stack).apply(player, hologram, event.getAction().name().contains("RIGHT_CLICK"))) {
             return;
         }
 
@@ -216,5 +213,23 @@ public class PlayerTemplateGuiSession implements Listener {
     private interface ToolHandler {
 
         boolean apply(Player player, TemplateHologram hologram, boolean isRightHand);
+    }
+
+    /**
+     * Prevent the player to drop any template tools.
+     * @param event The event of the player dropping a item.
+     */
+    @EventHandler
+    public void onPlayerDropEvent(PlayerDropItemEvent event) {
+        ItemStack itemStack = event.getItemDrop().getItemStack();
+        if (event.getItemDrop() == null) {
+            return;
+        }
+
+        // If the item is a template tool return and do nothing.
+        if (tools.containsKey(itemStack)) {
+            event.setCancelled(true);
+            return;
+        }
     }
 }

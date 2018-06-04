@@ -133,7 +133,6 @@ public class TemplateHologram {
      * @param blockFace facing of the player.
      */
     public void moveHologram(int amount, BlockFace blockFace) {
-
         hologramBlocks.clear();
         switch (blockFace) {
             case UP:
@@ -177,7 +176,6 @@ public class TemplateHologram {
      * @return direction of the player.
      */
     public BlockFace rotationToFace(float yaw, float pitch) {
-
         if (pitch <= -lookAngle) {
             return FACES[4];
         } else if (pitch >= lookAngle) {
