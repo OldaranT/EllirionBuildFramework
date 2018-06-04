@@ -144,8 +144,8 @@ public class MinecraftHelper {
             Material.SANDSTONE_STAIRS,
             Material.SMOOTH_STAIRS,
             Material.SPRUCE_WOOD_STAIRS,
-            Material.WOOD_STAIRS,
-            };
+            Material.WOOD_STAIRS
+    };
 
     private static final Material[] NON_ANCHOR_POINTS = new Material[] {
             Material.AIR,
@@ -186,8 +186,8 @@ public class MinecraftHelper {
             Material.WATER,
             Material.LAVA,
             Material.RED_MUSHROOM,
-            Material.BROWN_MUSHROOM,
-            };
+            Material.BROWN_MUSHROOM
+    };
 
     private static final HashMap<Material, int[]> MATERIAL_ROTATION_DATA = new HashMap<>();
     static {
