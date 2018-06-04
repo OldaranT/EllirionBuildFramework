@@ -34,7 +34,8 @@ public class TemplateManager {
         TEMPLATE_SESSIONS.remove(player);
         PlayerTemplateGuiSession session = TEMPLATE_GUI_SESSIONS.get(player);
         if (session != null) {
-            session.quitSession();
+            session.quit();
+            TEMPLATE_GUI_SESSIONS.clear();
         }
         TEMPLATE_GUI_SESSIONS.remove(player);
     }

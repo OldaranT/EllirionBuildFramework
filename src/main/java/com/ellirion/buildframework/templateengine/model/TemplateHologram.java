@@ -194,23 +194,8 @@ public class TemplateHologram {
         }
         TemplateHologram other = (TemplateHologram) obj;
 
-        if (!location.equals(other.location)) {
-            return false;
-        }
-
-        if (!template.equals(other.template)) {
-            return false;
-        }
-
-        if (!box.equals(other.box)) {
-            return false;
-        }
-
-        if (!hologramBlocks.equals(other.hologramBlocks)) {
-            return false;
-        }
-
-        return true;
+        return location.equals(other.location) && template.equals(other.template) && box.equals(other.box) &&
+               hologramBlocks.equals(other.hologramBlocks);
     }
 
     @Override

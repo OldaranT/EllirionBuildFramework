@@ -4,8 +4,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import com.ellirion.buildframework.templateengine.TemplateManager;
-import com.ellirion.buildframework.templateengine.model.Template;
+import com.ellirion.buildframework.templateengine.util.PlayerTemplateGuiSession;
 
 public class EventListener implements Listener {
 
@@ -19,18 +20,21 @@ public class EventListener implements Listener {
     }
 
     /**
-     * Add functionality to player drop event.
+     * Prevent the player to drop any template TOOLS.
      * @param event The event of the player dropping a item.
      */
     @EventHandler
     public void onPlayerDropEvent(PlayerDropItemEvent event) {
 
+        ItemStack itemStack = event.getItemDrop().getItemStack();
         if (event.getItemDrop() == null) {
             return;
         }
 
-        if (event.getItemDrop().getItemStack().getItemMeta().getLore().contains(Template.getTemplateTool())) {
+        // If the item is a template tool return and do nothing.
+        if (PlayerTemplateGuiSession.getTools().containsKey(itemStack)) {
             event.setCancelled(true);
+            return;
         }
     }
 }

@@ -9,7 +9,7 @@ import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-public class MockAssist {
+public class MockHelper {
 
     /**
      * Mocked air block.

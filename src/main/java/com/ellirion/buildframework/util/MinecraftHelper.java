@@ -7,6 +7,146 @@ import java.util.HashMap;
 
 public class MinecraftHelper {
 
+    private static final Material[] PLACE_LATE = new Material[] {
+            Material.WALL_SIGN,
+            Material.WALL_BANNER,
+            Material.BANNER,
+            Material.LADDER,
+            Material.PAINTING,
+            Material.ITEM_FRAME,
+            Material.STONE_BUTTON,
+            Material.WOOD_BUTTON,
+            Material.LEVER,
+            Material.REDSTONE,
+            Material.REDSTONE_TORCH_OFF,
+            Material.REDSTONE_TORCH_ON,
+            Material.VINE,
+            Material.TRIPWIRE_HOOK,
+            Material.PAINTING,
+            Material.PISTON_BASE,
+            Material.PISTON_EXTENSION,
+            Material.PISTON_STICKY_BASE,
+            Material.TORCH,
+            Material.ACACIA_DOOR,
+            Material.BIRCH_DOOR,
+            Material.DARK_OAK_DOOR,
+            Material.IRON_DOOR,
+            Material.JUNGLE_DOOR,
+            Material.SPRUCE_DOOR,
+            Material.WOOD_DOOR,
+            Material.WOODEN_DOOR,
+            Material.IRON_DOOR_BLOCK,
+            Material.MELON_STEM,
+            Material.PUMPKIN_STEM
+    };
+
+    private static final Material[] TO_ROTATE = new Material[] {
+
+            // Building blocks
+            Material.LOG_2,
+            Material.LOG,
+            Material.BONE_BLOCK,
+            Material.HAY_BLOCK,
+            Material.JACK_O_LANTERN,
+            Material.PUMPKIN,
+            Material.QUARTZ_BLOCK,
+
+            // Decoration blocks
+            Material.CHEST,
+            Material.ENDER_CHEST,
+            Material.FURNACE,
+            Material.ANVIL,
+            Material.LADDER,
+            Material.VINE,
+            Material.WALL_BANNER,
+            Material.STANDING_BANNER,
+            Material.BED_BLOCK,
+            Material.END_ROD,
+            Material.WALL_SIGN,
+            Material.SIGN_POST,
+            Material.SKULL,
+            Material.TORCH,
+
+            // Redstone
+            Material.DIODE_BLOCK_OFF,
+            Material.DIODE_BLOCK_ON,
+            Material.DISPENSER,
+            Material.DROPPER,
+            Material.OBSERVER,
+            Material.HOPPER,
+            Material.IRON_TRAPDOOR,
+            Material.TRAP_DOOR,
+            Material.LEVER,
+            Material.REDSTONE_TORCH_OFF,
+            Material.REDSTONE_TORCH_ON,
+            Material.STONE_BUTTON,
+            Material.WOOD_BUTTON,
+            Material.PISTON_BASE,
+            Material.PISTON_EXTENSION,
+            Material.PISTON_MOVING_PIECE,
+            Material.PISTON_STICKY_BASE,
+            Material.TRAPPED_CHEST,
+
+            // Fence Gate
+            Material.FENCE_GATE,
+            Material.ACACIA_FENCE,
+            Material.ACACIA_FENCE_GATE,
+            Material.BIRCH_FENCE_GATE,
+            Material.DARK_OAK_FENCE_GATE,
+            Material.JUNGLE_FENCE_GATE,
+            Material.SPRUCE_FENCE_GATE,
+
+            // Rail
+            Material.ACTIVATOR_RAIL,
+            Material.DETECTOR_RAIL,
+            Material.RAILS,
+            Material.POWERED_RAIL,
+
+            // Door
+            Material.ACACIA_DOOR,
+            Material.BIRCH_DOOR,
+            Material.DARK_OAK_DOOR,
+            Material.IRON_DOOR_BLOCK,
+            Material.JUNGLE_DOOR,
+            Material.WOOD_DOOR,
+            Material.WOODEN_DOOR,
+            Material.SPRUCE_DOOR,
+
+            // Terracotta
+            Material.GRAY_GLAZED_TERRACOTTA,
+            Material.GREEN_GLAZED_TERRACOTTA,
+            Material.CYAN_GLAZED_TERRACOTTA,
+            Material.BROWN_GLAZED_TERRACOTTA,
+            Material.BLACK_GLAZED_TERRACOTTA,
+            Material.BLUE_GLAZED_TERRACOTTA,
+            Material.RED_GLAZED_TERRACOTTA,
+            Material.MAGENTA_GLAZED_TERRACOTTA,
+            Material.PINK_GLAZED_TERRACOTTA,
+            Material.LIGHT_BLUE_GLAZED_TERRACOTTA,
+            Material.ORANGE_GLAZED_TERRACOTTA,
+            Material.PURPLE_GLAZED_TERRACOTTA,
+            Material.SILVER_GLAZED_TERRACOTTA,
+            Material.WHITE_GLAZED_TERRACOTTA,
+            Material.YELLOW_GLAZED_TERRACOTTA,
+            Material.LIME_GLAZED_TERRACOTTA,
+
+            // Stairs
+            Material.ACACIA_STAIRS,
+            Material.BIRCH_WOOD_STAIRS,
+            Material.BRICK_STAIRS,
+            Material.COBBLESTONE_STAIRS,
+            Material.DARK_OAK_STAIRS,
+            Material.JUNGLE_WOOD_STAIRS,
+            Material.NETHER_BRICK_STAIRS,
+            Material.PURPUR_STAIRS,
+            Material.QUARTZ_STAIRS,
+            Material.RED_SANDSTONE_STAIRS,
+            Material.SANDSTONE_STAIRS,
+            Material.SMOOTH_STAIRS,
+            Material.SPRUCE_WOOD_STAIRS,
+            Material.WOOD_STAIRS,
+            };
+
     private static final Material[] NON_ANCHOR_POINTS = new Material[] {
             Material.AIR,
             Material.TORCH,
@@ -49,159 +189,111 @@ public class MinecraftHelper {
             Material.BROWN_MUSHROOM,
             };
 
-    private static final HashMap<Material, int[]> MATERIAL_ROTATION_DATA;
+    private static final HashMap<Material, int[]> MATERIAL_ROTATION_DATA = new HashMap<>();
     static {
-        HashMap<Material, int[]> aMap = new HashMap<>();
-
-        aMap.put(Material.ACACIA_DOOR, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.ACACIA_DOOR, new int[] {
                 1, 2, 3, 0, 5, 6, 7, 4, 8, 9, 10, 11, 3, 0, 1, 2, 7, 4, 5, 6, 8, 9, 10, 11
         });
-
-        aMap.put(Material.ACACIA_STAIRS, new int[] {2, 3, 1, 0, 6, 7, 5, 4, 3, 2, 0, 1, 7, 6, 4, 5});
-
-        aMap.put(Material.ACTIVATOR_RAIL, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.ACACIA_STAIRS, new int[] {2, 3, 1, 0, 6, 7, 5, 4, 3, 2, 0, 1, 7, 6, 4, 5});
+        MATERIAL_ROTATION_DATA.put(Material.ACTIVATOR_RAIL, new int[] {
                 1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 6, 7, 9, 8, 12, 13, 11, 10
         });
-
-        aMap.put(Material.ANVIL, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.ANVIL, new int[] {
                 1, 2, 3, 0, 5, 6, 7, 4, 9, 10, 11, 8, 3, 0, 1, 2, 7, 4, 5, 6, 11, 8, 9, 10
         });
-
-        aMap.put(Material.BED_BLOCK, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.BED_BLOCK, new int[] {
                 1, 2, 3, 0, 1, 2, 3, 0, 9, 10, 11, 8, 9, 10, 11, 8, 3, 0, 1, 2, 3, 0, 1, 2, 11, 8, 9, 10, 11, 8, 9, 10
         });
-
-        aMap.put(Material.BLACK_GLAZED_TERRACOTTA, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.BLACK_GLAZED_TERRACOTTA, new int[] {
                 1, 2, 3, 0, 3, 0, 1, 2
         });
-
-        aMap.put(Material.BONE_BLOCK, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.BONE_BLOCK, new int[] {
                 0, 1, 2, 3, 8, 5, 6, 7, 4, 0, 1, 2, 3, 8, 5, 6, 7, 4
         });
-
-        aMap.put(Material.CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
-
-        aMap.put(Material.DETECTOR_RAIL, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.DETECTOR_RAIL, new int[] {
                 1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 6, 7, 9, 8, 12, 13, 11, 10
         });
-
-        aMap.put(Material.DIODE_BLOCK_OFF, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.DIODE_BLOCK_OFF, new int[] {
                 1, 2, 3, 0, 5, 6, 7, 4, 9, 10, 11, 8, 13, 14, 15, 12, 3, 0, 1, 2, 7, 4, 5, 6, 11, 8, 9, 10, 15, 12, 13,
                 14
         });
-
-        aMap.put(Material.DIODE_BLOCK_ON, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.DIODE_BLOCK_ON, new int[] {
                 1, 2, 3, 0, 5, 6, 7, 4, 9, 10, 11, 8, 13, 14, 15, 12, 3, 0, 1, 2, 7, 4, 5, 6, 11, 8, 9, 10, 15, 12, 13,
                 14
         });
-
-        aMap.put(Material.DISPENSER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.DROPPER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.END_ROD, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.ENDER_CHEST, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.FENCE_GATE, new int[] {1, 2, 3, 0, 5, 6, 7, 4, 3, 0, 1, 2, 7, 4, 5, 6});
-
-        aMap.put(Material.FURNACE, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
-
-        aMap.put(Material.HAY_BLOCK, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.DISPENSER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.DROPPER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.END_ROD, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.ENDER_CHEST, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.FENCE_GATE, new int[] {1, 2, 3, 0, 5, 6, 7, 4, 3, 0, 1, 2, 7, 4, 5, 6});
+        MATERIAL_ROTATION_DATA.put(Material.FURNACE, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.HAY_BLOCK, new int[] {
                 0, 1, 2, 3, 8, 5, 6, 7, 4, 0, 1, 2, 3, 8, 5, 6, 7, 4
         });
-
-        aMap.put(Material.HOPPER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.IRON_TRAPDOOR, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.HOPPER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.IRON_TRAPDOOR, new int[] {
                 3, 2, 0, 1, 7, 6, 4, 5, 11, 10, 8, 9, 15, 14, 12, 13, 2, 3, 1, 0, 6, 7, 5, 4, 10, 11, 9, 8, 14, 15, 13,
                 12
         });
-
-        aMap.put(Material.JACK_O_LANTERN, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.JACK_O_LANTERN, new int[] {
                 1, 2, 3, 0, 3, 0, 1, 2
         });
-
-        aMap.put(Material.LADDER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
-
-        aMap.put(Material.LEVER, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.LADDER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.LEVER, new int[] {
                 7, 3, 4, 3, 1, 6, 5, 0, 15, 11, 12, 10, 9, 14, 13, 8, 7, 4, 3, 1, 2, 6, 5, 0, 15, 12, 11, 9, 10, 14, 13,
                 8
         });
-
-        aMap.put(Material.LOG_2, new int[] {0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0, 1, 2, 3, 8, 9, 6, 7, 4, 5});
-
-        aMap.put(Material.LOG, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.LOG_2,
+                                   new int[] {0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0, 1, 2, 3, 8, 9, 6, 7, 4, 5});
+        MATERIAL_ROTATION_DATA.put(Material.LOG, new int[] {
                 0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7
         });
-
-        aMap.put(Material.OBSERVER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.PISTON_BASE, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.OBSERVER, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.PISTON_BASE, new int[] {
                 0, 1, 5, 4, 2, 3, 6, 7, 8, 9, 13, 12, 10, 11, 0, 1, 4, 5, 3, 2, 6, 7, 8, 9, 12, 13, 11, 10
         });
-
-        aMap.put(Material.PISTON_EXTENSION, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.PISTON_EXTENSION, new int[] {
                 0, 1, 5, 4, 2, 3, 6, 7, 8, 9, 13, 12, 10, 11, 0, 1, 4, 5, 3, 2, 6, 7, 8, 9, 12, 13, 11, 10
         });
-
-        aMap.put(Material.PISTON_STICKY_BASE, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.PISTON_STICKY_BASE, new int[] {
                 0, 1, 5, 4, 2, 3, 6, 7, 8, 9, 13, 12, 10, 11, 0, 1, 4, 5, 3, 2, 6, 7, 8, 9, 12, 13, 11, 10
         });
-
-        aMap.put(Material.POWERED_RAIL, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.POWERED_RAIL, new int[] {
                 1, 0, 5, 4, 2, 3, 6, 7, 9, 8, 13, 12, 10, 11, 1, 0, 4, 5, 3, 2, 6, 7, 9, 8, 12, 13, 11, 10
         });
-
-        aMap.put(Material.PUMPKIN, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.PUMPKIN, new int[] {
                 1, 2, 3, 0, 3, 0, 1, 2
         });
-
-        aMap.put(Material.QUARTZ_BLOCK, new int[] {0, 1, 2, 4, 3, 0, 1, 2, 4, 3});
-
-        aMap.put(Material.RAILS, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.QUARTZ_BLOCK, new int[] {0, 1, 2, 4, 3, 0, 1, 2, 4, 3});
+        MATERIAL_ROTATION_DATA.put(Material.RAILS, new int[] {
                 1, 0, 5, 4, 2, 3, 7, 8, 9, 6, 1, 0, 4, 5, 3, 2, 9, 6, 7, 8
         });
-
-        aMap.put(Material.REDSTONE_TORCH_OFF, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
-
-        aMap.put(Material.REDSTONE_TORCH_ON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
-
-        aMap.put(Material.SIGN_POST, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.REDSTONE_TORCH_OFF, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
+        MATERIAL_ROTATION_DATA.put(Material.REDSTONE_TORCH_ON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
+        MATERIAL_ROTATION_DATA.put(Material.SIGN_POST, new int[] {
                 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                 11
         });
-
-        aMap.put(Material.SKULL, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
-
-        aMap.put(Material.STANDING_BANNER, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.SKULL, new int[] {0, 1, 5, 4, 2, 3, 6, 7, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.STANDING_BANNER, new int[] {
                 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                 11
         });
-
-        aMap.put(Material.STONE_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
-
-        aMap.put(Material.TORCH, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
-
-        aMap.put(Material.TRAP_DOOR, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.STONE_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
+        MATERIAL_ROTATION_DATA.put(Material.TORCH, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
+        MATERIAL_ROTATION_DATA.put(Material.TRAP_DOOR, new int[] {
                 3, 2, 0, 1, 7, 6, 4, 5, 11, 10, 8, 9, 15, 14, 12, 13, 2, 3, 1, 0, 6, 7, 5, 4, 10, 11, 9, 8, 14, 15, 13,
                 12
         });
-
-        aMap.put(Material.TRAPPED_CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
-
-        aMap.put(Material.VINE, new int[] {
+        MATERIAL_ROTATION_DATA.put(Material.TRAPPED_CHEST, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.VINE, new int[] {
                 2, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15, 8, 8, 1, 9, 2, 10, 3, 11, 4, 12, 5, 13, 6, 14, 7,
                 15
         });
-
-        aMap.put(Material.WALL_BANNER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
-
-        aMap.put(Material.WALL_SIGN, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
-
-        aMap.put(Material.WOOD_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
-
-        MATERIAL_ROTATION_DATA = aMap;
+        MATERIAL_ROTATION_DATA.put(Material.WALL_BANNER, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.WALL_SIGN, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
+        MATERIAL_ROTATION_DATA.put(Material.WOOD_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
     }
     /**
      * A method to determine whether a certain material can be used as an anchor point for path supports.
@@ -252,6 +344,14 @@ public class MinecraftHelper {
             return data[metaData];
         }
         return data[metaData + data.length / 2];
+    }
+
+    public static Material[] getPlaceLate() {
+        return PLACE_LATE.clone();
+    }
+
+    public static Material[] getToRotate() {
+        return TO_ROTATE.clone();
     }
 }
 

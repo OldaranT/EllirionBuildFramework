@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.verification.VerificationMode;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -23,7 +22,7 @@ import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
-import com.ellirion.buildframework.util.MockAssist;
+import com.ellirion.buildframework.util.MockHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,36 +79,35 @@ public class TemplateTest {
 
         @Test
         public void moveHologram_whenMoveHologramIsCalled_shouldUpdateLocation() {
-            World w = MockAssist.createDefaultWorld();
-            //arrange
+            World w = MockHelper.createDefaultWorld();
 
+            // Arrange
             for (BlockFace bf : BlockFace.values()) {
                 int x = 0;
                 int y = 0;
                 int z = 0;
 
-                if (bf == BlockFace.UP) {
-                    y++;
-                }
-
-                if (bf == BlockFace.DOWN) {
-                    y--;
-                }
-
-                if (bf == BlockFace.EAST) {
-                    x++;
-                }
-
-                if (bf == BlockFace.WEST) {
-                    x--;
-                }
-
-                if (bf == BlockFace.NORTH) {
-                    z--;
-                }
-
-                if (bf == BlockFace.SOUTH) {
-                    z++;
+                switch (bf) {
+                    case UP:
+                        y++;
+                        break;
+                    case DOWN:
+                        y--;
+                        break;
+                    case EAST:
+                        x++;
+                        break;
+                    case WEST:
+                        x--;
+                        break;
+                    case NORTH:
+                        z--;
+                        break;
+                    case SOUTH:
+                        z++;
+                        break;
+                    default:
+                        break;
                 }
 
                 Location toCheckLocation = new Location(w, 0, 0, 0);
@@ -120,10 +118,10 @@ public class TemplateTest {
                 TemplateHologram toCheckHologram = createTemplateHologram(template, toCheckLocation);
                 TemplateHologram resultHologram = createTemplateHologram(template, resultLocation);
 
-                //act
+                // Act
                 toCheckHologram.moveHologram(1, bf);
 
-                //assert
+                // Assert
                 Assert.assertEquals(resultHologram, toCheckHologram);
             }
         }
@@ -223,61 +221,61 @@ public class TemplateTest {
 
         @Test
         public void rotateTemplate_whenRotatingClockwiseSquareTemplate_shouldUpdateTemplate() {
-            //arrange
+            // Arrange
             int xLength = 3;
             int zLength = 3;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateClockwiseTemplate(xLength, zLength);
 
-            //act
+            // Act
             templateToCheck.rotateTemplate(true);
 
-            //assert
+            // Assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
 
         @Test
         public void rotateTemplate_whenRotatingCounterClockwiseSquareTemplate_shouldUpdateTemplate() {
-            //arrange
+            // Arrange
             int xLength = 3;
             int zLength = 3;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateCounterClockwiseTemplate(xLength, zLength);
 
-            //act
+            // Act
             templateToCheck.rotateTemplate(false);
 
-            //assert
+            // Assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
 
         @Test
-        public void rotateTemplate_whenRotatingClockwiseRectangleTemplate_shouldUpdateTemplate() {
-            //arrange
+        public void rotateTemplate_whenRotatingRectangularTemplateClockwise_shouldReturnTrue() {
+            // Arrange
             int xLength = 2;
             int zLength = 4;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateClockwiseTemplate(xLength, zLength);
 
-            //act
+            // Act
             templateToCheck.rotateTemplate(true);
 
-            //assert
+            // Assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
 
         @Test
-        public void rotateTemplate_whenRotatingCounterClockwiseRectangleTemplate_shouldUpdateTemplate() {
-            //arrange
+        public void rotateTemplate_whenRotatingCounterClockwiseRectangleTemplate_shouldShouldReturnTrue() {
+            // Arrange
             int xLength = 2;
             int zLength = 4;
             Template templateToCheck = createRotateTemplate(xLength, zLength);
             Template templateResult = createRotateCounterClockwiseTemplate(xLength, zLength);
 
-            //act
+            // Act
             templateToCheck.rotateTemplate(false);
 
-            //assert
+            // Assert
             Assert.assertEquals(templateResult, templateToCheck);
         }
     }
@@ -450,8 +448,7 @@ public class TemplateTest {
             TemplateBlock[][][] blocks = t.getTemplateBlocks();
             int invocationCount = blocks.length * blocks[0].length * blocks[0][0].length;
 
-            VerificationMode mode = times(invocationCount);
-            verify(MockAssist.MOCK_AIR_BLOCK, mode).setType(any(), eq(false));
+            verify(MockHelper.MOCK_AIR_BLOCK, times(invocationCount)).setType(any(), eq(false));
         }
 
         private Template createTemplate() {
@@ -476,7 +473,7 @@ public class TemplateTest {
 
         private Location createDefaultLocation() {
             final Location mockLocation = mock(Location.class);
-            World w = MockAssist.createDefaultWorld();
+            World w = MockHelper.createDefaultWorld();
             when(mockLocation.getWorld()).thenReturn(w);
             return mockLocation;
         }

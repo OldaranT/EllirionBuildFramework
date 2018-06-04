@@ -28,148 +28,7 @@ import java.util.Map;
 
 public class Template {
 
-    private static final Material[] PLACE_LATE = new Material[] {
-            Material.WALL_SIGN,
-            Material.WALL_BANNER,
-            Material.BANNER,
-            Material.LADDER,
-            Material.PAINTING,
-            Material.ITEM_FRAME,
-            Material.STONE_BUTTON,
-            Material.WOOD_BUTTON,
-            Material.LEVER,
-            Material.REDSTONE,
-            Material.REDSTONE_TORCH_OFF,
-            Material.REDSTONE_TORCH_ON,
-            Material.VINE,
-            Material.TRIPWIRE_HOOK,
-            Material.PAINTING,
-            Material.PISTON_BASE,
-            Material.PISTON_EXTENSION,
-            Material.PISTON_STICKY_BASE,
-            Material.TORCH,
-            Material.ACACIA_DOOR,
-            Material.BIRCH_DOOR,
-            Material.DARK_OAK_DOOR,
-            Material.IRON_DOOR,
-            Material.JUNGLE_DOOR,
-            Material.SPRUCE_DOOR,
-            Material.WOOD_DOOR,
-            Material.WOODEN_DOOR,
-            Material.IRON_DOOR_BLOCK,
-            Material.MELON_STEM,
-            Material.PUMPKIN_STEM
-    };
-
-    private static final Material[] TO_ROTATE = new Material[] {
-
-            //Building blocks
-            Material.LOG_2,
-            Material.LOG,
-            Material.BONE_BLOCK,
-            Material.HAY_BLOCK,
-            Material.JACK_O_LANTERN,
-            Material.PUMPKIN,
-            Material.QUARTZ_BLOCK,
-
-            //Decoration blocks
-            Material.CHEST,
-            Material.ENDER_CHEST,
-            Material.FURNACE,
-            Material.ANVIL,
-            Material.LADDER,
-            Material.VINE,
-            Material.WALL_BANNER,
-            Material.STANDING_BANNER,
-            Material.BED_BLOCK,
-            Material.END_ROD,
-            Material.WALL_SIGN,
-            Material.SIGN_POST,
-            Material.SKULL,
-            Material.TORCH,
-
-            //Redstone
-            Material.DIODE_BLOCK_OFF,
-            Material.DIODE_BLOCK_ON,
-            Material.DISPENSER,
-            Material.DROPPER,
-            Material.OBSERVER,
-            Material.HOPPER,
-            Material.IRON_TRAPDOOR,
-            Material.TRAP_DOOR,
-            Material.LEVER,
-            Material.REDSTONE_TORCH_OFF,
-            Material.REDSTONE_TORCH_ON,
-            Material.STONE_BUTTON,
-            Material.WOOD_BUTTON,
-            Material.PISTON_BASE,
-            Material.PISTON_EXTENSION,
-            Material.PISTON_MOVING_PIECE,
-            Material.PISTON_STICKY_BASE,
-            Material.TRAPPED_CHEST,
-
-            //Fence Gate
-            Material.FENCE_GATE,
-            Material.ACACIA_FENCE,
-            Material.ACACIA_FENCE_GATE,
-            Material.BIRCH_FENCE_GATE,
-            Material.DARK_OAK_FENCE_GATE,
-            Material.JUNGLE_FENCE_GATE,
-            Material.SPRUCE_FENCE_GATE,
-
-            //Rail
-            Material.ACTIVATOR_RAIL,
-            Material.DETECTOR_RAIL,
-            Material.RAILS,
-            Material.POWERED_RAIL,
-
-            //Door
-            Material.ACACIA_DOOR,
-            Material.BIRCH_DOOR,
-            Material.DARK_OAK_DOOR,
-            Material.IRON_DOOR_BLOCK,
-            Material.JUNGLE_DOOR,
-            Material.WOOD_DOOR,
-            Material.WOODEN_DOOR,
-            Material.SPRUCE_DOOR,
-
-            //Terracotta
-            Material.GRAY_GLAZED_TERRACOTTA,
-            Material.GREEN_GLAZED_TERRACOTTA,
-            Material.CYAN_GLAZED_TERRACOTTA,
-            Material.BROWN_GLAZED_TERRACOTTA,
-            Material.BLACK_GLAZED_TERRACOTTA,
-            Material.BLUE_GLAZED_TERRACOTTA,
-            Material.RED_GLAZED_TERRACOTTA,
-            Material.MAGENTA_GLAZED_TERRACOTTA,
-            Material.PINK_GLAZED_TERRACOTTA,
-            Material.LIGHT_BLUE_GLAZED_TERRACOTTA,
-            Material.ORANGE_GLAZED_TERRACOTTA,
-            Material.PURPLE_GLAZED_TERRACOTTA,
-            Material.SILVER_GLAZED_TERRACOTTA,
-            Material.WHITE_GLAZED_TERRACOTTA,
-            Material.YELLOW_GLAZED_TERRACOTTA,
-            Material.LIME_GLAZED_TERRACOTTA,
-
-            //Stairs
-            Material.ACACIA_STAIRS,
-            Material.BIRCH_WOOD_STAIRS,
-            Material.BRICK_STAIRS,
-            Material.COBBLESTONE_STAIRS,
-            Material.DARK_OAK_STAIRS,
-            Material.JUNGLE_WOOD_STAIRS,
-            Material.NETHER_BRICK_STAIRS,
-            Material.PURPUR_STAIRS,
-            Material.QUARTZ_STAIRS,
-            Material.RED_SANDSTONE_STAIRS,
-            Material.SANDSTONE_STAIRS,
-            Material.SMOOTH_STAIRS,
-            Material.SPRUCE_WOOD_STAIRS,
-            Material.WOOD_STAIRS,
-            };
-
     private static final String DATA = "data";
-    private static final String TEMPLATE_TOOL = "Template Tool";
     private static final List<String> POSSIBLE_MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
             "Markers");
     @Getter @Setter private String templateName;
@@ -225,14 +84,6 @@ public class Template {
     }
 
     /**
-     * Return key for tools as a string.
-     * @return key for tool.
-     */
-    public static String getTemplateTool() {
-        return TEMPLATE_TOOL;
-    }
-
-    /**
      * List of all markers from the config.
      * @return final marker list.
      */
@@ -257,7 +108,7 @@ public class Template {
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    if (Arrays.asList(PLACE_LATE).contains(templateBlocks[x][y][z].getMaterial())) {
+                    if (Arrays.asList(MinecraftHelper.getPlaceLate()).contains(templateBlocks[x][y][z].getMaterial())) {
                         if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
                                 doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
@@ -558,7 +409,7 @@ public class Template {
         TemplateBlock[][][] rotatedTemplateBlock = new TemplateBlock[zDepth][yDepth][xDepth];
 
         for (int y = 0; y < yDepth; y++) {
-            //for each Y rotate x and z.
+            // For each Y rotate x and z.
             for (int x = 0; x < zDepth; x++) {
                 for (int z = 0; z < xDepth; z++) {
                     TemplateBlock block;
@@ -567,7 +418,7 @@ public class Template {
                     } else {
                         block = templateBlocks[xDepth - z - 1][y][x];
                     }
-                    if (Arrays.asList(TO_ROTATE).contains(block.getMaterial())) {
+                    if (Arrays.asList(MinecraftHelper.getToRotate()).contains(block.getMaterial())) {
                         Material currentMaterial = block.getMaterial();
                         int currentMetaData = (int) block.getMetadata().getData();
                         // Some materials have the same array, so to prevent copying and pasting of the same array 16 times, we get other arrays that are the same

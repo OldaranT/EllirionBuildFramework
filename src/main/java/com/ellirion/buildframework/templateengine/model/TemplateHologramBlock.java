@@ -28,15 +28,7 @@ public class TemplateHologramBlock {
 
         TemplateHologramBlock other = (TemplateHologramBlock) obj;
 
-        if (!loc.equals(other.loc)) {
-            return false;
-        }
-
-        if (!mat.equals(other.mat)) {
-            return false;
-        }
-
-        return true;
+        return loc.equals(other.loc) && mat.equals(other.mat);
     }
 
     @Override
