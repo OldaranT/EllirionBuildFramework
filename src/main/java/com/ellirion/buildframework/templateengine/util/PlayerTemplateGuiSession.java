@@ -229,7 +229,6 @@ public class PlayerTemplateGuiSession implements Listener {
         // If the item is a template tool return and do nothing.
         if (tools.containsKey(itemStack)) {
             event.setCancelled(true);
-            return;
         }
     }
 }
