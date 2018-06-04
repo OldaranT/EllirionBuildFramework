@@ -7,22 +7,19 @@ import com.ellirion.buildframework.model.Point;
 
 public class DoorWrapper {
 
-    @Getter @Setter private MaterialData materialData;
-    @Getter @Setter private Byte top;
-    @Getter @Setter private Byte bottom;
+    @Getter @Setter private MaterialData bottomMaterialData;
+    @Getter @Setter private MaterialData topMaterialData;
     @Getter @Setter private Point point;
 
     /**
      * Constructor.
-     * @param materialData materialdata of a door.
-     * @param top top part of a door.
-     * @param bottom bottom part of a door.
+     * @param bottomMaterialData Materialdata of bottom part of the door.
+     * @param topMaterialData Materialdata of top part of the door.
      * @param point point of the door.
      */
-    public DoorWrapper(final MaterialData materialData, final Byte top, final Byte bottom, final Point point) {
-        this.materialData = materialData;
-        this.top = top;
-        this.bottom = bottom;
+    public DoorWrapper(final MaterialData bottomMaterialData, final MaterialData topMaterialData, final Point point) {
+        this.bottomMaterialData = bottomMaterialData;
+        this.topMaterialData = topMaterialData;
         this.point = point;
     }
 }

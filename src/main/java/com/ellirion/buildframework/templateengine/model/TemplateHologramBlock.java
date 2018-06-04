@@ -1,7 +1,7 @@
 package com.ellirion.buildframework.templateengine.model;
 
-import lombok.Setter;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
@@ -18,5 +18,21 @@ public class TemplateHologramBlock {
     public TemplateHologramBlock(final Location location, final Material material) {
         loc = location.clone();
         mat = material;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TemplateHologramBlock)) {
+            return false;
+        }
+
+        TemplateHologramBlock other = (TemplateHologramBlock) obj;
+
+        return loc.equals(other.loc) && mat.equals(other.mat);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
