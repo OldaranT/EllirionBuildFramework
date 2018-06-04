@@ -146,10 +146,9 @@ public class WorldHelper {
         }
 
         BlockChange apply() {
+            // Note what the current block state was so we can revert back to it.
             Block block = getBlock(location);
             BlockChange change;
-            block.setType(material);
-            block.setData(data);
 
             TileEntity te = ((CraftWorld) location.getWorld()).getTileEntityAt(location.getBlockX(),
                                                                                location.getBlockY(),
@@ -161,6 +160,11 @@ public class WorldHelper {
                 change = new BlockChange(location, block.getType(), block.getData());
             }
 
+            // Apply the changes we were supposed to make.
+            block.setType(material);
+            block.setData(data);
+
+            // Return the BlockChange to be used for reverting.
             return change;
         }
     }
