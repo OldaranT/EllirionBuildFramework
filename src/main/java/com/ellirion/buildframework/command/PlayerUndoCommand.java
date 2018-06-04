@@ -17,9 +17,11 @@ public class PlayerUndoCommand implements CommandExecutor {
         }
 
         Player player = (Player) commandSender;
-
-        TransactionManager.undoLastTransaction(player).except(ex -> {
-            player.sendMessage(ChatColor.DARK_RED + ex.toString());
+        TransactionManager.undoLastTransaction(player).then(bool -> {
+            player.sendMessage(ChatColor.GREEN + "Undo completed.");
+            return bool;
+        }).except(ex -> {
+            player.sendMessage(ChatColor.RED + ex.toString());
         });
 
         return true;
