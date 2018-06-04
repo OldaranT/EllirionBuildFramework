@@ -4,9 +4,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.util.WorldHelper;
@@ -16,6 +18,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({WorldHelper.class})
+@PowerMockIgnore("javax.management.*")
 public class WorldHelperTest {
 
     @Test
@@ -78,10 +81,14 @@ public class WorldHelperTest {
         Block block = mock(Block.class);
         Material material = mock(Material.class);
         Location location = mock(Location.class);
+        World world = mock(CraftWorld.class);
+
+        when(location.getWorld()).thenReturn(world);
+
         byte metaData = 0;
 
         PowerMockito.stub(PowerMockito.method(WorldHelper.class, "getBlock", Location.class)).toReturn(block);
-        
+
         t1.start();
 
         verify(block, times(0)).setType(material);
