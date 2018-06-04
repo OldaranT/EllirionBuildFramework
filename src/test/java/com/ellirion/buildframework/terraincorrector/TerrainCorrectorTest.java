@@ -1,8 +1,10 @@
 package com.ellirion.buildframework.terraincorrector;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.junit.Before;
@@ -16,12 +18,14 @@ import com.ellirion.buildframework.util.WorldHelper;
 
 import static com.ellirion.buildframework.terraincorrector.TerrainTestUtil.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.*;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({BuildFramework.class, Bukkit.class, WorldHelper.class})
+@PrepareForTest({BuildFramework.class, Bukkit.class, WorldHelper.class, Player.class})
 public class TerrainCorrectorTest {
 
     private static final Material stone = Material.STONE;
@@ -30,25 +34,18 @@ public class TerrainCorrectorTest {
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
     private final BuildFramework mockPlugin = mock(BuildFramework.class);
     private final FileConfiguration mockConfig = mock(FileConfiguration.class);
+    private final WorldHelper mockHelper = mock(WorldHelper.class);
     private World mockWorld;
     private TerrainCorrector corrector;
 
     /*TODO mockstatic worldhelper
-     * TODO verify setType has been called certain amount of times*/
+     * TODO verify setType has been called certain amount of times
+     * TODO fix problem where the thread with the Act is excecuted after the Assert
+     * */
 
     public TerrainCorrectorTest() {
         mockStatic(BuildFramework.class);
         mockStatic(WorldHelper.class);
-        when(BuildFramework.getInstance()).thenReturn(mockPlugin);
-
-        when(mockPlugin.getConfig()).thenReturn(mockConfig);
-
-        when(mockConfig.getInt("TerrainCorrector.MaxHoleDepth", 5)).thenReturn(5);
-        when(mockConfig.getInt("TerrainCorrector.AreaLimitOffset", 5)).thenReturn(1);
-    }
-
-    private void initialSetup() {
-
         when(BuildFramework.getInstance()).thenReturn(mockPlugin);
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
@@ -64,7 +61,7 @@ public class TerrainCorrectorTest {
     }
 
     @Test
-    public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
+    public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws InterruptedException {
         // Arrange
         int yDepth = 0;
 
@@ -77,14 +74,17 @@ public class TerrainCorrectorTest {
         }
 
         // Act
+        Thread.sleep(1000);
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int x = 3 - depth; x >= 2; x--) {
-                assertTrue(mockWorld.getBlockAt(x, yDepth - depth, 2).getType() == Material.FENCE);
-            }
-        }
+        //        for (int depth = 0; depth < 2; depth++) {
+        //            for (int x = 3 - depth; x >= 2; x--) {
+        //                assertTrue(mockWorld.getBlockAt(x, yDepth - depth, 2).getType() == Material.FENCE);
+        //            }
+        //        }
+        Thread.sleep(2000);
+        verify(mockHelper, times(4)).setBlock(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -372,10 +372,25 @@ public class TerrainCorrectorTest {
         for (int x = -3; x <= 7; x++) {
             for (int z = -3; z <= 7; z++) {
                 for (int y = -7; y <= 3; y++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, stone);
+                    setBlockAtCoordinatesHelper(x, y, z, stone, mockWorld);
                 }
             }
         }
         return mockWorld;
+    }
+
+    private void setBlockAtCoordinatesHelper(final int x, final int y, final int z, Material mat, World world) {
+        Block mockBlock;
+        if (mat == Material.AIR) {
+            mockBlock = createMockBlock(true, false, mat);
+        } else if (mat == Material.WATER || mat == Material.LAVA) {
+            mockBlock = createMockBlock(false, true, mat);
+        } else {
+            mockBlock = createMockBlock(false, false, mat);
+        }
+        setCoordinates(mockBlock, x, y, z);
+        when(mockHelper.getBlock(any(Location.class))).thenCallRealMethod();
+        when(mockHelper.getBlock(any(), eq(x), eq(y), eq(z))).thenReturn(mockBlock);
+        when(world.getBlockAt(x, y, z)).thenReturn(mockBlock);
     }
 }

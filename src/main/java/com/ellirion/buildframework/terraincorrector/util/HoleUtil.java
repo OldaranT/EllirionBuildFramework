@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.ellirion.buildframework.util.WorldHelper.*;
+
 public class HoleUtil {
 
     /**
@@ -24,7 +26,7 @@ public class HoleUtil {
 
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
-                Block block = world.getBlockAt(x, y, z);
+                Block block = getBlock(world, x, y, z);
                 if ((block.isEmpty() || block.isLiquid() || !block.getType().isSolid()) &&
                     holes.stream().noneMatch(hole -> hole.contains(block))) {
 
@@ -112,22 +114,22 @@ public class HoleUtil {
         switch (dir) {
             case 0:
                 // NORTH
-                return world.getBlockAt(x, y, z - 1);
+                return getBlock(world, x, y, z - 1);
             case 1:
                 // EAST
-                return world.getBlockAt(x + 1, y, z);
+                return getBlock(world, x + 1, y, z);
             case 2:
                 // SOUTH
-                return world.getBlockAt(x, y, z + 1);
+                return getBlock(world, x, y, z + 1);
             case 3:
                 // WEST
-                return world.getBlockAt(x - 1, y, z);
+                return getBlock(world, x - 1, y, z);
             case 4:
                 // UP
-                return world.getBlockAt(x, y + 1, z);
+                return getBlock(world, x, y + 1, z);
             case 5:
                 // DOWN
-                return world.getBlockAt(x, y - 1, z);
+                return getBlock(world, x, y - 1, z);
 
             default:
                 throw new IndexOutOfBoundsException();

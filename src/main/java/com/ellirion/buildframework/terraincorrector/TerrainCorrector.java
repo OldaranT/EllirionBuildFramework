@@ -83,6 +83,7 @@ public class TerrainCorrector {
             List<Block> toRemove = getBlocksInBoundingBox();
             setListToAir(toRemove);
 
+            // NULLPOINTER DURING UNIT TESTS
             TransactionManager.addDoneTransaction(player,
                                                   new SequenceTransaction(TRANSACTIONS.toArray(new Transaction[0])));
         }, true);
