@@ -41,7 +41,7 @@ public class TerrainValidator {
         this.boundingBox = boundingBox;
 
         if (checkForBoundingBoxes()) {
-            model.getErrors().add(String.format("Another object that has been placed is within %d bocks",
+            model.getErrors().add(String.format("Another object that has been placed is within %d blocks",
                                                 BOUNDING_BOX_CHECK_RADIUS));
             model.setSucceeded(false);
         }

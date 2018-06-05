@@ -12,6 +12,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.terraincorrector.model.TerrainValidatorModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,10 +72,10 @@ public class TerrainValidatorTest {
         setFloor(world);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -82,10 +83,10 @@ public class TerrainValidatorTest {
         // Arrange
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -95,10 +96,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(anyInt(), eq(5), eq(5))).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -108,10 +109,10 @@ public class TerrainValidatorTest {
         replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_AIR);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -121,10 +122,10 @@ public class TerrainValidatorTest {
         replaceFloorWithSpecifiedBlock(world, boundingBox, 11, MOCK_BLOCK_LIQUID);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -136,10 +137,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(5, 5, 5)).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -161,10 +162,10 @@ public class TerrainValidatorTest {
         }
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -174,10 +175,10 @@ public class TerrainValidatorTest {
         replaceFloorWithSpecifiedBlock(world, boundingBox, 12, MOCK_BLOCK_AIR);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -191,10 +192,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(0, 0, 1)).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -207,10 +208,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(0, 0, 5)).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        final boolean result = validator.validate(boundingBox, world);
+        final TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -221,10 +222,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(-1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -237,10 +238,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(2, 2, 2)).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -253,10 +254,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(2, 16, 2)).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -265,10 +266,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(anyInt(), anyInt(), anyInt())).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -290,10 +291,10 @@ public class TerrainValidatorTest {
         }
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -306,10 +307,10 @@ public class TerrainValidatorTest {
         }
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -320,10 +321,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(anyInt(), eq(1), anyInt())).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -342,10 +343,10 @@ public class TerrainValidatorTest {
         when(world.getBlockAt(13, 1, -4)).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertTrue(result);
+        assertTrue(result.isSucceeded());
     }
 
     @Test
@@ -359,10 +360,10 @@ public class TerrainValidatorTest {
         when(TerrainManager.getBoundingBoxes()).thenReturn(boxList);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -376,10 +377,10 @@ public class TerrainValidatorTest {
         when(TerrainManager.getBoundingBoxes()).thenReturn(boxList);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     @Test
@@ -398,10 +399,10 @@ public class TerrainValidatorTest {
         setBlockAtCoordinates(world, 0, 0, 1, Material.WATER);
 
         // Act
-        boolean result = validator.validate(boundingBox, world);
+        TerrainValidatorModel result = validator.validate(boundingBox, world);
 
         // Assert
-        assertFalse(result);
+        assertFalse(result.isSucceeded());
     }
 
     private void setFloor(World world) {
