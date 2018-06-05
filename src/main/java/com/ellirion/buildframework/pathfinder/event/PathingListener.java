@@ -3,6 +3,9 @@ package com.ellirion.buildframework.pathfinder.event;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,13 +13,33 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.PathingManager;
 import com.ellirion.buildframework.pathfinder.model.PathingGraph;
 import com.ellirion.buildframework.pathfinder.model.PathingSession;
 import com.ellirion.buildframework.pathfinder.model.PathingVertex;
 
-public class PathingListener implements Listener {
+import java.util.Arrays;
+
+public class PathingListener implements Listener, CommandExecutor {
+
+    private static ItemStack PATHING_TOOL;
+
+    /**
+     * Constructor to create the pathing tool.
+     */
+    public PathingListener() {
+        if (PATHING_TOOL != null) {
+            return;
+        }
+        ItemStack a = new ItemStack(Material.STICK);
+        ItemMeta meta = a.getItemMeta();
+        meta.setLore(Arrays.asList("Pathing Tool"));
+        a.setItemMeta(meta);
+        PATHING_TOOL = a;
+    }
 
     /**
      * @param event The event to handle
@@ -28,7 +51,7 @@ public class PathingListener implements Listener {
             return;
         }
 
-        if (event.getItem().getType() == Material.STICK) {
+        if (event.getItem().equals(PATHING_TOOL)) {
             // Stick = path end point selector
             Block block = event.getClickedBlock();
 
@@ -96,5 +119,17 @@ public class PathingListener implements Listener {
         }
 
         player.sendMessage((vert.isVisited() ? ChatColor.GREEN : ChatColor.RED) + "" + vert);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+        if (!(commandSender instanceof Player)) {
+            return false;
+        }
+        Player player = (Player) commandSender;
+
+        player.getInventory().addItem(PATHING_TOOL);
+
+        return true;
     }
 }

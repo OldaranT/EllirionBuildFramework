@@ -68,3 +68,7 @@ commands:
     description: changes the pathfinder config
     usage: /pathconfig, /pc
     aliases: [pathconfig, pc]
+  PathTool:
+    description: give the player the pathing tool
+    usage: /PathTool, /pt
+    aliases: [pt]

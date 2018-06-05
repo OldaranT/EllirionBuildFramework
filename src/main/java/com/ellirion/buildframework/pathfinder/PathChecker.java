@@ -333,12 +333,12 @@ public class PathChecker {
 
     private boolean mayChangeHeight(PathingVertex to) {
         int count = 0;
-        PathingVertex from;
+        PathingVertex from = to.getCameFrom();
 
         // Loop backwards along the known path to assert that a
         // vertical move is valid.
-        while (count < pathLength) {
-            from = to.getCameFrom();
+        // If path length is 4, we check current block and 3 blocks back, so we go until pathLength - 1
+        while (count < (pathLength - 1)) {
             if (from == null) {
                 break;
             }
@@ -346,6 +346,7 @@ public class PathChecker {
             if (from.getData().getY() != to.getData().getY()) {
                 break;
             }
+            from = from.getCameFrom();
             count++;
         }
 

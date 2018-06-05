@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.model.PathingGraph;
 import com.ellirion.buildframework.pathfinder.model.PathingSession;
@@ -14,6 +15,7 @@ import com.ellirion.buildframework.util.async.Promise;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class AStar {
 
@@ -218,6 +220,7 @@ public class AStar {
                     try {
                         Thread.sleep(1);
                     } catch (Exception ex) {
+                        BuildFramework.getInstance().getLogger().log(Level.INFO, ex.getMessage(), ex);
                     }
                     wantVisited = visualThrottle * (System.currentTimeMillis() - startTime) / 1000;
                 }

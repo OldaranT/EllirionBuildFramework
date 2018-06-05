@@ -95,6 +95,7 @@ public class BuildFramework extends JavaPlugin {
         getCommand("HidePath").setExecutor(new CommandHidePath());
         getCommand("HideVisited").setExecutor(new CommandHideVisited());
         getCommand("PathConfig").setExecutor(new CommandPathConfig());
+        getCommand("PathTool").setExecutor(new PathingListener());
         getServer().getPluginManager().registerEvents(new PathingListener(), this);
         createConfig();
         createBlockValueConfig();

@@ -30,7 +30,7 @@ public class PathingGraph implements IGraph<Point> {
     }
 
     /**
-     * Remove the vertex {@code v}.
+     * Remove vertex {@code v}.
      * @param v The vertex
      */
     public void removeVertex(final PathingVertex v) {
@@ -38,7 +38,7 @@ public class PathingGraph implements IGraph<Point> {
     }
 
     /**
-     * Re-add the vertex {@code v}.
+     * Add vertex {@code v}.
      * @param v The vertex
      */
     public void addVertex(final PathingVertex v) {
