@@ -132,8 +132,9 @@ public class Template {
                         !toRotate.contains(w.getBlockAt(locX, locY, locZ).getType())) {
                         continue;
                     }
-                    if (toPlaceLate.contains(templateBlocks[x][y][z].getMaterial())) {
-                        if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
+                    if (toPlaceLate.contains(tMaterial) && !MinecraftHelper.isThisASpecialSnowflake(tMaterial,
+                                                                                                    (int) templateBlocks[x][y][z].getMetadata().getData())) {
+                        if (MinecraftHelper.isDoor(tMaterial)) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
                                 doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
                                                           templateBlocks[x][y + 1][z].getMetadata(),
