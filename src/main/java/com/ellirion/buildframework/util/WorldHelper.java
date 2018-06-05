@@ -156,7 +156,11 @@ public class WorldHelper {
                                                                                location.getBlockY(),
                                                                                location.getBlockZ());
             if (te != null) {
-                change = new BlockChange(location, block.getType(), block.getData(), te.save(new NBTTagCompound()));
+                NBTTagCompound ntc = te.save(new NBTTagCompound());
+                ntc.setInt("x", location.getBlockX());
+                ntc.setInt("y", location.getBlockY());
+                ntc.setInt("z", location.getBlockZ());
+                change = new BlockChange(location, block.getType(), block.getData(), ntc);
                 te.load(new NBTTagCompound());
             } else {
                 change = new BlockChange(location, block.getType(), block.getData());

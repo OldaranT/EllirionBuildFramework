@@ -183,7 +183,6 @@ public class Template {
                         new BlockPosition(below.getX(), below.getY(), below.getZ()));
                 if (te != null) {
                     ntc = te.save(ntc);
-                    te.load(new NBTTagCompound());
                 }
             }
 
@@ -193,27 +192,18 @@ public class Template {
 
             Transaction blockBelow = WorldHelper.setBlock(below.getLocation(),
                                                           Material.STONE, (byte) 0);
-            list.add(blockBelow);
-            blockBelow.getPromise().then((result) -> {
-                NBTTagCompound nbt = block.getData();
-                if (nbt != null) {
-                    nbt.setInt("x", p.getBlockX());
-                    nbt.setInt("y", p.getBlockY());
-                    nbt.setInt("z", p.getBlockZ());
-                }
-                Transaction blockChange = WorldHelper.setBlock(b.getLocation(),
-                                                               block.getMaterial(), block.getMetadata().getData(),
-                                                               nbt);
-                list.add(blockChange);
-                blockChange.getPromise().then((result2) -> {
-                    Transaction revertBelow = WorldHelper.setBlock(below.getLocation(),
-                                                                   a, b1, c);
-                    list.add(revertBelow);
-                });
-            });
-
-            //            list.add(blockChange);
-            //            list.add(revertBelow);
+            NBTTagCompound nbt = block.getData();
+            if (nbt != null) {
+                nbt.setInt("x", p.getBlockX());
+                nbt.setInt("y", p.getBlockY());
+                nbt.setInt("z", p.getBlockZ());
+            }
+            Transaction blockChange = WorldHelper.setBlock(b.getLocation(),
+                                                           block.getMaterial(), block.getMetadata().getData(),
+                                                           nbt);
+            Transaction revertBelow = WorldHelper.setBlock(below.getLocation(),
+                                                           a, b1, c);
+            list.add(new SequenceTransaction(true, blockBelow, blockChange, revertBelow));
         }
 
         // Place doors last.
