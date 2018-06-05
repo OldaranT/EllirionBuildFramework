@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
@@ -19,13 +20,12 @@ import com.ellirion.buildframework.util.WorldHelper;
 import static com.ellirion.buildframework.terraincorrector.TerrainTestUtil.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({BuildFramework.class, Bukkit.class, WorldHelper.class, Player.class})
+@PrepareForTest({BuildFramework.class, Bukkit.class, TerrainCorrector.class, WorldHelper.class, Player.class})
 public class TerrainCorrectorTest {
 
     private static final Material stone = Material.STONE;
@@ -34,7 +34,9 @@ public class TerrainCorrectorTest {
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
     private final BuildFramework mockPlugin = mock(BuildFramework.class);
     private final FileConfiguration mockConfig = mock(FileConfiguration.class);
-    private final WorldHelper mockHelper = mock(WorldHelper.class);
+    //    private final WorldHelper mWH = Mockito.spy(WorldHelper.class);
+    private final WorldHelper mockHelper = PowerMockito.mock(WorldHelper.class);
+    //    private Transaction t;
     private World mockWorld;
     private TerrainCorrector corrector;
 
@@ -46,7 +48,6 @@ public class TerrainCorrectorTest {
     public TerrainCorrectorTest() {
         mockStatic(BuildFramework.class);
         mockStatic(WorldHelper.class);
-
         when(BuildFramework.getInstance()).thenReturn(mockPlugin);
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
@@ -59,12 +60,18 @@ public class TerrainCorrectorTest {
     public void setup() {
         corrector = new TerrainCorrector();
         mockWorld = createDefaultWorld();
+        //        //        t = mock(Transaction.class);
+        //        when(setBlock(any(Location.class), any(Material.class), anyByte())).thenReturn(
+        //                Mockito.spy(Transaction.class));
     }
 
     @Test
     public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws InterruptedException {
         // Arrange
         int yDepth = 0;
+        when(mockHelper.setBlock(any(Location.class), any(Material.class),
+                                 anyByte())).thenReturn(null);
+        //        PowerMockito.spy(WorldHelper.class);
 
         for (int y = 2; y >= -5; y--) {
             for (int x = 2; x <= 5; x++) {
@@ -85,7 +92,11 @@ public class TerrainCorrectorTest {
         //            }
         //        }
         Thread.sleep(2000);
-        verify(mockHelper, times(4)).setBlock(any(), any(), any(), any(), any(), any());
+
+        verifyStatic(WorldHelper.class, times(400));
+        mockHelper.setBlock(mockWorld, 1, 0, 1, Material.FENCE, (byte) 0);
+
+        //        verify(mockHelper, times(20)).setBlock(any(), any(), any());
     }
 
     @Test
@@ -370,10 +381,18 @@ public class TerrainCorrectorTest {
 
     private World createDefaultWorld() {
         final World mockWorld = mock(World.class);
+        when(mockWorld.isChunkLoaded(anyInt(), anyInt())).thenReturn(true);
         for (int x = -3; x <= 7; x++) {
             for (int z = -3; z <= 7; z++) {
-                for (int y = -7; y <= 3; y++) {
+                for (int y = -7; y <= 0; y++) {
                     setBlockAtCoordinatesHelper(x, y, z, stone, mockWorld);
+                }
+            }
+        }
+        for (int x = 1; x <= 3; x++) {
+            for (int z = 1; z <= 3; z++) {
+                for (int y = 1; y <= 2; y++) {
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -390,8 +409,8 @@ public class TerrainCorrectorTest {
             mockBlock = createMockBlock(false, false, mat);
         }
         setCoordinates(mockBlock, x, y, z);
-        when(mockHelper.getBlock(any(Location.class))).thenCallRealMethod();
         when(mockHelper.getBlock(any(), eq(x), eq(y), eq(z))).thenReturn(mockBlock);
+        when(mockHelper.getBlock(any(Location.class))).thenCallRealMethod();
         when(world.getBlockAt(x, y, z)).thenReturn(mockBlock);
     }
 }
