@@ -10,12 +10,16 @@ import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
+import com.ellirion.buildframework.util.TransactionManager;
 import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.transact.SequenceTransaction;
+import com.ellirion.buildframework.util.transact.Transaction;
 
 import static com.ellirion.buildframework.terraincorrector.TerrainTestUtil.*;
 import static org.junit.Assert.*;
@@ -25,7 +29,9 @@ import static org.powermock.api.mockito.PowerMockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({BuildFramework.class, Bukkit.class, TerrainCorrector.class, WorldHelper.class, Player.class})
+@PrepareForTest({
+        BuildFramework.class, Bukkit.class, WorldHelper.class, TerrainCorrector.class, TransactionManager.class
+})
 public class TerrainCorrectorTest {
 
     private static final Material stone = Material.STONE;
@@ -34,9 +40,7 @@ public class TerrainCorrectorTest {
     private final BoundingBox boundingBox = new BoundingBox(1, 1, 1, 3, 2, 3);
     private final BuildFramework mockPlugin = mock(BuildFramework.class);
     private final FileConfiguration mockConfig = mock(FileConfiguration.class);
-    //    private final WorldHelper mWH = Mockito.spy(WorldHelper.class);
-    private final WorldHelper mockHelper = PowerMockito.mock(WorldHelper.class);
-    //    private Transaction t;
+
     private World mockWorld;
     private TerrainCorrector corrector;
 
@@ -46,8 +50,10 @@ public class TerrainCorrectorTest {
      * */
 
     public TerrainCorrectorTest() {
-        mockStatic(BuildFramework.class);
         mockStatic(WorldHelper.class);
+        mockStatic(BuildFramework.class);
+        mockStatic(TransactionManager.class);
+
         when(BuildFramework.getInstance()).thenReturn(mockPlugin);
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);
@@ -58,6 +64,7 @@ public class TerrainCorrectorTest {
 
     @Before
     public void setup() {
+
         corrector = new TerrainCorrector();
         mockWorld = createDefaultWorld();
         //        //        t = mock(Transaction.class);
@@ -66,12 +73,19 @@ public class TerrainCorrectorTest {
     }
 
     @Test
-    public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws InterruptedException {
+    public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws Exception {
         // Arrange
         int yDepth = 0;
-        when(mockHelper.setBlock(any(Location.class), any(Material.class),
-                                 anyByte())).thenReturn(null);
-        //        PowerMockito.spy(WorldHelper.class);
+        Transaction mockTransaction = mock(Transaction.class);
+        when(WorldHelper.setBlock(any(Location.class), any(Material.class),
+                                  anyByte())).thenReturn(mockTransaction);
+        when(WorldHelper.setBlock(eq(mockWorld), anyInt(), anyInt(), anyInt(), any(),
+                                  eq((byte) 0))).thenCallRealMethod();
+        when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
+
+        ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
+        PowerMockito.doNothing().when(
+                TransactionManager.class, "addDoneTransaction", any(Player.class), captor.capture());
 
         for (int y = 2; y >= -5; y--) {
             for (int x = 2; x <= 5; x++) {
@@ -82,21 +96,12 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        Thread.sleep(1000);
+
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
-        // Assert
-        //        for (int depth = 0; depth < 2; depth++) {
-        //            for (int x = 3 - depth; x >= 2; x--) {
-        //                assertTrue(mockWorld.getBlockAt(x, yDepth - depth, 2).getType() == Material.FENCE);
-        //            }
-        //        }
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
-        verifyStatic(WorldHelper.class, times(400));
-        mockHelper.setBlock(mockWorld, 1, 0, 1, Material.FENCE, (byte) 0);
-
-        //        verify(mockHelper, times(20)).setBlock(any(), any(), any());
+        assertEquals(4, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -409,8 +414,6 @@ public class TerrainCorrectorTest {
             mockBlock = createMockBlock(false, false, mat);
         }
         setCoordinates(mockBlock, x, y, z);
-        when(mockHelper.getBlock(any(), eq(x), eq(y), eq(z))).thenReturn(mockBlock);
-        when(mockHelper.getBlock(any(Location.class))).thenCallRealMethod();
-        when(world.getBlockAt(x, y, z)).thenReturn(mockBlock);
+        when(WorldHelper.getBlock(any(), eq(x), eq(y), eq(z))).thenReturn(mockBlock);
     }
 }
