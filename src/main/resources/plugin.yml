@@ -64,3 +64,15 @@ commands:
     description: changes the pathfinder config
     usage: /pathconfig, /pc
     aliases: [pathconfig, pc]
+  LoadTemplate:
+    description: load a template
+    usage: /LoadTemplate, /lt
+    aliases: [lt]
+  Undo:
+    description: Undo the last action
+    usage: /Undo
+    aliases:
+  Redo:
+    description: Redo the last undone action
+    usage: /Redo
+    aliases:

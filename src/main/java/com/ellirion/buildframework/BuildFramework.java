@@ -1,5 +1,6 @@
 package com.ellirion.buildframework;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -11,11 +12,14 @@ import com.ellirion.buildframework.pathfinder.command.CommandHidePath;
 import com.ellirion.buildframework.pathfinder.command.CommandHideVisited;
 import com.ellirion.buildframework.pathfinder.command.CommandPathConfig;
 import com.ellirion.buildframework.pathfinder.event.PathingListener;
+import com.ellirion.buildframework.command.PlayerRedoCommand;
+import com.ellirion.buildframework.command.PlayerUndoCommand;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
 import com.ellirion.buildframework.templateengine.command.CommandExportTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandImportTemplate;
+import com.ellirion.buildframework.templateengine.command.CommandLoadTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandPutTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveHologram;
 import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
@@ -24,6 +28,8 @@ import com.ellirion.buildframework.templateengine.util.TabCompletionMarkerNameLi
 import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import com.ellirion.buildframework.util.EventListener;
+import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.async.Promise;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +57,26 @@ public class BuildFramework extends JavaPlugin {
         INSTANCE = this;
     }
 
+    /**
+     * @return BuildFramework instance
+     */
+    public static BuildFramework getInstance() {
+        return INSTANCE;
+    }
+
+    public FileConfiguration getBlockValueConfig() {
+        return blockValueConfig;
+    }
+
+    public FileConfiguration getTemplateFormatConfig() {
+        return templateFormatConfig;
+    }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("BuildFramework is disabled.");
+    }
+
     @Override
     public void onEnable() {
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
@@ -72,6 +98,9 @@ public class BuildFramework extends JavaPlugin {
         getCommand("HidePath").setExecutor(new CommandHidePath());
         getCommand("HideVisited").setExecutor(new CommandHideVisited());
         getCommand("PathConfig").setExecutor(new CommandPathConfig());
+        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
+        getCommand("Undo").setExecutor(new PlayerUndoCommand());
+        getCommand("Redo").setExecutor(new PlayerRedoCommand());
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         getServer().getPluginManager().registerEvents(new PathingListener(), this);
         createConfig();
@@ -79,26 +108,11 @@ public class BuildFramework extends JavaPlugin {
         createBlockValueConfig();
         createTemplateFormatConfig();
         getLogger().info("BuildFramework is enabled.");
-    }
 
-    /**
-     * @return BuildFramework instance
-     */
-    public static BuildFramework getInstance() {
-        return INSTANCE;
-    }
+        Promise.setSyncRunner(r -> Bukkit.getScheduler().runTask(this, r));
+        Promise.setAsyncRunner(r -> Bukkit.getScheduler().runTaskAsynchronously(this, r));
 
-    public FileConfiguration getBlockValueConfig() {
-        return blockValueConfig;
-    }
-
-    public FileConfiguration getTemplateFormatConfig() {
-        return templateFormatConfig;
-    }
-
-    @Override
-    public void onDisable() {
-        getLogger().info("BuildFramework is disabled.");
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, WorldHelper::run, 1L, 1L);
     }
 
     private void createConfig() {
@@ -156,6 +170,7 @@ public class BuildFramework extends JavaPlugin {
 
         List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
                                               "HUMAN");
+        List<String> raceColors = Arrays.asList("GREEN", "SILVER", "CYAN", "ORANGE", "RED", "GRAY", "BLACK", "WHITE");
 
         List<String> typeList = Arrays.asList("HOUSE", "BLACKSMITH", "TOWNHALL", "SAWMILL", "STABLE", "BARRACK",
                                               "WINDMILL", "HARBOR");
@@ -168,6 +183,7 @@ public class BuildFramework extends JavaPlugin {
         List<String> markerList = Arrays.asList("DOOR", "GROUND", "PATH");
 
         String racePath = "Races";
+        String raceColorsPath = "RaceColors";
         String typePath = "Types";
         String levelPath = "Levels";
         String markersPath = "Markers";
@@ -181,6 +197,7 @@ public class BuildFramework extends JavaPlugin {
                                               "Markers is a list of all the possible markers you can use.\n");
 
         templateFormatConfig.addDefault(racePath, raceList);
+        templateFormatConfig.addDefault(raceColorsPath, raceColors);
         templateFormatConfig.addDefault(typePath, typeList);
         templateFormatConfig.addDefault(levelPath, levelList);
         templateFormatConfig.addDefault(markersPath, markerList);
