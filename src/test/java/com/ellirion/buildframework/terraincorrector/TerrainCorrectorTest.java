@@ -421,7 +421,6 @@ public class TerrainCorrectorTest {
             mockBlock = createMockBlock(false, false, mat);
         }
         setCoordinates(mockBlock, x, y, z);
-        //        when(world.getBlockAt(x, y, z)).thenReturn(mockBlock);
         when(WorldHelper.getBlock(world, x, y, z)).thenReturn(mockBlock);
         when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
     }
