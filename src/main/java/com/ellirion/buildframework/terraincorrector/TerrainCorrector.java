@@ -16,7 +16,6 @@ import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 import com.ellirion.buildframework.terraincorrector.rulebook.RavineSupportsRuleBook;
 import com.ellirion.buildframework.util.TransactionManager;
-import com.ellirion.buildframework.util.WorldHelper;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.SequenceTransaction;
 import com.ellirion.buildframework.util.transact.Transaction;
@@ -29,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
+import static com.ellirion.buildframework.util.WorldHelper.*;
 
 public class TerrainCorrector {
 
@@ -95,7 +95,7 @@ public class TerrainCorrector {
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
 
-                Block b = WorldHelper.getBlock(world, x, boundingBox.getY1() - 1, z);
+                Block b = getBlock(world, x, boundingBox.getY1() - 1, z);
                 BlockData data = new BlockData(b.getType(), b.getData());
 
                 if (materials.containsKey(data)) {
@@ -195,9 +195,6 @@ public class TerrainCorrector {
                 //introduce randomization for blocks not below the bounding box
                 Double rand = ThreadLocalRandom.current().nextDouble(0, 100);
 
-                BuildFramework.getInstance().getLogger().info(
-                        String.format("rand: %f, percentage: %d", rand, currentEntry.getPercentage()));
-
                 if (rand < currentEntry.getPercentage()) {
                     percentage -= 5;
                     maxOffset += 1;
@@ -219,7 +216,7 @@ public class TerrainCorrector {
     }
 
     private void fillDownwards(Block block, BlockData data, int startDepth) {
-        Block currentBlock = WorldHelper.getBlock(world, block.getX(), block.getY() - startDepth, block.getZ());
+        Block currentBlock = getBlock(world, block.getX(), block.getY() - startDepth, block.getZ());
 
         while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
             sendSyncBlockChanges(currentBlock, data);
@@ -268,7 +265,7 @@ public class TerrainCorrector {
 
                 for (int z = bottomBlockZ; z <= topBlockZ; z++) {
 
-                    final Block b = WorldHelper.getBlock(world, x, y, z);
+                    final Block b = getBlock(world, x, y, z);
 
                     if (!b.isLiquid() && !b.isEmpty()) {
                         blocks.add(b);
@@ -356,14 +353,14 @@ public class TerrainCorrector {
 
     private List<Block> getBlocksBelow(Block b, int depth) {
         List<Block> result = new ArrayList<>();
-        Block current = WorldHelper.getBlock(world, b.getX(), b.getY() - 1, b.getZ());
+        Block current = getBlock(world, b.getX(), b.getY() - 1, b.getZ());
 
         for (int i = 0; i < depth; i++) {
             if (!current.isEmpty() && !current.isLiquid()) {
                 break;
             }
             result.add(current);
-            current = WorldHelper.getBlock(world, current.getX(), current.getY() - 1, current.getZ());
+            current = getBlock(world, current.getX(), current.getY() - 1, current.getZ());
         }
 
         return result;
@@ -424,7 +421,7 @@ public class TerrainCorrector {
 
     private List<Block> blocksToReplace(int x, int y, int z, int depth) {
         List<Block> toChange = new ArrayList<>();
-        Block b = WorldHelper.getBlock(world, x, y, z);
+        Block b = getBlock(world, x, y, z);
         if (blocksBelowBoundingBoxOrWithinOffset(b, 0) && (b.isLiquid() || b.isEmpty())) {
             if (!toChange.contains(b)) {
                 toChange.add(b);
@@ -463,7 +460,7 @@ public class TerrainCorrector {
                     // If it's a solid, this column is done
                     Location loc = new Point(x1 + x, baseY - offsetY,
                                              z1 + z).toLocation(world);
-                    Block block = WorldHelper.getBlock(loc);
+                    Block block = getBlock(loc);
                     if (block.getType().isSolid()) {
                         continue;
                     }
@@ -570,7 +567,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
-                            Block b = WorldHelper.getBlock(world, x, y - i, z);
+                            Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -584,7 +581,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
-                            Block b = WorldHelper.getBlock(world, x, y - i, z);
+                            Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -598,7 +595,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
-                            Block b = WorldHelper.getBlock(world, x, y - i, z);
+                            Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -612,7 +609,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
-                            Block b = WorldHelper.getBlock(world, x, y - i, z);
+                            Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
                                 continue;
                             }
@@ -627,7 +624,7 @@ public class TerrainCorrector {
     }
 
     private void sendSyncBlockChanges(Block block, BlockData data) {
-        TRANSACTIONS.add(WorldHelper.setBlock(block.getLocation(), data.getMaterial(), data.getData()));
+        TRANSACTIONS.add(setBlock(block.getLocation(), data.getMaterial(), data.getData()));
     }
 
     private List<Block> supportSelector(int method, int minHoleX, int maxHoleX,

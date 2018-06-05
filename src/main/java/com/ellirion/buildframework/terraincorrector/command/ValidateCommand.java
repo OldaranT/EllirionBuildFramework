@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.TerrainValidator;
+import com.ellirion.buildframework.terraincorrector.model.TerrainValidatorModel;
 import com.ellirion.buildframework.util.WorldEditHelper;
 
 public class ValidateCommand implements CommandExecutor {
@@ -39,13 +40,16 @@ public class ValidateCommand implements CommandExecutor {
 
         final BoundingBox boundingBox = new BoundingBox(start, end);
 
-        final boolean result = validator.validate(boundingBox, player.getWorld());
-        if (result) {
+        final TerrainValidatorModel result = validator.validate(boundingBox, player.getWorld());
+        if (result.isSucceeded()) {
             player.sendMessage(ChatColor.GREEN + "The selected area can be corrected");
             return true;
         }
 
-        player.sendMessage(ChatColor.DARK_RED + "The selected area can not be corrected");
+        for (String str : result.getErrors()) {
+            player.sendMessage(ChatColor.RED + str);
+        }
+
         return true;
     }
 }

@@ -46,6 +46,7 @@ public class TerrainCorrectorTest {
     public TerrainCorrectorTest() {
         mockStatic(BuildFramework.class);
         mockStatic(WorldHelper.class);
+
         when(BuildFramework.getInstance()).thenReturn(mockPlugin);
 
         when(mockPlugin.getConfig()).thenReturn(mockConfig);

@@ -7,18 +7,20 @@ import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
+import com.ellirion.buildframework.terraincorrector.model.TerrainValidatorModel;
 
 import java.util.List;
 
 import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
+import static com.ellirion.buildframework.util.WorldHelper.*;
 
 public class TerrainValidator {
 
     private static final BuildFramework BUILD_FRAMEWORK = BuildFramework.getInstance();
     private static final FileConfiguration CONFIG = BUILD_FRAMEWORK.getConfig();
     private static final FileConfiguration BLOCK_VALUE_CONFIG = BUILD_FRAMEWORK.getBlockValueConfig();
-    private static final String maxHoleDepthConfigPath = "TerrainCorrecter.MaxHoleDepth";
-    private static final int depthOffset = CONFIG.getInt(maxHoleDepthConfigPath, 5);
+    private static final int DEPTH_OFFSET = CONFIG.getInt("TerrainCorrecter.MaxHoleDepth", 5);
+    private static final int BOUNDING_BOX_CHECK_RADIUS = CONFIG.getInt("TerrainCorrector.BoundingBoxMinDist", 5);
     private World world;
     private BoundingBox boundingBox;
 
@@ -29,7 +31,8 @@ public class TerrainValidator {
      * @param world the world that should
      * @return returns whether the terrain chances to the terrain will be within acceptable levels
      */
-    public boolean validate(final BoundingBox boundingBox, final World world) {
+    public TerrainValidatorModel validate(final BoundingBox boundingBox, final World world) {
+        TerrainValidatorModel model = new TerrainValidatorModel(true);
         final double overhangLimit = CONFIG.getInt("TerrainCorrector.OverheadLimit", 50);
         final double blocksLimit = CONFIG.getInt("TerrainCorrector.BlocksLimit", 100);
         final double totalLimit = CONFIG.getInt("TerrainCorrector.TotalLimit", 200);
@@ -38,38 +41,51 @@ public class TerrainValidator {
         this.boundingBox = boundingBox;
 
         if (checkForBoundingBoxes()) {
-            return false;
+            model.getErrors().add(String.format("Another object that has been placed is within %d bocks",
+                                                BOUNDING_BOX_CHECK_RADIUS));
+            model.setSucceeded(false);
+        }
+
+        List<Hole> holes = findHoles(world, boundingBox, 0, DEPTH_OFFSET);
+        for (Hole h : holes) {
+            List<Block> blocks = h.getBlockList();
+            if (checkForRiver(blocks)) {
+                model.getErrors().add("The selected area was above a river or lake");
+                model.setSucceeded(false);
+            }
         }
 
         final double overhangScore = calculateOverhang();
 
         if (overhangScore >= overhangLimit) {
-            return false;
+            model.getErrors().add("The amount of blocks that needs to be filled is to high");
+            model.setSucceeded(false);
         }
 
         final double blocksScore = calculateBlocks(offset);
         if (blocksScore >= blocksLimit) {
-            return false;
+            model.getErrors().add("The amount of blocks that needs to be cleared is too much");
+            model.setSucceeded(false);
         }
 
-        List<Hole> holes = findHoles(world, boundingBox, 0, depthOffset);
-        for (Hole h : holes) {
-            List<Block> blocks = h.getBlockList();
-            if (checkForRiver(blocks)) {
-                return false;
-            }
+        //this step also needs to check if the model has succeeded thus far
+        // because we don't want to add unnecessary information
+        if (blocksScore + overhangScore >= totalLimit && model.isSucceeded()) {
+            model.getErrors().add("the amount of blocks that need to be changed is to high");
+            model.setSucceeded(false);
         }
 
-        return !(blocksScore + overhangScore >= totalLimit);
+        return model;
     }
 
     private boolean checkForBoundingBoxes() {
-        final int checkRadius = CONFIG.getInt("TerrainCorrector.BoundingBoxMinDist", 5);
 
-        Point point1 = new Point(boundingBox.getX1() - checkRadius, boundingBox.getY1() - checkRadius,
-                                 boundingBox.getZ1() - checkRadius);
-        Point point2 = new Point(boundingBox.getX2() + checkRadius, boundingBox.getY2() + checkRadius,
-                                 boundingBox.getZ2() + checkRadius);
+        Point point1 = new Point(boundingBox.getX1() - BOUNDING_BOX_CHECK_RADIUS,
+                                 boundingBox.getY1() - BOUNDING_BOX_CHECK_RADIUS,
+                                 boundingBox.getZ1() - BOUNDING_BOX_CHECK_RADIUS);
+        Point point2 = new Point(boundingBox.getX2() + BOUNDING_BOX_CHECK_RADIUS,
+                                 boundingBox.getY2() + BOUNDING_BOX_CHECK_RADIUS,
+                                 boundingBox.getZ2() + BOUNDING_BOX_CHECK_RADIUS);
 
         BoundingBox boundingBoxWithOffset = new BoundingBox(point1, point2);
 
@@ -90,7 +106,7 @@ public class TerrainValidator {
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z < boundingBox.getZ2(); z++) {
 
-                final Block block = world.getBlockAt(x, y, z);
+                final Block block = getBlock(world, x, y, z);
 
                 if (block.isLiquid() || block.isEmpty()) {
 
@@ -128,7 +144,7 @@ public class TerrainValidator {
 
                 for (int z = bottomBlockZ; z <= topBlockZ; z++) {
 
-                    final Block b = world.getBlockAt(x, y, z);
+                    final Block b = getBlock(world, x, y, z);
 
                     if (b.isLiquid()) {
                         return Double.POSITIVE_INFINITY;
@@ -178,7 +194,7 @@ public class TerrainValidator {
                 break;
             }
 
-            final Block block = world.getBlockAt((int) x, (int) y, (int) loopZ);
+            final Block block = getBlock(world, (int) x, (int) y, (int) loopZ);
             if (!block.isEmpty() && !block.isLiquid()) {
                 currentDistance = distance;
             }
@@ -191,7 +207,7 @@ public class TerrainValidator {
                 break;
             }
 
-            final Block block = world.getBlockAt((int) x, (int) y, (int) loopZ);
+            final Block block = getBlock(world, (int) x, (int) y, (int) loopZ);
             if (!block.isEmpty() && !block.isLiquid()) {
                 currentDistance = distance;
             }
