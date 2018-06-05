@@ -630,39 +630,22 @@ public class TerrainCorrector {
     private List<Block> supportSelector(int method, int minHoleX, int maxHoleX,
                                         int minHoleZ, int maxHoleZ) {
         switch (method) {
-            //START OF BRIDGE STYLE SUPPORTS
+            //BRIDGE STYLE SUPPORTS
             case 0:
-                // build bridge style supports for structure from point 1 to point 2 on the Z axis.
-                return getBridgeSupport(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 1:
-                // build bridge style supports for structure from point 1 to point 2 on the X axis.
-                return getBridgeSupport(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-            //START OF THE ONE SIDED SUPPORTS
+                return getBridgeSupport(method, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            //THE ONE SIDED SUPPORTS
             case 2:
-                //NORTH TO SOUTH
-                return oneSidedSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 3:
-                //EAST TO WEST
-                return oneSidedSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 4:
-                // SOUTH TO NORTH
-                return oneSidedSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 5:
-                // WEST TO EAST
-                return oneSidedSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-            // START OF THE CORNER SUPPORTS
+                return oneSidedSupportMap(method - 2, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+            // CORNER SUPPORTS
             case 6:
-                // NORTH EAST TO SOUTH WEST
-                return cornerSupportMap(0, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 7:
-                // SOUTH EAST TO NORTH WEST
-                return cornerSupportMap(1, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 8:
-                // SOUTH WEST TO NORTH EAST
-                return cornerSupportMap(2, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             case 9:
-                // NORTH WEST TO SOUTH EAST
-                return cornerSupportMap(3, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                return cornerSupportMap(method - 6, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             default:
                 // FOR UNEXPECTED SCENARIO'S JUST FILL FROM OUTSIDE IN ON ALL SIDES
                 // build building supports under the bounding box from all sides inwards.
