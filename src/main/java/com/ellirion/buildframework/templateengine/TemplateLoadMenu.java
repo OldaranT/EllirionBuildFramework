@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Wool;
@@ -20,6 +21,7 @@ import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.templateengine.model.TemplateSession;
 import com.ellirion.buildframework.templateengine.util.FileUtil;
+import com.ellirion.buildframework.templateengine.util.PlayerTemplateGuiSession;
 
 import java.io.FileInputStream;
 import java.util.Arrays;
@@ -189,6 +191,7 @@ public class TemplateLoadMenu implements Listener {
         ItemMeta im = i.getItemMeta();
         im.setDisplayName(name);
         im.setLore(lore);
+        im.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
         i.setItemMeta(im);
         return i;
     }
@@ -243,6 +246,7 @@ public class TemplateLoadMenu implements Listener {
             TemplateHologram hologram = new TemplateHologram(t, hologramLocation);
             TemplateManager.getSelectedHolograms().put(player, hologram);
             hologram.create(player);
+            new PlayerTemplateGuiSession(BuildFramework.getInstance(), player, hologram);
         } catch (Exception e) {
             BuildFramework.getInstance().getLogger().severe(e.getMessage());
             player.sendMessage(ChatColor.DARK_RED + "Something went wrong when trying to load this template");

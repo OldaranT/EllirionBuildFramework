@@ -1,4 +1,4 @@
-package com.ellirion.buildframework.util;
+package com.ellirion.buildframework.util.async;
 
 @FunctionalInterface
 public interface IPromiseBody<TResult> {
