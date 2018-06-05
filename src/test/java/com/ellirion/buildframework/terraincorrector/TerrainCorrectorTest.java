@@ -43,6 +43,7 @@ public class TerrainCorrectorTest {
 
     private World mockWorld;
     private TerrainCorrector corrector;
+    private ArgumentCaptor<Transaction> captor;
 
     /*TODO mockstatic worldhelper
      * TODO verify setType has been called certain amount of times
@@ -60,13 +61,25 @@ public class TerrainCorrectorTest {
 
         when(mockConfig.getInt("TerrainCorrector.MaxHoleDepth", 5)).thenReturn(5);
         when(mockConfig.getInt("TerrainCorrector.AreaLimitOffset", 5)).thenReturn(1);
+        when(mockConfig.getInt("TerrainCorrector.HoleFillerChanceToChangeDepth", 10)).thenReturn(0);
+
+        Transaction mockTransaction = mock(Transaction.class);
+        when(WorldHelper.setBlock(any(Location.class), any(Material.class),
+                                  anyByte())).thenReturn(mockTransaction);
+        when(WorldHelper.setBlock(eq(mockWorld), anyInt(), anyInt(), anyInt(), any(),
+                                  eq((byte) 0))).thenCallRealMethod();
+        when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
 
         corrector = new TerrainCorrector();
         mockWorld = createDefaultWorld();
+        captor = ArgumentCaptor.forClass(Transaction.class);
+
+        PowerMockito.doNothing().when(
+                TransactionManager.class, "addDoneTransaction", any(Player.class), captor.capture());
         //        //        t = mock(Transaction.class);
         //        when(setBlock(any(Location.class), any(Material.class), anyByte())).thenReturn(
         //                Mockito.spy(Transaction.class));
@@ -76,21 +89,11 @@ public class TerrainCorrectorTest {
     public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws Exception {
         // Arrange
         int yDepth = 0;
-        Transaction mockTransaction = mock(Transaction.class);
-        when(WorldHelper.setBlock(any(Location.class), any(Material.class),
-                                  anyByte())).thenReturn(mockTransaction);
-        when(WorldHelper.setBlock(eq(mockWorld), anyInt(), anyInt(), anyInt(), any(),
-                                  eq((byte) 0))).thenCallRealMethod();
-        when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
-
-        ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
-        PowerMockito.doNothing().when(
-                TransactionManager.class, "addDoneTransaction", any(Player.class), captor.capture());
 
         for (int y = 2; y >= -5; y--) {
             for (int x = 2; x <= 5; x++) {
                 for (int z = 1; z <= 3; z++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -99,20 +102,20 @@ public class TerrainCorrectorTest {
 
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
-        Thread.sleep(1000);
+        Thread.sleep(500);
 
-        assertEquals(4, ((SequenceTransaction) captor.getValue()).getChildren().size());
+        assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
-    public void correctTerrain_whenHoleFacesWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
+    public void correctTerrain_whenHoleFacesWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws InterruptedException {
         // Arrange
         int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
             for (int x = -1; x < 3; x++) {
                 for (int z = 1; z <= 3; z++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -121,22 +124,20 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int x = 1 + depth; x <= 2; x++) {
-                assertTrue(mockWorld.getBlockAt(x, yDepth - depth, 2).getType() == Material.FENCE);
-            }
-        }
+
+        Thread.sleep(500);
+        assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
-    public void correctTerrain_whenHoleFacesNorthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
+    public void correctTerrain_whenHoleFacesNorthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws InterruptedException {
         // Arrange
         int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
             for (int x = 1; x <= 3; x++) {
                 for (int z = -1; z < 3; z++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -145,11 +146,9 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int z = 1 + depth; z <= 2; z++) {
-                assertTrue(mockWorld.getBlockAt(2, yDepth - depth, z).getType() == Material.FENCE);
-            }
-        }
+
+        Thread.sleep(500);
+        assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -160,7 +159,7 @@ public class TerrainCorrectorTest {
         for (int y = 2; y >= -5; y--) {
             for (int x = 1; x <= 3; x++) {
                 for (int z = 2; z <= 5; z++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -169,11 +168,13 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int z = 3 - depth; z >= 2; z--) {
-                assertTrue(mockWorld.getBlockAt(2, yDepth - depth, z).getType() == Material.FENCE);
-            }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -184,7 +185,7 @@ public class TerrainCorrectorTest {
         for (int y = 2; y >= -6; y--) {
             for (int z = 2; z <= 4; z++) {
                 for (int x = 2; x <= 4; x++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -193,13 +194,13 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int x = 3 - depth; x >= 2; x--) {
-                for (int z = 3 - depth; z >= 2; z--) {
-                    assertTrue(mockWorld.getBlockAt(x, yDepth - depth, z).getType() == Material.FENCE);
-                }
-            }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -210,7 +211,7 @@ public class TerrainCorrectorTest {
         for (int y = 2; y >= -6; y--) {
             for (int z = -1; z <= 2; z++) {
                 for (int x = 2; x <= 4; x++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -219,13 +220,12 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int x = 3 - depth; x >= 2; x--) {
-                for (int z = 1 + depth; z <= 2; z++) {
-                    assertTrue(mockWorld.getBlockAt(x, yDepth - depth, z).getType() == Material.FENCE);
-                }
-            }
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -236,7 +236,7 @@ public class TerrainCorrectorTest {
         for (int y = 2; y >= -6; y--) {
             for (int z = 2; z <= 4; z++) {
                 for (int x = -1; x <= 2; x++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -245,13 +245,13 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int x = 1 + depth; x <= 2; x++) {
-                for (int z = 3 - depth; z >= 2; z--) {
-                    assertTrue(mockWorld.getBlockAt(x, yDepth - depth, z).getType() == Material.FENCE);
-                }
-            }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -262,7 +262,7 @@ public class TerrainCorrectorTest {
         for (int y = 2; y >= -6; y--) {
             for (int z = -1; z <= 2; z++) {
                 for (int x = -1; x <= 2; x++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -271,13 +271,13 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int x = 1 + depth; x <= 2; x++) {
-                for (int z = 1 + depth; z <= 2; z++) {
-                    assertTrue(mockWorld.getBlockAt(x, yDepth - depth, z).getType() == Material.FENCE);
-                }
-            }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -290,7 +290,7 @@ public class TerrainCorrectorTest {
         for (int y = 2; y >= -6; y--) {
             for (int x = 2; x <= 4; x++) {
                 for (int z = 0; z <= 3; z++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -299,14 +299,13 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int z = 1; z <= 2; z++) {
-                if (Math.abs(z) % 2 == 0) {
-                    assertEquals(Material.FENCE, mockWorld.getBlockAt(centreX + depth, yDepth - depth, z).getType());
-                    assertEquals(Material.FENCE, mockWorld.getBlockAt(centreX - depth, yDepth - depth, z).getType());
-                }
-            }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
@@ -319,7 +318,7 @@ public class TerrainCorrectorTest {
         for (int y = 2; y >= -6; y--) {
             for (int x = 0; x <= 3; x++) {
                 for (int z = 2; z <= 4; z++) {
-                    setBlockAtCoordinates(mockWorld, x, y, z, air);
+                    setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
             }
         }
@@ -328,60 +327,75 @@ public class TerrainCorrectorTest {
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int depth = 0; depth < 2; depth++) {
-            for (int x = 1; x <= 2; x++) {
-                if (Math.abs(x) % 2 == 0) {
-                    assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ + depth).getType());
-                    assertEquals(Material.FENCE, mockWorld.getBlockAt(x, yDepth - depth, centreZ - depth).getType());
-                }
-            }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
     public void correctTerrain_whenNoHolesButHasBlocksInBoundingBox_shouldClearBlocksInBoundingBox() {
         // Arrange
-        // Happens in the setup.
+        for (int y = 1; y <= 2; y++) {
+            for (int x = 1; x <= 3; x++) {
+                for (int z = 1; z <= 3; z++) {
+                    setBlockAtCoordinatesHelper(x, y, z, stone, mockWorld);
+                }
+            }
+        }
 
         // Act
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int y = 1; y <= 2; y++) {
-            for (int x = 1; x <= 3; x++) {
-                for (int z = 1; z <= 3; z++) {
-                    assertEquals(air, mockWorld.getBlockAt(x, y, z).getType());
-                }
-            }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(18, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
     public void correctTerrain_whenHoleOnlyUnderBoundingBox_shouldSetTopBlocksToBarrier() {
         // Arrange
-        setBlockAtCoordinates(mockWorld, 2, 0, 2, air);
+        setBlockAtCoordinatesHelper(2, 0, 2, air, mockWorld);
 
         // Act
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        assertEquals(Material.BARRIER, mockWorld.getBlockAt(2, 0, 2).getType());
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+        assertEquals(1, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
     public void correctTerrain_whenHoleNotExceedsAreaLimit_shouldFillWithMostCommonMaterial() {
         // Arrange
         for (int x = 2; x >= 0; x--) {
-            setBlockAtCoordinates(mockWorld, x, 0, 2, air);
+            setBlockAtCoordinatesHelper(x, 0, 2, air, mockWorld);
         }
 
         // Act
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
         // Assert
-        for (int x = 2; x >= 0; x--) {
-            assertEquals(stone, mockWorld.getBlockAt(x, 0, 2).getType());
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // do nothing
         }
+        assertEquals(3, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     private World createDefaultWorld() {
@@ -394,8 +408,8 @@ public class TerrainCorrectorTest {
                 }
             }
         }
-        for (int x = 1; x <= 3; x++) {
-            for (int z = 1; z <= 3; z++) {
+        for (int x = -1; x <= 7; x++) {
+            for (int z = -1; z <= 7; z++) {
                 for (int y = 1; y <= 2; y++) {
                     setBlockAtCoordinatesHelper(x, y, z, air, mockWorld);
                 }
@@ -414,6 +428,8 @@ public class TerrainCorrectorTest {
             mockBlock = createMockBlock(false, false, mat);
         }
         setCoordinates(mockBlock, x, y, z);
-        when(WorldHelper.getBlock(any(), eq(x), eq(y), eq(z))).thenReturn(mockBlock);
+        //        when(world.getBlockAt(x, y, z)).thenReturn(mockBlock);
+        when(WorldHelper.getBlock(world, x, y, z)).thenReturn(mockBlock);
+        when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
     }
 }
