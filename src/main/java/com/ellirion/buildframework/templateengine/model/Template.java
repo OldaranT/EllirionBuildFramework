@@ -14,11 +14,16 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.util.MinecraftHelper;
+import com.ellirion.buildframework.util.TransactionManager;
+import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.transact.SequenceTransaction;
+import com.ellirion.buildframework.util.transact.Transaction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,8 +99,11 @@ public class Template {
     /**
      * Place a template in the world at a given location.
      * @param loc location to place the template.
+     * @param player the player that is placing the template
      */
-    public void putTemplateInWorld(Location loc) {
+    public void putTemplateInWorld(Location loc, Player player) {
+        List<Transaction> list = new ArrayList<>();
+
         int xDepth = templateBlocks.length;
         int yDepth = templateBlocks[0].length;
         int zDepth = templateBlocks[0][0].length;
@@ -128,24 +136,15 @@ public class Template {
                     int locY = loc.getBlockY() + y;
                     int locZ = loc.getBlockZ() + z;
 
-                    Block b = w.getBlockAt(locX, locY, locZ);
-                    b.setType(templateBlocks[x][y][z].getMaterial(), false);
-                    b.getState().update();
-
-                    MaterialData copiedState = getTemplateBlocks()[x][y][z].getMetadata();
-                    BlockState blockState = b.getState();
-                    blockState.setData(copiedState);
-                    blockState.update(false, false);
-
-                    TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
-
-                    if (te != null) {
-                        NBTTagCompound ntc = getTemplateBlocks()[x][y][z].getData();
+                    TemplateBlock tb = templateBlocks[x][y][z];
+                    NBTTagCompound ntc = tb.getData();
+                    if (ntc != null) {
                         ntc.setInt("x", locX);
                         ntc.setInt("y", locY);
                         ntc.setInt("z", locZ);
-                        te.load(ntc);
                     }
+                    list.add(WorldHelper.setBlock(w, locX, locY, locZ, tb.getMaterial(),
+                                                  tb.getMetadata().getData(), tb.getData()));
                 }
             }
         }
@@ -160,26 +159,50 @@ public class Template {
             Material belowMaterial = below.getType();
             byte metadata = below.getState().getData().getData();
             NBTTagCompound ntc = new NBTTagCompound();
-            TileEntity te = w.getHandle().getTileEntity(
-                    new BlockPosition(below.getX(), below.getY(), below.getZ()));
-            if (te != null) {
-                ntc = te.save(ntc);
-                te.load(new NBTTagCompound());
+
+            if (p.getBlockY() - loc.getBlockY() > 0) {
+                TemplateBlock tb = templateBlocks[p.getBlockX() - loc.getBlockX()]
+                        [p.getBlockY() - loc.getBlockY() - 1]
+                        [p.getBlockZ() - loc.getBlockZ()];
+                ntc = tb.getData();
+                belowMaterial = tb.getMaterial();
+                metadata = tb.getMetadata().getData();
+            } else {
+                TileEntity te = w.getHandle().getTileEntity(
+                        new BlockPosition(below.getX(), below.getY(), below.getZ()));
+                if (te != null) {
+                    ntc = te.save(ntc);
+                    te.load(new NBTTagCompound());
+                }
             }
 
-            below.setType(Material.STONE, false);
+            final Material a = belowMaterial;
+            final byte b1 = metadata;
+            final NBTTagCompound c = ntc;
 
-            b.setType(block.getMaterial(), false);
-            BlockState state = b.getState();
-            state.setData(block.getMetadata());
-            state.update();
+            Transaction blockBelow = WorldHelper.setBlock(below.getLocation(),
+                                                          Material.STONE, (byte) 0);
+            list.add(blockBelow);
+            blockBelow.getPromise().then((result) -> {
+                NBTTagCompound nbt = block.getData();
+                if (nbt != null) {
+                    nbt.setInt("x", p.getBlockX());
+                    nbt.setInt("y", p.getBlockY());
+                    nbt.setInt("z", p.getBlockZ());
+                }
+                Transaction blockChange = WorldHelper.setBlock(b.getLocation(),
+                                                               block.getMaterial(), block.getMetadata().getData(),
+                                                               nbt);
+                list.add(blockChange);
+                blockChange.getPromise().then((result2) -> {
+                    Transaction revertBelow = WorldHelper.setBlock(below.getLocation(),
+                                                                   a, b1, c);
+                    list.add(revertBelow);
+                });
+            });
 
-            below.setTypeIdAndData(belowMaterial.ordinal(), metadata, false);
-            te = w.getHandle().getTileEntity(
-                    new BlockPosition(below.getX(), below.getY(), below.getZ()));
-            if (te != null) {
-                te.load(ntc);
-            }
+            //            list.add(blockChange);
+            //            list.add(revertBelow);
         }
 
         // Place doors last.
@@ -189,18 +212,27 @@ public class Template {
             Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
             Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
 
-            doorBottom.setType(dw.getBottomMaterialData().getItemType(), false);
-            doorTop.setType(dw.getTopMaterialData().getItemType(), false);
+            MaterialData bot = dw.getBottomMaterialData();
+            MaterialData top = dw.getTopMaterialData();
 
-            BlockState bottomState = doorBottom.getState();
-            BlockState topState = doorTop.getState();
+            Transaction topDoor = WorldHelper.setBlock(doorTop.getLocation(), top.getItemType(),
+                                                       top.getData());
+            Transaction botDoor = WorldHelper.setBlock(doorBottom.getLocation(), bot.getItemType(),
+                                                       bot.getData());
+            list.add(topDoor);
+            list.add(botDoor);
 
-            bottomState.setData(dw.getBottomMaterialData());
-            topState.setData(dw.getTopMaterialData());
-
-            topState.update();
-            bottomState.update();
+            //            doorBottom.setType(dw.getMaterialData().getItemType());
+            //            doorTop.setType(dw.getMaterialData().getItemType());
+            //
+            //            doorBottom.setData(dw.getBottom());
+            //            doorTop.setData(dw.getTop());
+            //
+            //            doorBottom.getState().update();
+            //            doorTop.getState().update();
         }
+
+        TransactionManager.addDoneTransaction(player, new SequenceTransaction(list.toArray(new Transaction[0])));
     }
 
     private void addMarker(String name, Point point) {

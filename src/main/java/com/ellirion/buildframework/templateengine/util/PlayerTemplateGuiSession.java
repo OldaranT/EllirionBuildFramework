@@ -200,7 +200,7 @@ public class PlayerTemplateGuiSession implements Listener {
     private boolean confirm(Player player, TemplateHologram hologram, boolean isRightClick) {
         // Place the template
         Template t = hologram.getTemplate();
-        t.putTemplateInWorld(hologram.getLocation());
+        t.putTemplateInWorld(hologram.getLocation(), player);
         quit();
         return false;
     }

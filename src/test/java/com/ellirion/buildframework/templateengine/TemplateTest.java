@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.junit.Assert;
 import org.junit.Before;
@@ -441,7 +442,7 @@ public class TemplateTest {
         public void putTemplateInWorld_whenCorrect_shouldSetBlocksCorrectAmountOfTimes() {
             Template t = createTemplate();
 
-            t.putTemplateInWorld(createDefaultLocation());
+            t.putTemplateInWorld(createDefaultLocation(), mock(Player.class));
 
             TemplateBlock[][][] blocks = t.getTemplateBlocks();
             int invocationCount = blocks.length * blocks[0].length * blocks[0][0].length;

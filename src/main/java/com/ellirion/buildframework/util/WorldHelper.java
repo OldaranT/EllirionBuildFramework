@@ -157,7 +157,7 @@ public class WorldHelper {
                                                                                location.getBlockZ());
             if (te != null) {
                 change = new BlockChange(location, block.getType(), block.getData(), te.save(new NBTTagCompound()));
-                te.load(nbt);
+                te.load(new NBTTagCompound());
             } else {
                 change = new BlockChange(location, block.getType(), block.getData());
             }
@@ -166,6 +166,14 @@ public class WorldHelper {
             block.setType(material);
             block.setData(data);
 
+            if (nbt != null) {
+                TileEntity te2 = ((CraftWorld) location.getWorld()).getTileEntityAt(location.getBlockX(),
+                                                                                    location.getBlockY(),
+                                                                                    location.getBlockZ());
+                if (te2 != null) {
+                    te2.load(nbt);
+                }
+            }
             // Return the BlockChange to be used for reverting.
             return change;
         }
