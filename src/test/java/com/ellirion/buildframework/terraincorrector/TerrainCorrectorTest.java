@@ -80,15 +80,11 @@ public class TerrainCorrectorTest {
 
         PowerMockito.doNothing().when(
                 TransactionManager.class, "addDoneTransaction", any(Player.class), captor.capture());
-        //        //        t = mock(Transaction.class);
-        //        when(setBlock(any(Location.class), any(Material.class), anyByte())).thenReturn(
-        //                Mockito.spy(Transaction.class));
     }
 
     @Test
-    public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws Exception {
+    public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
             for (int x = 2; x <= 5; x++) {
@@ -102,15 +98,19 @@ public class TerrainCorrectorTest {
 
         corrector.correctTerrain(boundingBox, mockWorld, player);
 
-        Thread.sleep(500);
+        // Assert
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            fail();
+        }
 
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
-    public void correctTerrain_whenHoleFacesWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws InterruptedException {
+    public void correctTerrain_whenHoleFacesWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
             for (int x = -1; x < 3; x++) {
@@ -125,14 +125,17 @@ public class TerrainCorrectorTest {
 
         // Assert
 
-        Thread.sleep(500);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            fail();
+        }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
-    public void correctTerrain_whenHoleFacesNorthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() throws InterruptedException {
+    public void correctTerrain_whenHoleFacesNorthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
             for (int x = 1; x <= 3; x++) {
@@ -147,14 +150,17 @@ public class TerrainCorrectorTest {
 
         // Assert
 
-        Thread.sleep(500);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            fail();
+        }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
     @Test
     public void correctTerrain_whenHoleFacesSouthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -5; y--) {
             for (int x = 1; x <= 3; x++) {
@@ -172,7 +178,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -180,7 +186,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesSouthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
             for (int z = 2; z <= 4; z++) {
@@ -198,7 +203,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -206,7 +211,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesNorthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
             for (int z = -1; z <= 2; z++) {
@@ -223,7 +227,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -231,7 +235,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesSouthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
             for (int z = 2; z <= 4; z++) {
@@ -249,7 +252,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -257,7 +260,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesNorthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-        int yDepth = 0;
 
         for (int y = 2; y >= -6; y--) {
             for (int z = -1; z <= 2; z++) {
@@ -275,7 +277,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -284,8 +286,6 @@ public class TerrainCorrectorTest {
     public void correctTerrain_whenOverRavineOnZAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnXAxis() {
         // Arrange
         BoundingBox boundingBox = new BoundingBox(1, 1, 1, 5, 2, 2);
-        int yDepth = 0;
-        int centreX = 3;
 
         for (int y = 2; y >= -6; y--) {
             for (int x = 2; x <= 4; x++) {
@@ -303,7 +303,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -312,8 +312,6 @@ public class TerrainCorrectorTest {
     public void correctTerrain_whenOverRavineOnXAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnZAxis() {
         // Arrange
         BoundingBox boundingBox = new BoundingBox(1, 1, 1, 2, 2, 5);
-        int yDepth = 0;
-        int centreZ = 3;
 
         for (int y = 2; y >= -6; y--) {
             for (int x = 0; x <= 3; x++) {
@@ -331,7 +329,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -355,7 +353,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(18, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -373,7 +371,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(1, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
@@ -393,7 +391,7 @@ public class TerrainCorrectorTest {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            // do nothing
+            fail();
         }
         assertEquals(3, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
