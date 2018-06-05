@@ -81,6 +81,7 @@ public class TerrainValidatorTest {
     @Test
     public void validate_whenFloorNotFilledAndAreaToCheckIsAir_shouldReturnFalse() {
         // Arrange
+        // Happens in setup
 
         // Act
         final TerrainValidatorModel result = validator.validate(boundingBox, world);

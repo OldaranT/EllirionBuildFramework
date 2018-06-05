@@ -45,11 +45,6 @@ public class TerrainCorrectorTest {
     private TerrainCorrector corrector;
     private ArgumentCaptor<Transaction> captor;
 
-    /*TODO mockstatic worldhelper
-     * TODO verify setType has been called certain amount of times
-     * TODO fix problem where the thread with the Act is excecuted after the Assert
-     * */
-
     public TerrainCorrectorTest() {
         mockStatic(WorldHelper.class);
         mockStatic(BuildFramework.class);
@@ -301,7 +296,7 @@ public class TerrainCorrectorTest {
         // Assert
 
         try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             fail();
         }
@@ -327,7 +322,7 @@ public class TerrainCorrectorTest {
         // Assert
 
         try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             fail();
         }
