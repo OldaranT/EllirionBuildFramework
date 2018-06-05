@@ -69,12 +69,6 @@ public class CommandPathBuilder implements CommandExecutor {
             case "CREATEFROMPATHFINDER":
                 createPathFromPathFinder(player, strings);
                 break;
-            case "UNDO":
-                BuilderManager.undo(player);
-                break;
-            case "REDO":
-                BuilderManager.redo(player);
-                break;
             default:
                 player.sendMessage(ChatColor.DARK_RED +
                                    "Please enter an action\nSupported actions are: create, setname, setradius, addblock, save, load");
@@ -135,7 +129,7 @@ public class CommandPathBuilder implements CommandExecutor {
             player.sendMessage(ChatColor.DARK_RED + "You have no path builder selected");
             return;
         }
-        if (strings.length < 4) {
+        if (strings.length < 3) {
             player.sendMessage(
                     ChatColor.DARK_RED + "Command usage: /pathbuilder addblock <material> <weight> <metadata>");
             return;
@@ -149,11 +143,11 @@ public class CommandPathBuilder implements CommandExecutor {
             player.sendMessage(
                     "Block " + mat + ":" + data + " added to path builder " + builder.getName() + " with weight " +
                     weight);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             player.sendMessage(
                     ChatColor.DARK_RED +
-                    "something went wrong when trying to add this block. Did you make sure you entered everything correctly?");
-            return;
+                    //                    "Something went wrong when trying to add this block. Did you make sure you entered everything correctly?");
+                    "Weights and metadata have to be entered as numbers");
         }
     }
 

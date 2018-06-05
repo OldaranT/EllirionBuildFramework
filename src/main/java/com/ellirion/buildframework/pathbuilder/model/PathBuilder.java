@@ -12,7 +12,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
-import com.ellirion.buildframework.model.BlockChange;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathbuilder.util.BresenhamLine3D;
 import com.ellirion.buildframework.util.MinecraftHelper;
@@ -78,7 +77,7 @@ public class PathBuilder {
     public void addBlock(Material mat, double weight, byte data) {
         denormalizeWeights(weightedBlocks, blocksWeight);
         weightedBlocks.put(new PathMaterial(mat, data), weight);
-        blocksWeight = getTotalBlockWeight();
+        blocksWeight = getTotalWeight(weightedBlocks);
         normalizeWeights(weightedBlocks, blocksWeight);
     }
 
@@ -100,7 +99,7 @@ public class PathBuilder {
     public void addStep(Material mat, double weight, byte data) {
         denormalizeWeights(weightedSteps, stepsWeight);
         weightedSteps.put(new PathMaterial(mat, data), weight);
-        stepsWeight = getTotalStepWeight();
+        stepsWeight = getTotalWeight(weightedSteps);
         normalizeWeights(weightedSteps, stepsWeight);
     }
 
@@ -144,7 +143,7 @@ public class PathBuilder {
                 double random = r.nextDouble();
                 PathMaterial pm = getPathMaterial(weightedBlocks, random);
                 blockChanges.add(
-                        new BlockChange(b.getType(), b.getData(), pm.getMat(), pm.getData(), b.getLocation()));
+                        new BlockChange(pm.getMat(), pm.getData(), b.getLocation()));
             }
             // If the path at this point isn't grounded, create supports
             if (count % (radius * 3) == 0 && !isGrounded(p, w)) {
@@ -246,7 +245,7 @@ public class PathBuilder {
             if (!map.containsKey(p.up()) && countPathBlocksAbove(p, map) > 0 &&
                 w.getBlockAt(p.up().toLocation(w)).getType() == Material.AIR) {
                 PathMaterial mat = getPathMaterial(weightedSteps, r.nextDouble());
-                BlockChange newChange = new BlockChange(Material.AIR, (byte) 0, mat.getMat(), mat.getData(),
+                BlockChange newChange = new BlockChange(mat.getMat(), mat.getData(),
                                                         p.up().toLocation(w));
                 toAdd.add(newChange);
                 map.put(p.up(), newChange);
@@ -323,21 +322,29 @@ public class PathBuilder {
         return points;
     }
 
-    private double getTotalBlockWeight() {
+    private <T> double getTotalWeight(HashMap<T, Double> map) {
         double weight = 0;
-        for (double d : weightedBlocks.values()) {
+        for (double d : map.values()) {
             weight += d;
         }
         return weight;
     }
 
-    private double getTotalStepWeight() {
-        double weight = 0;
-        for (double d : weightedSteps.values()) {
-            weight += d;
-        }
-        return weight;
-    }
+    //    private double getTotalBlockWeight() {
+    //        double weight = 0;
+    //        for (double d : weightedBlocks.values()) {
+    //            weight += d;
+    //        }
+    //        return weight;
+    //    }
+    //
+    //    private double getTotalStepWeight() {
+    //        double weight = 0;
+    //        for (double d : weightedSteps.values()) {
+    //            weight += d;
+    //        }
+    //        return weight;
+    //    }
 
     private void denormalizeWeights(HashMap<PathMaterial, Double> weightMap, double totalWeight) {
         double previous = 0;
@@ -389,13 +396,7 @@ public class PathBuilder {
         return (double) countGrounded / (double) points.size() >= 0.66;
     }
 
-    /**
-     * GetAnchorPoints without showing the flood fill.
-     * @param point The point of the path from which to find anchor points
-     * @param w the world in which the path is built
-     * @return a list of anchor points
-     */
-    public List<Point> getAnchorPoints(Point point, World w) {
+    private List<Point> getAnchorPoints(Point point, World w) {
         return getAnchorPoints(point, w, null);
     }
 
@@ -491,9 +492,6 @@ public class PathBuilder {
             visited.put(curr, true);
 
             steps++;
-            if (steps % 1000000 == 0) {
-                BuildFramework.getInstance().getLogger().info(steps + " steps");
-            }
             if (steps >= 5000000) {
                 BuildFramework.getInstance().getLogger().info("Could not find anchor point for " + p.toString());
                 anchorFound = true;
@@ -503,6 +501,7 @@ public class PathBuilder {
         return anchor;
     }
 
+    // This method is used to prevent floating anchor points
     private Point checkUpDown(Point p, World w, int radius) {
         for (int i = 0; i <= radius; i++) {
             Point translated = p.translate(new Point(0, i, 0));
@@ -633,11 +632,11 @@ public class PathBuilder {
             builder.weightedSteps.put(new PathMaterial(mat.getMat(), mat.getData()), weight);
         }
 
-        builder.blocksWeight = builder.getTotalBlockWeight();
-        builder.stepsWeight = builder.getTotalStepWeight();
+        builder.blocksWeight = builder.getTotalWeight(builder.weightedBlocks);
+        builder.stepsWeight = builder.getTotalWeight(builder.weightedSteps);
 
-        builder.normalizeWeights(builder.weightedBlocks, builder.getTotalBlockWeight());
-        builder.normalizeWeights(builder.weightedSteps, builder.getTotalStepWeight());
+        builder.normalizeWeights(builder.weightedBlocks, builder.getTotalWeight(builder.weightedBlocks));
+        builder.normalizeWeights(builder.weightedSteps, builder.getTotalWeight(builder.weightedSteps));
 
         return builder;
     }
