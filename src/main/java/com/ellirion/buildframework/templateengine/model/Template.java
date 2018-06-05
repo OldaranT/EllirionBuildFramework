@@ -113,10 +113,25 @@ public class Template {
         HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
         List<DoorWrapper> doors = new ArrayList<>();
         List<Material> toPlaceLate = Arrays.asList(MinecraftHelper.getPlaceLate());
+        List<Material> toRotate = Arrays.asList(MinecraftHelper.getToRotate());
 
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
+
+                    int locX = loc.getBlockX() + x;
+                    int locY = loc.getBlockY() + y;
+                    int locZ = loc.getBlockZ() + z;
+
+                    Material wMaterial = w.getBlockAt(locX, locY, locZ).getType();
+                    Material tMaterial = templateBlocks[x][y][z].getMaterial();
+
+                    // Skip equal blocks.
+                    if (wMaterial.equals(tMaterial) &&
+                        !toPlaceLate.contains(tMaterial) &&
+                        !toRotate.contains(w.getBlockAt(locX, locY, locZ).getType())) {
+                        continue;
+                    }
                     if (toPlaceLate.contains(templateBlocks[x][y][z].getMaterial())) {
                         if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
@@ -131,10 +146,6 @@ public class Template {
                         }
                         continue;
                     }
-
-                    int locX = loc.getBlockX() + x;
-                    int locY = loc.getBlockY() + y;
-                    int locZ = loc.getBlockZ() + z;
 
                     TemplateBlock tb = templateBlocks[x][y][z];
                     NBTTagCompound ntc = tb.getData();
@@ -232,7 +243,7 @@ public class Template {
             //            doorTop.getState().update();
         }
 
-        TransactionManager.addDoneTransaction(player, new SequenceTransaction(list.toArray(new Transaction[0])));
+        TransactionManager.addDoneTransaction(player, new SequenceTransaction(true, list.toArray(new Transaction[0])));
     }
 
     private void addMarker(String name, Point point) {

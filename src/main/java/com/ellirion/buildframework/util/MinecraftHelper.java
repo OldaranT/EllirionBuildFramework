@@ -37,7 +37,8 @@ public class MinecraftHelper {
             Material.WOODEN_DOOR,
             Material.IRON_DOOR_BLOCK,
             Material.MELON_STEM,
-            Material.PUMPKIN_STEM
+            Material.PUMPKIN_STEM,
+            Material.BED_BLOCK
     };
 
     private static final Material[] TO_ROTATE = new Material[] {
