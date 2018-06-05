@@ -69,9 +69,23 @@ public class BuildFramework extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        registerCommands();
-        registerTabCompleters();
-        registerListeners();
+        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
+        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
+        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
+        getCommand("Validate").setExecutor(new ValidateCommand());
+        getCommand("AddMarker").setExecutor(new CommandAddMarker());
+        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
+        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
+        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
+        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
+        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
+        getCommand("Undo").setExecutor(new PlayerUndoCommand());
+        getCommand("Redo").setExecutor(new PlayerRedoCommand());
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
         createConfig();
         createBlockValueConfig();
         createTemplateFormatConfig();
@@ -164,31 +178,5 @@ public class BuildFramework extends JavaPlugin {
         } catch (IOException e) {
             getLogger().throwing(BuildFramework.class.toString(), "createTemplateFormatConfig", e);
         }
-    }
-
-    private void registerCommands() {
-        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
-        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
-        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
-        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
-        getCommand("Validate").setExecutor(new ValidateCommand());
-        getCommand("AddMarker").setExecutor(new CommandAddMarker());
-        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
-        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
-        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
-        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
-        getCommand("Undo").setExecutor(new PlayerUndoCommand());
-        getCommand("Redo").setExecutor(new PlayerRedoCommand());
-    }
-
-    private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new EventListener(), this);
-    }
-
-    private void registerTabCompleters() {
-        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
-        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
-        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
-        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
     }
 }
