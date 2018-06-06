@@ -14,14 +14,6 @@ public class RavineSupportsRuleBook extends CoRRuleBook<Integer> {
     private static String MAX_HOLE_Z = "maxHoleZ";
     private static String MAX_Z = "maxZ";
 
-    /*
-     * WithResultType == what kind of object you return
-     * when == if
-     * then == action
-     * stop == stop going through the rules if when == true
-     * build == create the rule
-     * */
-
     /**
      * @return the max x of the hole.
      */
@@ -77,6 +69,14 @@ public class RavineSupportsRuleBook extends CoRRuleBook<Integer> {
     public static String getMinZ() {
         return MIN_Z;
     }
+
+    /*
+     * WithResultType == what kind of object you return
+     * when == if
+     * then == action
+     * stop == stop going through the rules if when == true
+     * build == create the rule
+     * */
 
     @Override
     public void defineRules() {
