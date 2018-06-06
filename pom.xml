@@ -262,7 +262,7 @@
         <dependency>
             <groupId>com.deliveredtechnologies</groupId>
             <artifactId>rulebook-core</artifactId>
-            <version>0.10-SNAPSHOT</version>
+            <version>0.10</version>
         </dependency>
     </dependencies>
 </project>
