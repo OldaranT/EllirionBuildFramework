@@ -35,25 +35,10 @@ public class TerrainCorrector {
     private static final FileConfiguration CONFIG = BuildFramework.getInstance().getConfig();
     private static final String maxHoleDepthConfigPath = "TerrainCorrector.MaxHoleDepth";
     private static final String areaLimitOffsetConfigPath = "TerrainCorrector.AreaLimitOffset";
-    private static final String minHoleXFactKey = "minHoleX";
-    private static final String minXFactKey = "minX";
-    private static final String maxHoleXFactKey = "maxHoleX";
-    private static final String maxXFactKey = "maxX";
-    private static final String minHoleZFactKey = "minHoleZ";
-    private static final String minZFactKey = "minZ";
-    private static final String maxHoleZFactKey = "maxHoleZ";
-    private static final String maxZFactKey = "maxZ";
     private static final int offset = CONFIG.getInt(areaLimitOffsetConfigPath, 5);
     private static final int depthOffset = CONFIG.getInt(maxHoleDepthConfigPath, 5);
     private static final int bridgeSupportClearancePercentage = CONFIG.getInt(
             "TerrainCorrector.BridgeCenterSupportClearancePercentage", 15);
-
-    private static final RavineSupportsRuleBook ravineSupportsRuleBook = (RavineSupportsRuleBook) RuleBookBuilder
-            .create(RavineSupportsRuleBook.class)
-            .withResultType(Integer.class)
-            .withDefaultResult(Integer.MAX_VALUE)
-            .build();
-    private static final FactMap ravineSupportsFacts = new FactMap();
     private static List<Transaction> TRANSACTIONS;
 
     private BoundingBox boundingBox;
@@ -69,8 +54,6 @@ public class TerrainCorrector {
      */
 
     public Promise correctTerrain(BoundingBox boundingBox, World world, Player player) {
-        ravineSupportsRuleBook.setKeys(minHoleXFactKey, minXFactKey, maxHoleXFactKey, maxXFactKey, minHoleZFactKey,
-                                       minZFactKey, maxHoleZFactKey, maxZFactKey);
         return new Promise<>(finisher -> {
             TRANSACTIONS = new ArrayList<>();
             this.boundingBox = boundingBox;
@@ -286,6 +269,25 @@ public class TerrainCorrector {
     }
 
     private void buildRavineSupports(Hole hole) {
+        final String minHoleXFactKey = "minHoleX";
+        final String minXFactKey = "minX";
+        final String maxHoleXFactKey = "maxHoleX";
+        final String maxXFactKey = "maxX";
+        final String minHoleZFactKey = "minHoleZ";
+        final String minZFactKey = "minZ";
+        final String maxHoleZFactKey = "maxHoleZ";
+        final String maxZFactKey = "maxZ";
+
+        RavineSupportsRuleBook ravineSupportsRuleBook = (RavineSupportsRuleBook) RuleBookBuilder
+                .create(RavineSupportsRuleBook.class)
+                .withResultType(Integer.class)
+                .withDefaultResult(Integer.MAX_VALUE)
+                .build();
+
+        ravineSupportsRuleBook.setKeys(minHoleXFactKey, minXFactKey, maxHoleXFactKey, maxXFactKey, minHoleZFactKey,
+                                       minZFactKey, maxHoleZFactKey, maxZFactKey);
+
+        FactMap ravineSupportsFacts = new FactMap();
 
         int minX = boundingBox.getX1();
         int maxX = boundingBox.getX2();
