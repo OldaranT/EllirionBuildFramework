@@ -70,7 +70,7 @@ public class FileUtil {
     public static File getTemplate(String name) {
         String path = PATH;
 
-        return new File(path + File.pathSeparator + name + ".nbt");
+        return new File(path + File.separator + name + ".nbt");
     }
 
     /**
