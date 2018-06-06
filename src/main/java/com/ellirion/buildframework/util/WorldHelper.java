@@ -93,8 +93,7 @@ public class WorldHelper {
         int chunkZ = Math.floorDiv(z, 16);
 
         if (!world.isChunkLoaded(chunkX, chunkZ) &&
-            (MinecraftServer.getServer() == null || Thread.currentThread() !=
-                                                    MinecraftServer.getServer().primaryThread)) {
+            Thread.currentThread() != MinecraftServer.getServer().primaryThread) {
             Promise p = new Promise<>(finisher -> {
                 world.loadChunk(chunkX, chunkZ);
                 markChunkActive(world.getChunkAt(chunkX, chunkZ));
