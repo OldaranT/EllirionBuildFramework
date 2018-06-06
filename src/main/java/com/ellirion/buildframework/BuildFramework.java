@@ -125,7 +125,6 @@ public class BuildFramework extends JavaPlugin {
         blockValueConfig.options().copyDefaults(true);
 
         // Try and save the file
-
         try {
             blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {

@@ -3,6 +3,7 @@ package com.ellirion.buildframework.terraincorrector;
 import com.deliveredtechnologies.rulebook.FactMap;
 import com.deliveredtechnologies.rulebook.Result;
 import com.deliveredtechnologies.rulebook.lang.RuleBookBuilder;
+import com.google.common.collect.Lists;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -79,24 +80,22 @@ public class TerrainCorrector {
     private BlockData getFloorMaterial() {
         Map<BlockData, Integer> materials = new HashMap<>();
 
+        // Loop through al the blocks and place them in a hash map.
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
 
                 Block b = getBlock(world, x, boundingBox.getY1() - 1, z);
                 BlockData data = new BlockData(b.getType(), b.getData());
 
-                if (materials.containsKey(data)) {
-                    materials.replace(data, materials.get(data) + 1);
-                } else {
-                    materials.put(data, 1);
-                }
+                materials.put(data, materials.getOrDefault(data, 0) + 1);
             }
         }
 
+        // Check which block has the most occurrences.
         int max = 0;
         BlockData data = null;
         for (Map.Entry<BlockData, Integer> entry : materials.entrySet()) {
-            if (entry.getValue() > max && entry.getKey().material.isSolid()) {
+            if (entry.getValue() > max && MinecraftHelper.isPathSolid(entry.getKey().material)) {
                 max = entry.getValue();
                 data = entry.getKey();
             }
@@ -421,15 +420,18 @@ public class TerrainCorrector {
 
     // Get blocks you need to replace below a specific point
     private List<Block> blocksToReplace(int x, int y, int z, int depth) {
-        List<Block> toChange = new ArrayList<>();
+        Map<Block, Object> toChange = new HashMap<>();
         Block b = getBlock(world, x, y, z);
         if (blocksBelowBoundingBoxOrWithinOffset(b, 0) && (b.isLiquid() || b.isEmpty())) {
-            if (!toChange.contains(b)) {
-                toChange.add(b);
+            if (!toChange.containsKey(b)) {
+                toChange.put(b, null);
             }
-            toChange.addAll(getBlocksBelow(b, depth));
+            for (Block block : getBlocksBelow(b, depth)) {
+                toChange.put(block, null);
+            }
         }
-        return toChange;
+
+        return Lists.newArrayList(toChange.keySet());
     }
 
     private List<Block> createSupportsLocationMap() {
