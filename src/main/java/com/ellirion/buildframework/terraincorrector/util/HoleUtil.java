@@ -14,8 +14,9 @@ import static com.ellirion.buildframework.util.WorldHelper.*;
 public class HoleUtil {
 
     /**
+     * Find all {@link Hole}'s below the given {@link BoundingBox} in the given {@link World}.
      * @param world the world.
-     * @param boundingBox the boundingbox
+     * @param boundingBox the bounding box
      * @param offset the offset for how far around the boundingbox you can go.
      * @param depthOffset the offset for how deep you can go.
      * @return return the found holes.
@@ -42,10 +43,10 @@ public class HoleUtil {
         Hole hole = new Hole(block);
         LinkedList<Block> todoBlocks = new LinkedList<>();
 
-        //Add the current block to the todoBlocks of blocks that are yet to be done
+        // Add the current block to the todoBlocks of blocks that are yet to be done
         todoBlocks.add(block);
 
-        //Execute this method for each block in the todoBlocks
+        // Execute this method for each block in the todoBlocks
         while ((block = todoBlocks.poll()) != null) {
             exploreAdjacentNonSolidBlocks(block, hole, todoBlocks, false, offset, boundingBox, depthOffset, world);
         }
@@ -54,12 +55,14 @@ public class HoleUtil {
     }
 
     /**
+     * Find all adjacent blocks of the given block that are not solid
+     * and within the provided offset of the {@link BoundingBox}.
      * @param block the starting block.
      * @param hole the hole to fill.
      * @param todo the list of blocks that still need to be done.
      * @param onlyUnder boolean to determine whether to stop at the edge of the bounding box or not.
      * @param offset how far outside the boundingbox it needs to look.
-     * @param boundingBox the boundingbox under which it looks.
+     * @param boundingBox the bounding box under which it looks.
      * @param depthOffset the maximum amount of blocks it can go down.
      * @param world the world in which to look.
      */

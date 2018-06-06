@@ -138,11 +138,8 @@ public class TerrainCorrector {
 
         Map<Block, Integer> result = new HashMap<>();
         LinkedList<ToDoEntry> todo = new LinkedList<>();
-
         Block block = blocks.stream().filter(x -> blocksBelowBoundingBoxOrWithinOffset(x, 0)).findAny().get();
-
         ToDoEntry entry = new ToDoEntry(block, 0, chancePercentage, 0);
-
         todo.add(entry);
 
         while ((entry = todo.poll()) != null) {
@@ -192,7 +189,6 @@ public class TerrainCorrector {
 
     private void placeBlocksAccordingToDepthMap(Map<Block, Integer> map, BlockData data) {
         for (Map.Entry entry : map.entrySet()) {
-
             fillDownwards((Block) entry.getKey(), data, (int) entry.getValue());
         }
     }
@@ -234,21 +230,15 @@ public class TerrainCorrector {
 
         final int bottomBlockX = boundingBox.getX1();
         final int topBlockX = boundingBox.getX2();
-
         final int bottomBlockY = boundingBox.getY1();
         final int topBlockY = boundingBox.getY2();
-
         final int bottomBlockZ = boundingBox.getZ1();
         final int topBlockZ = boundingBox.getZ2();
 
         for (int x = bottomBlockX; x <= topBlockX; x++) {
-
             for (int y = bottomBlockY; y <= topBlockY; y++) {
-
                 for (int z = bottomBlockZ; z <= topBlockZ; z++) {
-
                     final Block b = getBlock(world, x, y, z);
-
                     if (!b.isLiquid() && !b.isEmpty()) {
                         blocks.add(b);
                     }
@@ -277,7 +267,6 @@ public class TerrainCorrector {
 
         int minX = boundingBox.getX1();
         int maxX = boundingBox.getX2();
-
         int minZ = boundingBox.getZ1();
         int maxZ = boundingBox.getZ2();
 
@@ -288,12 +277,10 @@ public class TerrainCorrector {
 
         int minHoleX;
         int maxHoleX;
-
         int minHoleZ;
         int maxHoleZ;
 
         List<Block> topBlocks = hole.getTopBlocks();
-
         List<Hole> subHoles = new ArrayList<>();
 
         for (Block b : topBlocks) {
@@ -420,7 +407,6 @@ public class TerrainCorrector {
         List<Block> toChange = new ArrayList<>();
         int x1 = boundingBox.getX1();
         int x2 = boundingBox.getX2();
-
         int z1 = boundingBox.getZ1();
         int z2 = boundingBox.getZ2();
 

@@ -21,7 +21,6 @@ public class AddBoundingBoxCommand implements CommandExecutor {
         }
 
         Player pl = (Player) commandSender;
-
         Selection sel = WorldEditHelper.getSelection(pl);
 
         if (!(sel instanceof CuboidSelection)) {
@@ -30,13 +29,10 @@ public class AddBoundingBoxCommand implements CommandExecutor {
         }
 
         CuboidSelection selection = (CuboidSelection) sel;
-
         Point start = new Point(selection.getMinimumPoint());
         Point end = new Point(selection.getMaximumPoint());
 
-        final BoundingBox boundingBox = new BoundingBox(start, end);
-
-        TerrainManager.getBoundingBoxes().add(boundingBox);
+        TerrainManager.getBoundingBoxes().add(new BoundingBox(start, end));
 
         pl.sendMessage("Added BoundingBox");
         return true;

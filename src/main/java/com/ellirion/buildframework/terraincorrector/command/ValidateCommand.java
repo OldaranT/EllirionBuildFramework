@@ -23,7 +23,6 @@ public class ValidateCommand implements CommandExecutor {
         }
 
         Player player = (Player) commandSender;
-
         Selection sel = WorldEditHelper.getSelection(player);
 
         if (!(sel instanceof CuboidSelection)) {
@@ -32,15 +31,12 @@ public class ValidateCommand implements CommandExecutor {
         }
 
         CuboidSelection selection = (CuboidSelection) sel;
-
         Point start = new Point(selection.getMinimumPoint());
         Point end = new Point(selection.getMaximumPoint());
-
         final TerrainValidator validator = new TerrainValidator();
 
-        final BoundingBox boundingBox = new BoundingBox(start, end);
+        final TerrainValidatorModel result = validator.validate(new BoundingBox(start, end), player.getWorld());
 
-        final TerrainValidatorModel result = validator.validate(boundingBox, player.getWorld());
         if (result.isSucceeded()) {
             player.sendMessage(ChatColor.GREEN + "The selected area can be corrected");
             return true;

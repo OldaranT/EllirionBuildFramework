@@ -104,11 +104,9 @@ public class TerrainValidator {
 
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z < boundingBox.getZ2(); z++) {
-
                 final Block block = getBlock(world, x, y, z);
 
                 if (block.isLiquid() || block.isEmpty()) {
-
                     final double distance = findClosestBlock(new Point(x, y, z));
                     final Double score = calculateOverhangScore(totalArea, distance);
                     total += score;
@@ -128,21 +126,15 @@ public class TerrainValidator {
 
         final int bottomBlockX = boundingBox.getX1() - offset;
         final int topBlockX = boundingBox.getX2() + offset;
-
         final int bottomBlockY = boundingBox.getY1();
         final int topBlockY = boundingBox.getY2() + offset;
-
         final int bottomBlockZ = boundingBox.getZ1() - offset;
         final int topBlockZ = boundingBox.getZ2() + offset;
-
         final double volume = boundingBox.getDepth() * boundingBox.getWidth() * boundingBox.getHeight();
 
         for (int x = bottomBlockX; x <= topBlockX; x++) {
-
             for (int y = bottomBlockY; y <= topBlockY; y++) {
-
                 for (int z = bottomBlockZ; z <= topBlockZ; z++) {
-
                     final Block b = getBlock(world, x, y, z);
 
                     if (b.isLiquid()) {
@@ -163,9 +155,7 @@ public class TerrainValidator {
     }
 
     private double findClosestBlock(final Point startingPosition) {
-
         final double x = startingPosition.getX();
-
         double finalDistance = Double.POSITIVE_INFINITY;
 
         for (double loopX = x; loopX <= boundingBox.getX2(); loopX++) {
@@ -173,7 +163,6 @@ public class TerrainValidator {
         }
 
         for (double loopX = x; loopX >= boundingBox.getX1(); loopX--) {
-
             finalDistance = loopTroughBlocks(finalDistance, loopX, startingPosition);
         }
 
@@ -181,12 +170,10 @@ public class TerrainValidator {
     }
 
     private double loopTroughBlocks(double currentDistance, final double x, final Point startingPosition) {
-
         final double z = startingPosition.getZ();
         final double y = boundingBox.getY1() - 1;
 
         for (double loopZ = z; loopZ <= boundingBox.getZ2(); loopZ++) {
-
             final double distance = startingPosition.distanceManhattan(new Point(x, y, loopZ));
 
             if (currentDistance < distance) {
