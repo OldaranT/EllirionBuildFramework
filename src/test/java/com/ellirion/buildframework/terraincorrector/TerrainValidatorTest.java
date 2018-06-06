@@ -80,8 +80,7 @@ public class TerrainValidatorTest {
 
     @Test
     public void validate_whenFloorNotFilledAndAreaToCheckIsAir_shouldReturnFalse() {
-        // Arrange
-        // Happens in setup
+        // Arrange happens in setup()
 
         // Act
         final TerrainValidatorModel result = validator.validate(boundingBox, world);
@@ -93,7 +92,6 @@ public class TerrainValidatorTest {
     @Test
     public void validate_whenFloorNotFilledAndAreaToCheckIsContainsBlocks_shouldReturnFalse() {
         // Arrange
-
         when(world.getBlockAt(anyInt(), eq(5), eq(5))).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
@@ -249,7 +247,6 @@ public class TerrainValidatorTest {
     public void validate_whenFlooredAndBlocksAreOutsideValidationArea_shouldReturnTrue() {
         // Arrange
         setFloor(world);
-
         when(world.getBlockAt(-6, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(6, -1, -6)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(2, 16, 2)).thenReturn(MOCK_BLOCK_STONE);
@@ -277,7 +274,6 @@ public class TerrainValidatorTest {
     public void validate_whenOneBlockOverLimitAndFloored_shouldReturnFalse() {
         // Arrange
         setFloor(world);
-
         when(world.getBlockAt(anyInt(), eq(1), eq(1))).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(anyInt(), eq(2), eq(1))).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(anyInt(), eq(3), eq(1))).thenReturn(MOCK_BLOCK_STONE);
@@ -302,7 +298,6 @@ public class TerrainValidatorTest {
     public void validate_whenOneBlockUnderLimitAndFloored_shouldReturnTrue() {
         // Arrange
         setFloor(world);
-
         for (int x = 1; x < boundingBox.getX2(); x++) {
             when(world.getBlockAt(x, 1, 1)).thenReturn(MOCK_BLOCK_STONE);
         }

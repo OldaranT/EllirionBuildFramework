@@ -68,7 +68,6 @@ public class TerrainCorrectorTest {
 
     @Before
     public void setup() throws Exception {
-
         corrector = new TerrainCorrector();
         mockWorld = createDefaultWorld();
         captor = ArgumentCaptor.forClass(Transaction.class);
@@ -80,7 +79,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenHoleFacesEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-
         for (int y = 2; y >= -5; y--) {
             for (int x = 2; x <= 5; x++) {
                 for (int z = 1; z <= 3; z++) {
@@ -99,7 +97,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenHoleFacesWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-
         for (int y = 2; y >= -5; y--) {
             for (int x = -1; x < 3; x++) {
                 for (int z = 1; z <= 3; z++) {
@@ -118,7 +115,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenHoleFacesNorthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-
         for (int y = 2; y >= -5; y--) {
             for (int x = 1; x <= 3; x++) {
                 for (int z = -1; z < 3; z++) {
@@ -137,7 +133,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenHoleFacesSouthAndExceedsDepthAndExceedsAreaLimit_shouldBuildSupports() {
         // Arrange
-
         for (int y = 2; y >= -5; y--) {
             for (int x = 1; x <= 3; x++) {
                 for (int z = 2; z <= 5; z++) {
@@ -156,7 +151,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesSouthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-
         for (int y = 2; y >= -6; y--) {
             for (int z = 2; z <= 4; z++) {
                 for (int x = 2; x <= 4; x++) {
@@ -175,7 +169,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesNorthEastAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-
         for (int y = 2; y >= -6; y--) {
             for (int z = -1; z <= 2; z++) {
                 for (int x = 2; x <= 4; x++) {
@@ -194,7 +187,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesSouthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-
         for (int y = 2; y >= -6; y--) {
             for (int z = 2; z <= 4; z++) {
                 for (int x = -1; x <= 2; x++) {
@@ -213,7 +205,6 @@ public class TerrainCorrectorTest {
     @Test
     public void correctTerrain_whenCornerHoleFacesNorthWestAndExceedsDepthAndExceedsAreaLimit_shouldBuildCornerSupports() {
         // Arrange
-
         for (int y = 2; y >= -6; y--) {
             for (int z = -1; z <= 2; z++) {
                 for (int x = -1; x <= 2; x++) {
@@ -233,7 +224,6 @@ public class TerrainCorrectorTest {
     public void correctTerrain_whenOverRavineOnZAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnXAxis() {
         // Arrange
         BoundingBox boundingBox = new BoundingBox(1, 1, 1, 5, 2, 2);
-
         for (int y = 2; y >= -6; y--) {
             for (int x = 2; x <= 4; x++) {
                 for (int z = 0; z <= 3; z++) {
@@ -253,7 +243,6 @@ public class TerrainCorrectorTest {
     public void correctTerrain_whenOverRavineOnXAxisAndExceedsDepthAndExceedsAreaLimit_shouldBuildBridgeSupportsOnZAxis() {
         // Arrange
         BoundingBox boundingBox = new BoundingBox(1, 1, 1, 2, 2, 5);
-
         for (int y = 2; y >= -6; y--) {
             for (int x = 0; x <= 3; x++) {
                 for (int z = 2; z <= 4; z++) {
@@ -316,6 +305,7 @@ public class TerrainCorrectorTest {
     private World createDefaultWorld() {
         final World mockWorld = mock(World.class);
         when(mockWorld.isChunkLoaded(anyInt(), anyInt())).thenReturn(true);
+
         for (int x = -3; x <= 7; x++) {
             for (int z = -3; z <= 7; z++) {
                 for (int y = -7; y <= 0; y++) {

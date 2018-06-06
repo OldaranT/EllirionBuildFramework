@@ -21,7 +21,6 @@ public class CorrectCommand implements CommandExecutor {
         }
 
         Player player = (Player) commandSender;
-
         Selection sel = WorldEditHelper.getSelection(player);
 
         if (!(sel instanceof CuboidSelection)) {
@@ -30,14 +29,11 @@ public class CorrectCommand implements CommandExecutor {
         }
 
         CuboidSelection selection = (CuboidSelection) sel;
-
         Point start = new Point(selection.getMinimumPoint());
         Point end = new Point(selection.getMaximumPoint());
 
-        BoundingBox bb = new BoundingBox(start, end);
-
         TerrainCorrector corrector = new TerrainCorrector();
-        corrector.correctTerrain(bb, player.getWorld(), player);
+        corrector.correctTerrain(new BoundingBox(start, end), player.getWorld(), player);
 
         return true;
     }

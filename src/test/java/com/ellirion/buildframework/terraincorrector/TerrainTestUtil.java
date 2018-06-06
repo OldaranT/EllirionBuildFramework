@@ -38,6 +38,7 @@ public class TerrainTestUtil {
             mockBlock = createMockBlock(false, false, mat);
         }
         setCoordinates(mockBlock, x, y, z);
+
         // when setType is called change the material getType returns
         doAnswer((Answer) invocation -> {
             Material material = invocation.getArgument(0);
