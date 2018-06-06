@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.command.PlayerRedoCommand;
 import com.ellirion.buildframework.command.PlayerUndoCommand;
+import com.ellirion.buildframework.pathbuilder.command.CommandPathBuilder;
 import com.ellirion.buildframework.pathfinder.command.CommandFindPath;
 import com.ellirion.buildframework.pathfinder.command.CommandHidePath;
 import com.ellirion.buildframework.pathfinder.command.CommandHideVisited;
@@ -34,6 +35,9 @@ import com.ellirion.buildframework.util.async.Promise;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -80,6 +84,7 @@ public class BuildFramework extends JavaPlugin {
         registerTabCompleters();
         registerListeners();
         createConfig();
+        createFilePaths();
         createBlockValueConfig();
         createTemplateFormatConfig();
         getLogger().info("BuildFramework is enabled.");
@@ -106,13 +111,27 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainCorrector.HoleFillerChanceToChangeDepth", 10);
         // Template config settings
         config.addDefault("TemplateEngine.Path", "plugins/Ellirion-BuildFramework/templates/");
+        // Path builder config
+        config.addDefault("PathBuilder.pathbuilderPath", "plugins/Ellirion-BuildFramework/pathbuilders/");
+        config.addDefault("PathBuilder.floodFillDepth", 5000000);
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
     }
 
-    private void createBlockValueConfig() {
+    // Create filepaths if they don't exist yet
+    private void createFilePaths() {
+        Path path = Paths.get(config.getString("templatePath"));
+        if (!Files.exists(path) && !path.toFile().mkdirs()) {
+            getLogger().warning("The path for templates could not be created");
+        }
+        path = Paths.get(config.getString("PathBuilder.pathbuilderPath"));
+        if (!Files.exists(path) && !path.toFile().mkdirs()) {
+            getLogger().warning("The path for PathBuilders could not be created");
+        }
+    }
 
+    private void createBlockValueConfig() {
         File blockValueConfigFile = new File(getDataFolder(), "BlockValues.yml");
         blockValueConfig = YamlConfiguration.loadConfiguration(blockValueConfigFile);
 
@@ -208,6 +227,9 @@ public class BuildFramework extends JavaPlugin {
         getCommand("HideVisited").setExecutor(new CommandHideVisited());
         getCommand("PathConfig").setExecutor(new CommandPathConfig());
         getCommand("PathTool").setExecutor(new PathingListener());
+
+        // Path builder
+        getCommand("PathBuilder").setExecutor(new CommandPathBuilder());
     }
 
     private void registerListeners() {
