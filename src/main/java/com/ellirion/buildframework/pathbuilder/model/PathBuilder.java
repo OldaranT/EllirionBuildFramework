@@ -104,7 +104,7 @@ public class PathBuilder {
     }
 
     /**
-     * Overload of other method, does the same but with data set to 0.
+     * Overload of {@link #addStep(Material, double, byte)}, does the same but with data set to 0.
      * @param mat material to add
      * @param weight weight to set the material to
      */

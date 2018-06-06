@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.ellirion.buildframework.pathbuilder.command.CommandCreatePath;
 import com.ellirion.buildframework.pathbuilder.command.CommandPathBuilder;
 import com.ellirion.buildframework.pathfinder.command.CommandFindPath;
 import com.ellirion.buildframework.pathfinder.command.CommandHidePath;
@@ -42,7 +41,6 @@ import java.util.List;
 
 public class BuildFramework extends JavaPlugin {
 
-    @SuppressWarnings("PMD.SuspiciousConstantFieldName")
     private static BuildFramework INSTANCE;
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
@@ -114,11 +112,11 @@ public class BuildFramework extends JavaPlugin {
     // Create filepaths if they don't exist yet
     private void createFilePaths() {
         Path path = Paths.get(config.getString("templatePath"));
-        if (!Files.exists(path) && !(path.toFile().mkdirs())) {
+        if (!Files.exists(path) && !path.toFile().mkdirs()) {
             getLogger().warning("The path for templates could not be created");
         }
         path = Paths.get(config.getString("PathBuilder.pathbuilderPath"));
-        if (!Files.exists(path) && !(path.toFile().mkdirs())) {
+        if (!Files.exists(path) && !path.toFile().mkdirs()) {
             getLogger().warning("The path for PathBuilders could not be created");
         }
     }
@@ -217,7 +215,6 @@ public class BuildFramework extends JavaPlugin {
         getCommand("PathTool").setExecutor(new PathingListener());
 
         // Path builder
-        getCommand("CreatePath").setExecutor(new CommandCreatePath());
         getCommand("PathBuilder").setExecutor(new CommandPathBuilder());
     }
 

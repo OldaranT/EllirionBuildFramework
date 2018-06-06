@@ -4,8 +4,6 @@ import lombok.Getter;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
 
-import java.text.DecimalFormat;
-
 public class PathMaterial {
 
     @Getter private Material mat;
@@ -58,7 +56,6 @@ public class PathMaterial {
 
     @Override
     public int hashCode() {
-        return Integer.parseInt(
-                new DecimalFormat("000").format(mat.getId()) + "" + new DecimalFormat("00").format((int) data));
+        return (mat.getId() << 8) + (0xFF & data);
     }
 }

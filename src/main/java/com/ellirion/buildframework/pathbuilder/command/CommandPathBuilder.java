@@ -55,7 +55,7 @@ public class CommandPathBuilder implements CommandExecutor {
                 removeBlock(player, strings);
                 break;
             case "SAVE":
-                save(player, strings);
+                save(player);
                 break;
             case "LOAD":
                 load(player, strings);
@@ -79,7 +79,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Create a PathBuilder with a given name
-    // Params: [string]
+    // Args: [string]
     private void create(Player player, String[] strings) {
         if (strings.length < 2) {
             player.sendMessage(ChatColor.DARK_RED + "Please enter a name");
@@ -87,6 +87,10 @@ public class CommandPathBuilder implements CommandExecutor {
         }
         String[] nameStrings = Arrays.copyOfRange(strings, 1, strings.length);
         String name = String.join(" ", nameStrings);
+        if (StringHelper.invalidFileName(name)) {
+            player.sendMessage("That name was invalid");
+            return;
+        }
         PathBuilder builder = new PathBuilder(name);
         builder.setRadius(3);
         BuilderManager.getBuilderSessions().put(player, builder);
@@ -94,7 +98,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Set the name of the selected PathBuilder to the given name
-    // Params: [string]
+    // Args: [string]
     private void setName(Player player, String[] strings) {
         if (strings.length < 2) {
             player.sendMessage(ChatColor.DARK_RED + "Please enter a name");
@@ -108,7 +112,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Set the radius of the selected PathBuilder
-    // Params: <int>
+    // Args: <int>
     private void setRadius(Player player, String[] strings) {
         try {
             PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
@@ -125,7 +129,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Add a block to the selected PathBuilder
-    // Params: <Material> <weight> <metadata as int>
+    // Args: <Material> <weight> <metadata as int>
     private void addBlock(Player player, String[] strings) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         if (builder == null) {
@@ -154,7 +158,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Add a step block to the selected PathBuilder
-    // Params: <Material> <weight> <metadata as int>
+    // Args: <Material> <weight> <metadata as int>
     private void addStep(Player player, String[] strings) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         if (builder == null) {
@@ -184,7 +188,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Remove a block from the selected PathBuilder
-    // Params: <Material> <metadata as int>
+    // Args: <Material> <metadata as int>
     private void removeBlock(Player player, String[] strings) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         if (builder == null) {
@@ -209,8 +213,8 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Save the selected PathBuilder to a file
-    // Params: none
-    private void save(Player player, String[] strings) {
+    // Args: none
+    private void save(Player player) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         // Filter out illegal characters
         String name = builder.getName();
@@ -229,7 +233,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Load a PathBuilder from a file
-    // Params: [string]
+    // Args: [string]
     private void load(Player player, String[] strings) {
         String[] nameStrings = Arrays.copyOfRange(strings, 1, strings.length);
         String name = String.join(" ", nameStrings);
@@ -250,7 +254,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Show info about the selected PathBuilder
-    // Params: none
+    // Args: none
     private void info(Player player) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
 
@@ -258,7 +262,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Use the anchorPoints method to find an anchor point from the player's location (for debugging purposes)
-    // Params: none
+    // Args: none
     private void anchor(Player player) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
         Location l = player.getLocation();
@@ -273,7 +277,7 @@ public class CommandPathBuilder implements CommandExecutor {
     }
 
     // Build a path along the path from the path finder
-    // Params: none
+    // Args: none
     private void createPathFromPathFinder(Player player, String[] args) {
         // Get path from PathingManager
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
