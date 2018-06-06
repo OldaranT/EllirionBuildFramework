@@ -1,12 +1,14 @@
 package com.ellirion.buildframework.templateengine.model;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.PacketPlayOutBlockChange;
 import net.minecraft.server.v1_12_R1.PlayerConnection;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -21,8 +23,12 @@ import java.util.Map;
 
 public class TemplateHologram {
 
+    private static final BlockFace[] FACES = {
+            BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN
+    };
+    private static final float lookAngle = 45.0f;
     @Getter private Location location;
-    private Template template;
+    @Setter @Getter private Template template;
     @Getter private BoundingBox box;
     @Getter private List<TemplateHologramBlock> hologramBlocks;
 
@@ -33,6 +39,9 @@ public class TemplateHologram {
      */
     public TemplateHologram(final Template t, final Location loc) {
         location = loc.clone();
+        location.setX(loc.getBlockX());
+        location.setY(loc.getBlockY());
+        location.setZ(loc.getBlockZ());
         template = t;
         box = template.getBoundingBox();
         hologramBlocks = new LinkedList<>();
@@ -61,8 +70,6 @@ public class TemplateHologram {
      * @param player the player for which to create the hologram
      */
     public void create(Player player) {
-        BoundingBox box = getBox();
-        Location location = getLocation();
         int[] coordinates = CommandHelper.getCoordinates(box, location);
         World w = getLocation().getWorld();
 
@@ -103,8 +110,7 @@ public class TemplateHologram {
     // To remove the hologram, we simply need to update all blocks where the hologram is
     public void remove(Player player) {
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
-        BoundingBox box = getBox();
-        Location location = getLocation();
+        BoundingBox box = template.getBoundingBox();
         World w = location.getWorld();
 
         int[] coordinates = CommandHelper.getCoordinates(box, location);
@@ -113,12 +119,85 @@ public class TemplateHologram {
             for (int y = coordinates[2]; y <= coordinates[3]; y++) {
                 for (int z = coordinates[4]; z <= coordinates[5]; z++) {
 
-                    // If the block is not air, change it to a barrier block
                     connection.sendPacket(new PacketPlayOutBlockChange(
                             ((CraftWorld) w).getHandle(),
                             new BlockPosition(x, y, z)));
                 }
             }
         }
+    }
+
+    /**
+     * Update the hologram location.
+     * @param amount of how many blocks need to be moved.
+     * @param blockFace facing of the player.
+     */
+    public void moveHologram(int amount, BlockFace blockFace) {
+        hologramBlocks.clear();
+        switch (blockFace) {
+            case UP:
+                this.location.setY((double) (location.getBlockY() + amount));
+                break;
+            case DOWN:
+                this.location.setY((double) (location.getBlockY() - amount));
+                break;
+            case EAST:
+                this.location.setX((double) (location.getBlockX() + amount));
+                break;
+            case WEST:
+                this.location.setX((double) (location.getBlockX() - amount));
+                break;
+            case NORTH:
+                this.location.setZ((double) (location.getBlockZ() - amount));
+                break;
+            case SOUTH:
+                this.location.setZ((double) (location.getBlockZ() + amount));
+                break;
+            default:
+                break;
+        }
+        fillHologramBlocks();
+    }
+
+    /**
+     * Set location.
+     * @param l the new location
+     */
+    public void setLocation(Location l) {
+        hologramBlocks.clear();
+        location = l;
+        fillHologramBlocks();
+    }
+
+    /**
+     * Check the facing of the player.
+     * @param yaw of the player.
+     * @param pitch of the player.
+     * @return direction of the player.
+     */
+    public BlockFace rotationToFace(float yaw, float pitch) {
+        if (pitch <= -lookAngle) {
+            return FACES[4];
+        } else if (pitch >= lookAngle) {
+            return FACES[5];
+        }
+
+        return FACES[Math.round(yaw / 90f) & 0x3].getOppositeFace();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TemplateHologram)) {
+            return false;
+        }
+        TemplateHologram other = (TemplateHologram) obj;
+
+        return location.equals(other.location) && template.equals(other.template) && box.equals(other.box) &&
+               hologramBlocks.equals(other.hologramBlocks);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
