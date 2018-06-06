@@ -440,6 +440,7 @@ public class TerrainCorrector {
             if (!toChange.contains(b)) {
                 toChange.add(b);
             }
+            toChange.addAll(getBlocksBelow(b, depth));
         }
         return toChange;
     }
