@@ -65,6 +65,7 @@ public class TerrainCorrector {
      * @param boundingBox the BoundingBox that will be used for terrain smoothing.
      * @param world The world in which the changes need to happen
      * @param player The player that wants to change the world
+     * @return the {@link Promise} in which the correction will be executed
      */
 
     public Promise correctTerrain(BoundingBox boundingBox, World world, Player player) {
