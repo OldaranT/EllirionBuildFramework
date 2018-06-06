@@ -4,6 +4,7 @@ import org.bukkit.Material;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class MinecraftHelper {
 
@@ -296,7 +297,7 @@ public class MinecraftHelper {
         MATERIAL_ROTATION_DATA.put(Material.WOOD_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
     }
 
-    private static final Material[] PATH_FINDER_SOLIDS = new Material[] {
+    private static final List<Material> PATH_FINDER_SOLIDS = Arrays.asList(
             Material.STONE,
             Material.GRASS,
             Material.DIRT,
@@ -400,7 +401,7 @@ public class MinecraftHelper {
             Material.BLACK_GLAZED_TERRACOTTA,
             Material.CONCRETE,
             Material.CONCRETE_POWDER
-    };
+    );
 
     /**
      * A method to determine whether a certain material can be used as an anchor point for path supports.
@@ -466,8 +467,8 @@ public class MinecraftHelper {
      * @param m th ematerial to check
      * @return whether the given material is solid or not
      */
-    public static boolean pathSolid(Material m) {
-        return Arrays.asList(PATH_FINDER_SOLIDS).contains(m);
+    public static boolean isPathSolid(Material m) {
+        return PATH_FINDER_SOLIDS.contains(m);
     }
 }
 

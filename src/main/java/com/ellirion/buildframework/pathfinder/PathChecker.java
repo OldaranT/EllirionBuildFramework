@@ -303,7 +303,7 @@ public class PathChecker {
     }
 
     private boolean checkSolid(Material m) {
-        return MinecraftHelper.pathSolid(m);
+        return MinecraftHelper.isPathSolid(m);
     }
 
     private boolean checkClear(Point p) {
