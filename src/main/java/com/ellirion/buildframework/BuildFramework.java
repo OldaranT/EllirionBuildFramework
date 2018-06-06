@@ -5,14 +5,14 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.ellirion.buildframework.command.PlayerRedoCommand;
+import com.ellirion.buildframework.command.PlayerUndoCommand;
 import com.ellirion.buildframework.pathbuilder.command.CommandPathBuilder;
 import com.ellirion.buildframework.pathfinder.command.CommandFindPath;
 import com.ellirion.buildframework.pathfinder.command.CommandHidePath;
 import com.ellirion.buildframework.pathfinder.command.CommandHideVisited;
 import com.ellirion.buildframework.pathfinder.command.CommandPathConfig;
 import com.ellirion.buildframework.pathfinder.event.PathingListener;
-import com.ellirion.buildframework.command.PlayerRedoCommand;
-import com.ellirion.buildframework.command.PlayerUndoCommand;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
@@ -25,6 +25,9 @@ import com.ellirion.buildframework.templateengine.command.CommandRemoveMarker;
 import com.ellirion.buildframework.templateengine.util.TabCompletionFileNameList;
 import com.ellirion.buildframework.templateengine.util.TabCompletionMarkerNameList;
 import com.ellirion.buildframework.templateengine.util.TabCompletionNameCreator;
+import com.ellirion.buildframework.terraincorrector.command.AddBoundingBoxCommand;
+import com.ellirion.buildframework.terraincorrector.command.CorrectCommand;
+import com.ellirion.buildframework.terraincorrector.command.GetBoundingBoxesCommand;
 import com.ellirion.buildframework.terraincorrector.command.ValidateCommand;
 import com.ellirion.buildframework.util.EventListener;
 import com.ellirion.buildframework.util.WorldHelper;
@@ -100,6 +103,12 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TerrainCorrector.TotalLimit", 50);
         config.addDefault("TerrainCorrector.Offset", 5);
         config.addDefault("TerrainCorrector.BoundingBoxMinDist", 5);
+        // Terrain corrector config settings
+        config.addDefault("TerrainCorrector.MaxHoleDepth", 5);
+        config.addDefault("TerrainCorrector.AreaLimitOffset", 5);
+        config.addDefault("TerrainCorrector.BridgeCenterSupportClearancePercentage", 15);
+        config.addDefault("TerrainCorrector.HoleFillerMaxDepth", 5);
+        config.addDefault("TerrainCorrector.HoleFillerChanceToChangeDepth", 10);
         // Template config settings
         config.addDefault("TemplateEngine.Path", "plugins/Ellirion-BuildFramework/templates/");
         // Path builder config
@@ -134,8 +143,7 @@ public class BuildFramework extends JavaPlugin {
 
         blockValueConfig.options().copyDefaults(true);
 
-        //try and save the file
-
+        // Try and save the file
         try {
             blockValueConfig.save(blockValueConfigFile);
         } catch (IOException e) {
@@ -144,7 +152,7 @@ public class BuildFramework extends JavaPlugin {
     }
 
     private void createTemplateFormatConfig() {
-        //set the variables that are needed for the config
+        // Set the variables that are needed for the config
 
         List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
                                               "HUMAN");
@@ -166,7 +174,7 @@ public class BuildFramework extends JavaPlugin {
         String levelPath = "Levels";
         String markersPath = "Markers";
 
-        //get the file and load the config from the file
+        // Get the file and load the config from the file
         File templateFormatConfigFile = new File(getDataFolder(), "TemplateFormat.yml");
         templateFormatConfig = YamlConfiguration.loadConfiguration(templateFormatConfigFile);
 
@@ -197,8 +205,12 @@ public class BuildFramework extends JavaPlugin {
         getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
         getCommand("AddMarker").setExecutor(new CommandAddMarker());
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
+        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
         getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
         getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("CorrectTerain").setExecutor(new CorrectCommand());
+        getCommand("GetBoundingboxes").setExecutor(new GetBoundingBoxesCommand());
+        getCommand("AddBoundingBox").setExecutor(new AddBoundingBoxCommand());
         getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
 
         // Terrain validator

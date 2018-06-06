@@ -9,6 +9,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.util.WorldHelper;
 
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class PathingSession {
         if (this.path != null) {
             for (Point point : this.path) {
                 Location location = point.toLocation(world);
-                Block block = world.getBlockAt(location);
+                Block block = WorldHelper.getBlock(location);
                 player.sendBlockChange(location, block.getType(), block.getData());
             }
         }
@@ -91,7 +92,7 @@ public class PathingSession {
         for (Point point : path) {
             Location l = point.toLocation(world);
             player.sendBlockChange(l, Material.CONCRETE,
-                                   world.getBlockAt(l).getType().isSolid() ? (byte) 1 : (byte) 5);
+                                   WorldHelper.getBlock(l).getType().isSolid() ? (byte) 1 : (byte) 5);
         }
     }
 

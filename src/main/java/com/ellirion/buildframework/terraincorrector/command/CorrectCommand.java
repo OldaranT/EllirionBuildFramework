@@ -9,15 +9,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
-import com.ellirion.buildframework.terraincorrector.TerrainValidator;
-import com.ellirion.buildframework.terraincorrector.model.TerrainValidatorModel;
+import com.ellirion.buildframework.terraincorrector.TerrainCorrector;
 import com.ellirion.buildframework.util.WorldEditHelper;
 
-public class ValidateCommand implements CommandExecutor {
+public class CorrectCommand implements CommandExecutor {
 
     @Override
-    public boolean onCommand(final CommandSender commandSender, final Command command, final String s,
-                             final String[] strings) {
+    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) {
             return true;
         }
@@ -33,18 +31,9 @@ public class ValidateCommand implements CommandExecutor {
         CuboidSelection selection = (CuboidSelection) sel;
         Point start = new Point(selection.getMinimumPoint());
         Point end = new Point(selection.getMaximumPoint());
-        final TerrainValidator validator = new TerrainValidator();
 
-        final TerrainValidatorModel result = validator.validate(new BoundingBox(start, end), player.getWorld());
-
-        if (result.isSucceeded()) {
-            player.sendMessage(ChatColor.GREEN + "The selected area can be corrected");
-            return true;
-        }
-
-        for (String str : result.getErrors()) {
-            player.sendMessage(ChatColor.RED + str);
-        }
+        TerrainCorrector corrector = new TerrainCorrector();
+        corrector.correctTerrain(new BoundingBox(start, end), player.getWorld(), player);
 
         return true;
     }
