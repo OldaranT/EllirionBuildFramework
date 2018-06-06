@@ -39,7 +39,7 @@ public class TerrainCorrector {
     private static final int depthOffset = CONFIG.getInt(maxHoleDepthConfigPath, 5);
     private static final int bridgeSupportClearancePercentage = CONFIG.getInt(
             "TerrainCorrector.BridgeCenterSupportClearancePercentage", 15);
-    private static List<Transaction> TRANSACTIONS;
+    private final List<Transaction> transactions = new ArrayList<>();
 
     private BoundingBox boundingBox;
     private World world;
@@ -55,7 +55,6 @@ public class TerrainCorrector {
 
     public Promise correctTerrain(BoundingBox boundingBox, World world, Player player) {
         return new Promise<>(finisher -> {
-            TRANSACTIONS = new ArrayList<>();
             this.boundingBox = boundingBox;
             this.world = world;
             List<Hole> holes = findHoles(world, boundingBox, offset, depthOffset);
@@ -69,7 +68,7 @@ public class TerrainCorrector {
 
             TransactionManager.addDoneTransaction(player,
                                                   new SequenceTransaction(true,
-                                                                          TRANSACTIONS.toArray(new Transaction[0])));
+                                                                          transactions.toArray(new Transaction[0])));
             finisher.resolve(null);
         }, true);
     }
@@ -628,7 +627,7 @@ public class TerrainCorrector {
     }
 
     private void sendSyncBlockChanges(Block block, BlockData data) {
-        TRANSACTIONS.add(setBlock(block.getLocation(), data.getMaterial(), data.getData()));
+        transactions.add(setBlock(block.getLocation(), data.getMaterial(), data.getData()));
     }
 
     private List<Block> supportSelector(int method, int minHoleX, int maxHoleX,
