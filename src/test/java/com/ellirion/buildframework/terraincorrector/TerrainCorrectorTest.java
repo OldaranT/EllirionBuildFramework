@@ -61,7 +61,7 @@ public class TerrainCorrectorTest {
         Transaction mockTransaction = mock(Transaction.class);
         when(WorldHelper.setBlock(any(Location.class), any(Material.class),
                                   anyByte())).thenReturn(mockTransaction);
-        when(WorldHelper.setBlock(eq(mockWorld), anyInt(), anyInt(), anyInt(), any(),
+        when(WorldHelper.setBlock(any(), anyInt(), anyInt(), anyInt(), any(),
                                   eq((byte) 0))).thenCallRealMethod();
         when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
     }
