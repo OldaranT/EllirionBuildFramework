@@ -79,24 +79,22 @@ public class TerrainCorrector {
     private BlockData getFloorMaterial() {
         Map<BlockData, Integer> materials = new HashMap<>();
 
+        // Loop through al the blocks and place them in a hash map.
         for (int x = boundingBox.getX1(); x <= boundingBox.getX2(); x++) {
             for (int z = boundingBox.getZ1(); z <= boundingBox.getZ2(); z++) {
 
                 Block b = getBlock(world, x, boundingBox.getY1() - 1, z);
                 BlockData data = new BlockData(b.getType(), b.getData());
 
-                if (materials.containsKey(data)) {
-                    materials.replace(data, materials.get(data) + 1);
-                } else {
-                    materials.put(data, 1);
-                }
+                materials.put(data, materials.getOrDefault(data, 0) + 1);
             }
         }
 
+        // Check which block has the most occurrences.
         int max = 0;
         BlockData data = null;
         for (Map.Entry<BlockData, Integer> entry : materials.entrySet()) {
-            if (entry.getValue() > max && entry.getKey().material.isSolid()) {
+            if (entry.getValue() > max && MinecraftHelper.isPathSolid(entry.getKey().material)) {
                 max = entry.getValue();
                 data = entry.getKey();
             }
