@@ -5,14 +5,14 @@ import com.deliveredtechnologies.rulebook.model.rulechain.cor.CoRRuleBook;
 
 public class RavineSupportsRuleBook extends CoRRuleBook<Integer> {
 
-    public static String minHoleX = "minHoleX";
-    public static String minX = "minX";
-    public static String maxHoleX = "maxHoleX";
-    public static String maxX = "maxX";
-    public static String minHoleZ = "minHoleZ";
-    public static String minZ = "minZ";
-    public static String maxHoleZ = "maxHoleZ";
-    public static String maxZ = "maxZ";
+    private static String MIN_HOLE_X = "minHoleX";
+    private static String MIN_X = "minX";
+    private static String MAX_HOLE_X = "maxHoleX";
+    private static String MAX_X = "maxX";
+    private static String MIN_HOLE_Z = "minHoleZ";
+    private static String MIN_Z = "minZ";
+    private static String MAX_HOLE_Z = "maxHoleZ";
+    private static String MAX_Z = "maxZ";
 
     /*
      * WithResultType == what kind of object you return
@@ -22,122 +22,178 @@ public class RavineSupportsRuleBook extends CoRRuleBook<Integer> {
      * build == create the rule
      * */
 
+    /**
+     * @return the max x of the hole.
+     */
+    public static String getMaxHoleX() {
+        return MAX_HOLE_X;
+    }
+
+    /**
+     * @return the max z of the hole.
+     */
+    public static String getMaxHoleZ() {
+        return MAX_HOLE_Z;
+    }
+
+    /**
+     * @return the max x.
+     */
+    public static String getMaxX() {
+        return MAX_X;
+    }
+
+    /**
+     * @return the max z.
+     */
+    public static String getMaxZ() {
+        return MAX_Z;
+    }
+
+    /**
+     * @return the min x of the hole.
+     */
+    public static String getMinHoleX() {
+        return MIN_HOLE_X;
+    }
+
+    /**
+     * @return the min z of the hole.
+     */
+    public static String getMinHoleZ() {
+        return MIN_HOLE_Z;
+    }
+
+    /**
+     * @return the min x.
+     */
+    public static String getMinX() {
+        return MIN_X;
+    }
+
+    /**
+     * @return the min z.
+     */
+    public static String getMinZ() {
+        return MIN_Z;
+    }
+
     @Override
     public void defineRules() {
         // Check if the hole runs straight from one side to the other.
         // Build on the z-axis
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(minHoleX) <= facts.getIntVal(minX) &&
-                                       facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX)) &&
-                                      !(facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) ||
-                                        facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ)))
+                                      (facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) &&
+                                       facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X)) &&
+                                      !(facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) ||
+                                        facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z)))
                         .then((facts, result) -> result.setValue(0))
                         .stop()
                         .build());
         // Build on the x-axis
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) &&
-                                       facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ)) &&
-                                      !(facts.getIntVal(minHoleX) <= facts.getIntVal(minX) ||
-                                        facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX)))
+                                      (facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) &&
+                                       facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z)) &&
+                                      !(facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) ||
+                                        facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X)))
                         .then((facts, result) -> result.setValue(1))
                         .stop()
                         .build());
         // Check if hole is not a corner and faces north
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) &&
-                                       facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) &&
-                                       facts.getIntVal(minHoleX) <= facts.getIntVal(minX) &&
-                                       !(facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ))) ||
-                                      (facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) &&
-                                       !(facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) ||
-                                         facts.getIntVal(minHoleX) <= facts.getIntVal(minX) ||
-                                         facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ))))
+                                      (facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) &&
+                                       facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) &&
+                                       facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) &&
+                                       !(facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z))) ||
+                                      (facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) &&
+                                       !(facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) ||
+                                         facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) ||
+                                         facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z))))
                         .then((facts, result) -> result.setValue(2))
                         .stop()
                         .build());
         // Check if hole is not a corner and faces east
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) &&
-                                       facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) &&
-                                       facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ) &&
-                                       !(facts.getIntVal(minHoleX) <= facts.getIntVal(minX))) ||
-                                      (facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) &&
-                                       !(facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) ||
-                                         facts.getIntVal(minHoleX) <= facts.getIntVal(minX) ||
-                                         facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ))))
+                                      (facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) &&
+                                       facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) &&
+                                       facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z) &&
+                                       !(facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X))) ||
+                                      (facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) &&
+                                       !(facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) ||
+                                         facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) ||
+                                         facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z))))
                         .then((facts, result) -> result.setValue(3))
                         .stop()
                         .build());
         // Check if hole is not a corner and faces south
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ) &&
-                                       facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) &&
-                                       facts.getIntVal(minHoleX) <= facts.getIntVal(minX) &&
-                                       !(facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ))) ||
-                                      (facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ) &&
-                                       !(facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) ||
-                                         facts.getIntVal(minHoleX) <= facts.getIntVal(minX) ||
-                                         facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ))))
+                                      (facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z) &&
+                                       facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) &&
+                                       facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) &&
+                                       !(facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z))) ||
+                                      (facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z) &&
+                                       !(facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) ||
+                                         facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) ||
+                                         facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z))))
                         .then((facts, result) -> result.setValue(4))
                         .stop()
                         .build());
         // Check if hole is not a corner and faces west
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(minHoleX) <= facts.getIntVal(minX) &&
-                                       facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) &&
-                                       facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ) &&
-                                       !(facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX))) ||
-                                      (facts.getIntVal(minHoleX) <= facts.getIntVal(minX) &&
-                                       !(facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) ||
-                                         facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) ||
-                                         facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ))))
+                                      (facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) &&
+                                       facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) &&
+                                       facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z) &&
+                                       !(facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X))) ||
+                                      (facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) &&
+                                       !(facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) ||
+                                         facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) ||
+                                         facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z))))
                         .then((facts, result) -> result.setValue(5))
                         .stop()
                         .build());
         // Check if the hole is a corner and faces north east
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) &&
-                                       facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX)) &&
-                                      !(facts.getIntVal(minHoleX) <= facts.getIntVal(minX) &&
-                                        facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ)))
+                                      (facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) &&
+                                       facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X)) &&
+                                      !(facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) &&
+                                        facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z)))
                         .then((facts, result) -> result.setValue(6))
                         .stop()
                         .build());
         // Check if the hole is a corner and faces south east
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ) &&
-                                       facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX)) &&
-                                      !(facts.getIntVal(minHoleX) <= facts.getIntVal(minX) &&
-                                        facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ)))
+                                      (facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z) &&
+                                       facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X)) &&
+                                      !(facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X) &&
+                                        facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z)))
                         .then((facts, result) -> result.setValue(7))
                         .stop()
                         .build());
         // Check if the hole is a corner and faces south west
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ) &&
-                                       facts.getIntVal(minHoleX) <= facts.getIntVal(minX)) &&
-                                      !(facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) &&
-                                        facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ)))
+                                      (facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z) &&
+                                       facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X)) &&
+                                      !(facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) &&
+                                        facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z)))
                         .then((facts, result) -> result.setValue(8))
                         .stop()
                         .build());
         // Check if the hole is a corner and faces north west
         addRule(RuleBuilder.create().withResultType(Integer.class)
                         .when(facts ->
-                                      (facts.getIntVal(minHoleZ) <= facts.getIntVal(minZ) &&
-                                       facts.getIntVal(minHoleX) <= facts.getIntVal(minX)) &&
-                                      !(facts.getIntVal(maxHoleX) >= facts.getIntVal(maxX) &&
-                                        facts.getIntVal(maxHoleZ) >= facts.getIntVal(maxZ)))
+                                      (facts.getIntVal(MIN_HOLE_Z) <= facts.getIntVal(MIN_Z) &&
+                                       facts.getIntVal(MIN_HOLE_X) <= facts.getIntVal(MIN_X)) &&
+                                      !(facts.getIntVal(MAX_HOLE_X) >= facts.getIntVal(MAX_X) &&
+                                        facts.getIntVal(MAX_HOLE_Z) >= facts.getIntVal(MAX_Z)))
                         .then((facts, result) -> result.setValue(9))
                         .stop()
                         .build());

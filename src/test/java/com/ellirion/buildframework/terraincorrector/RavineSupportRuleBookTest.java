@@ -264,13 +264,13 @@ public class RavineSupportRuleBookTest {
     private void setKeysAndFacts(int hMinX, int xMin, int hMaxX, int xMax, int hMinZ,
                                  int zMin, int hMaxZ, int zMax) {
 
-        facts.setValue(RavineSupportsRuleBook.minHoleX, hMinX);
-        facts.setValue(RavineSupportsRuleBook.maxX, xMin);
-        facts.setValue(RavineSupportsRuleBook.maxHoleX, hMaxX);
-        facts.setValue(RavineSupportsRuleBook.maxX, xMax);
-        facts.setValue(RavineSupportsRuleBook.minHoleZ, hMinZ);
-        facts.setValue(RavineSupportsRuleBook.minZ, zMin);
-        facts.setValue(RavineSupportsRuleBook.maxHoleZ, hMaxZ);
-        facts.setValue(RavineSupportsRuleBook.maxZ, zMax);
+        facts.setValue(RavineSupportsRuleBook.getMinHoleX(), hMinX);
+        facts.setValue(RavineSupportsRuleBook.getMaxX(), xMin);
+        facts.setValue(RavineSupportsRuleBook.getMaxHoleX(), hMaxX);
+        facts.setValue(RavineSupportsRuleBook.getMaxX(), xMax);
+        facts.setValue(RavineSupportsRuleBook.getMinHoleZ(), hMinZ);
+        facts.setValue(RavineSupportsRuleBook.getMinZ(), zMin);
+        facts.setValue(RavineSupportsRuleBook.getMaxHoleZ(), hMaxZ);
+        facts.setValue(RavineSupportsRuleBook.getMaxZ(), zMax);
     }
 }

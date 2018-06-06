@@ -68,8 +68,8 @@ public class TerrainValidator {
             model.setSucceeded(false);
         }
 
-        //this step also needs to check if the model has succeeded thus far
-        // because we don't want to add unnecessary information
+        // This step also needs to check if the model has succeeded thus far
+        // Because we don't want to add unnecessary information.
         if (blocksScore + overhangScore >= totalLimit && model.isSucceeded()) {
             model.getErrors().add("the amount of blocks that need to be changed is to high");
             model.setSucceeded(false);
@@ -79,7 +79,6 @@ public class TerrainValidator {
     }
 
     private boolean checkForBoundingBoxes() {
-
         Point point1 = new Point(boundingBox.getX1() - BOUNDING_BOX_CHECK_RADIUS,
                                  boundingBox.getY1() - BOUNDING_BOX_CHECK_RADIUS,
                                  boundingBox.getZ1() - BOUNDING_BOX_CHECK_RADIUS);

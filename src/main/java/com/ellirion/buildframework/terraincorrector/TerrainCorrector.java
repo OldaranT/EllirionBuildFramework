@@ -280,10 +280,10 @@ public class TerrainCorrector {
         int minZ = boundingBox.getZ1();
         int maxZ = boundingBox.getZ2();
 
-        ravineSupportsFacts.setValue(RavineSupportsRuleBook.minX, minX);
-        ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxX, maxX);
-        ravineSupportsFacts.setValue(RavineSupportsRuleBook.minZ, minZ);
-        ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxZ, maxZ);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMinX(), minX);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMaxX(), maxX);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMinZ(), minZ);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMaxZ(), maxZ);
 
         int minHoleX;
         int maxHoleX;
@@ -318,10 +318,10 @@ public class TerrainCorrector {
             minHoleZ = h.getMinZ();
             maxHoleZ = h.getMaxZ();
 
-            ravineSupportsFacts.setValue(RavineSupportsRuleBook.minHoleX, h.getMinX());
-            ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxHoleX, h.getMaxX());
-            ravineSupportsFacts.setValue(RavineSupportsRuleBook.minHoleZ, h.getMinZ());
-            ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxHoleZ, h.getMaxZ());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMinHoleX(), h.getMinX());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMaxHoleX(), h.getMaxX());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMinHoleZ(), h.getMinZ());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMaxHoleZ(), h.getMaxZ());
 
             // Run the values through the rules in the rulebook.
             ravineSupportsRuleBook.run(ravineSupportsFacts);
