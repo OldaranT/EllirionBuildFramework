@@ -64,6 +64,7 @@ public class TerrainCorrectorTest {
         when(WorldHelper.setBlock(any(), anyInt(), anyInt(), anyInt(), any(),
                                   eq((byte) 0))).thenCallRealMethod();
         when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
+        when(WorldHelper.getRelativeBlock(anyInt(), any(Block.class), any(World.class))).thenCallRealMethod();
     }
 
     @Before

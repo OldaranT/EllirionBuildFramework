@@ -15,6 +15,7 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 import com.ellirion.buildframework.terraincorrector.rulebook.RavineSupportsRuleBook;
+import com.ellirion.buildframework.util.MinecraftHelper;
 import com.ellirion.buildframework.util.TransactionManager;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.SequenceTransaction;
@@ -199,7 +200,7 @@ public class TerrainCorrector {
     private void fillDownwards(Block block, BlockData data, int startDepth) {
         Block currentBlock = getBlock(world, block.getX(), block.getY() - startDepth, block.getZ());
 
-        while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
+        while (currentBlock.isEmpty() || !MinecraftHelper.isPathSolid(currentBlock.getType())) {
             sendSyncBlockChanges(currentBlock, data);
             currentBlock = getRelativeBlock(5, currentBlock, world);
         }

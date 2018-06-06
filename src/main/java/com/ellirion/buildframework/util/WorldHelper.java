@@ -160,6 +160,41 @@ public class WorldHelper {
         }
     }
 
+    /**
+     * @param dir in what direction it needs to look.
+     * @param block the block from where it needs to look.
+     * @param world the world where you are looking in.
+     * @return return the found block.
+     */
+    public static Block getRelativeBlock(int dir, Block block, World world) {
+        int x = block.getX();
+        int y = block.getY();
+        int z = block.getZ();
+        switch (dir) {
+            case 0:
+                // NORTH
+                return getBlock(world, x, y, z - 1);
+            case 1:
+                // EAST
+                return getBlock(world, x + 1, y, z);
+            case 2:
+                // SOUTH
+                return getBlock(world, x, y, z + 1);
+            case 3:
+                // WEST
+                return getBlock(world, x - 1, y, z);
+            case 4:
+                // UP
+                return getBlock(world, x, y + 1, z);
+            case 5:
+                // DOWN
+                return getBlock(world, x, y - 1, z);
+
+            default:
+                throw new IndexOutOfBoundsException();
+        }
+    }
+
     private static class BlockChange {
 
         private Location location;
@@ -172,8 +207,8 @@ public class WorldHelper {
         }
 
         BlockChange(final Location loc, final Material mat, final byte data, final NBTTagCompound nbt) {
-            this.location = loc;
-            this.material = mat;
+            location = loc;
+            material = mat;
             this.data = data;
             this.nbt = nbt;
         }
@@ -209,7 +244,7 @@ public class WorldHelper {
 
         PendingBlockChange(final BlockChange change) {
             this.change = change;
-            this.promise = new Promise<>();
+            promise = new Promise<>();
         }
 
         BlockChange apply() {
@@ -225,8 +260,8 @@ public class WorldHelper {
         private BlockChange after;
 
         BlockChangeTransaction(final BlockChange change) {
-            this.before = null;
-            this.after = change;
+            before = null;
+            after = change;
         }
 
         @Override
