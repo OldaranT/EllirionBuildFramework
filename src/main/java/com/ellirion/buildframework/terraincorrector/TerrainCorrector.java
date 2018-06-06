@@ -56,7 +56,7 @@ public class TerrainCorrector {
      * @return the {@link Promise} in which the correction will be executed
      */
 
-    public Promise correctTerrain(BoundingBox boundingBox, World world, Player player) {
+    public Promise<Object> correctTerrain(BoundingBox boundingBox, World world, Player player) {
         return new Promise<>(finisher -> {
             this.boundingBox = boundingBox;
             this.world = world;
