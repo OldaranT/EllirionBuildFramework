@@ -9,6 +9,7 @@ import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.model.Direction;
 import com.ellirion.buildframework.pathfinder.model.DirectionChange;
 import com.ellirion.buildframework.pathfinder.model.PathingVertex;
+import com.ellirion.buildframework.util.MinecraftHelper;
 import com.ellirion.buildframework.util.WorldHelper;
 
 import java.util.ArrayList;
@@ -292,18 +293,17 @@ public class PathChecker {
         Material m = b.getType();
 
         boolean isSolid = checkSolid(m);
-        boolean isEmpty = !checkSolid(m);
         boolean isClear = checkClear(p);
         boolean isGrounded = checkGrounded(p);
 
-        PointInfo pi = new PointInfo(isSolid, isEmpty, isClear, isGrounded);
+        PointInfo pi = new PointInfo(isSolid, !isSolid, isClear, isGrounded);
         points.put(p, pi);
 
         return pi;
     }
 
     private boolean checkSolid(Material m) {
-        return m.isSolid();
+        return MinecraftHelper.pathSolid(m);
     }
 
     private boolean checkClear(Point p) {
@@ -324,7 +324,7 @@ public class PathChecker {
 
     private boolean checkGrounded(Point p) {
         for (Direction d : Direction.values()) {
-            if (WorldHelper.getBlock(d.apply(p).toLocation(world)).getType().isSolid()) {
+            if (checkSolid(WorldHelper.getBlock(d.apply(p).toLocation(world)).getType())) {
                 return true;
             }
         }
@@ -332,13 +332,13 @@ public class PathChecker {
     }
 
     private boolean mayChangeHeight(PathingVertex to) {
-        int count = 0;
+        int count = 1;
         PathingVertex from = to.getCameFrom();
 
         // Loop backwards along the known path to assert that a
         // vertical move is valid.
         // If path length is 4, we check current block and 3 blocks back, so we go until pathLength - 1
-        while (count < (pathLength - 1)) {
+        while (count < pathLength) {
             if (from == null) {
                 break;
             }

@@ -295,6 +295,113 @@ public class MinecraftHelper {
         MATERIAL_ROTATION_DATA.put(Material.WALL_SIGN, new int[] {0, 1, 5, 4, 2, 3, 0, 1, 4, 5, 3, 2});
         MATERIAL_ROTATION_DATA.put(Material.WOOD_BUTTON, new int[] {0, 3, 4, 2, 1, 5, 0, 4, 3, 1, 2, 5});
     }
+
+    private static final Material[] PATH_FINDER_SOLIDS = new Material[] {
+            Material.STONE,
+            Material.GRASS,
+            Material.DIRT,
+            Material.COBBLESTONE,
+            Material.WOOD,
+            Material.BEDROCK,
+            Material.SAND,
+            Material.GRAVEL,
+            Material.GOLD_ORE,
+            Material.IRON_ORE,
+            Material.COAL_ORE,
+            Material.LOG,
+            Material.LEAVES,
+            Material.SPONGE,
+            Material.GLASS,
+            Material.LAPIS_ORE,
+            Material.LAPIS_BLOCK,
+            Material.SANDSTONE,
+            Material.WOOL,
+            Material.GOLD_BLOCK,
+            Material.IRON_BLOCK,
+            Material.DOUBLE_STEP,
+            Material.STEP,
+            Material.BRICK,
+            Material.MOSSY_COBBLESTONE,
+            Material.OBSIDIAN,
+            Material.WOOD_STAIRS,
+            Material.DIAMOND_ORE,
+            Material.DIAMOND_BLOCK,
+            Material.SOIL,
+            Material.COBBLESTONE_STAIRS,
+            Material.ICE,
+            Material.SNOW_BLOCK,
+            Material.CLAY,
+            Material.NETHERRACK,
+            Material.SOUL_SAND,
+            Material.GLOWSTONE,
+            Material.STAINED_GLASS,
+            Material.SMOOTH_BRICK,
+            Material.BRICK_STAIRS,
+            Material.SMOOTH_STAIRS,
+            Material.MYCEL,
+            Material.NETHER_BRICK,
+            Material.NETHER_BRICK_STAIRS,
+            Material.WOOD_DOUBLE_STEP,
+            Material.WOOD_STEP,
+            Material.SANDSTONE_STAIRS,
+            Material.EMERALD_ORE,
+            Material.EMERALD_BLOCK,
+            Material.SPRUCE_WOOD_STAIRS,
+            Material.BIRCH_WOOD_STAIRS,
+            Material.JUNGLE_WOOD_STAIRS,
+            Material.REDSTONE_BLOCK,
+            Material.QUARTZ_ORE,
+            Material.HOPPER,
+            Material.QUARTZ_BLOCK,
+            Material.QUARTZ_STAIRS,
+            Material.STAINED_CLAY,
+            Material.LEAVES_2,
+            Material.LOG_2,
+            Material.ACACIA_STAIRS,
+            Material.DARK_OAK_STAIRS,
+            Material.SLIME_BLOCK,
+            Material.BARRIER,
+            Material.PRISMARINE,
+            Material.SEA_LANTERN,
+            Material.HAY_BLOCK,
+            Material.HARD_CLAY,
+            Material.COAL_BLOCK,
+            Material.PACKED_ICE,
+            Material.RED_SANDSTONE,
+            Material.RED_SANDSTONE_STAIRS,
+            Material.DOUBLE_STONE_SLAB2,
+            Material.STONE_SLAB2,
+            Material.PURPUR_PILLAR,
+            Material.PURPUR_STAIRS,
+            Material.PURPUR_DOUBLE_SLAB,
+            Material.PURPUR_SLAB,
+            Material.END_BRICKS,
+            Material.GRASS_PATH,
+            Material.FROSTED_ICE,
+            Material.MAGMA,
+            Material.NETHER_WART_BLOCK,
+            Material.RED_NETHER_BRICK,
+            Material.BONE_BLOCK,
+            Material.WHITE_GLAZED_TERRACOTTA,
+            Material.ORANGE_GLAZED_TERRACOTTA,
+            Material.MAGENTA_GLAZED_TERRACOTTA,
+            Material.LIGHT_BLUE_GLAZED_TERRACOTTA,
+            Material.YELLOW_GLAZED_TERRACOTTA,
+            Material.LIME_GLAZED_TERRACOTTA,
+            Material.PINK_GLAZED_TERRACOTTA,
+            Material.GRAY_GLAZED_TERRACOTTA,
+            Material.SILVER_GLAZED_TERRACOTTA,
+            Material.CYAN_GLAZED_TERRACOTTA,
+            Material.PURPLE_GLAZED_TERRACOTTA,
+            Material.BLUE_GLAZED_TERRACOTTA,
+            Material.BROWN_GLAZED_TERRACOTTA,
+            Material.GREEN_GLAZED_TERRACOTTA,
+            Material.RED_GLAZED_TERRACOTTA,
+            Material.BLACK_GLAZED_TERRACOTTA,
+            Material.CONCRETE,
+            Material.CONCRETE_POWDER
+    };
+
     /**
      * A method to determine whether a certain material can be used as an anchor point for path supports.
      * @param mat the material to check
@@ -352,6 +459,15 @@ public class MinecraftHelper {
 
     public static Material[] getToRotate() {
         return TO_ROTATE.clone();
+    }
+
+    /**
+     * Check if the material is 'solid' for the path finder.
+     * @param m th ematerial to check
+     * @return whether the given material is solid or not
+     */
+    public static boolean pathSolid(Material m) {
+        return Arrays.asList(PATH_FINDER_SOLIDS).contains(m);
     }
 }
 

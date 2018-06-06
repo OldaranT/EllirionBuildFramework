@@ -70,7 +70,7 @@ public class Heap<T extends Comparable> {
      */
     public T peek() {
         if (length == 0) {
-            return null;
+            throw new IllegalStateException();
         }
 
         return arr[0];

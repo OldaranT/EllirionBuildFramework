@@ -275,9 +275,6 @@ public class AStar {
         // Add pow(distance from goal, fGoalExp) * fGoalFactor
         double fScore = Math.pow(adjacent.getData().distanceEuclidian(goal), fGoalExp) * fGoalFactor;
 
-        // Add the distance from the "optimal" line
-        //fScore += adjacent.getData().distanceFromLine(start, goal) * fLine;
-
         return fScore;
     }
 
