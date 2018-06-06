@@ -334,8 +334,12 @@ public class MinecraftHelper {
      * @param meta current metadata to check.
      * @return true if their is a specific occasion.
      */
-    public static boolean isThisASpecialSnowflake(Material mat, int meta) {
-        return SPECIAL_SNOWFLAKE_DATA.get(mat).contains(meta);
+    public static boolean isSpecialSnowflake(Material mat, int meta) {
+        List<Integer> list = SPECIAL_SNOWFLAKE_DATA.get(mat);
+        if (list == null) {
+            return false;
+        }
+        return list.contains(meta);
     }
 
     /**

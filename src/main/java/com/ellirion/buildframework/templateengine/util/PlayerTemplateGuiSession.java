@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.templateengine.TemplateManager;
 import com.ellirion.buildframework.templateengine.model.Template;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class PlayerTemplateGuiSession implements Listener {
 
@@ -200,7 +202,10 @@ public class PlayerTemplateGuiSession implements Listener {
     private boolean confirm(Player player, TemplateHologram hologram, boolean isRightClick) {
         // Place the template
         Template t = hologram.getTemplate();
-        t.putTemplateInWorld(hologram.getLocation(), player);
+        t.putTemplateInWorld(hologram.getLocation(), player).except(ex -> {
+            player.sendMessage("Path finding failed: " + ex.getMessage());
+            BuildFramework.getInstance().getLogger().log(Level.SEVERE, "Template placing failed", ex);
+        });
         quit();
         return false;
     }

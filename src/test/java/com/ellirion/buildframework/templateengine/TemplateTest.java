@@ -464,7 +464,7 @@ public class TemplateTest {
             PowerMockito.doNothing().when(
                     TransactionManager.class, "addDoneTransaction", any(Player.class), captor.capture());
 
-            t.putTemplateInWorld(l, mock(Player.class));
+            t.putTemplateInWorld(l, mock(Player.class)).await();
 
             assertEquals(27, ((SequenceTransaction) captor.getValue()).getChildren().size());
         }
