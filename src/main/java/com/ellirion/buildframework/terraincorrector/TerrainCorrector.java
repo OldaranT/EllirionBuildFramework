@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
@@ -15,6 +16,7 @@ import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 import com.ellirion.buildframework.terraincorrector.rulebook.RavineSupportsRuleBook;
+import com.ellirion.buildframework.util.MinecraftHelper;
 import com.ellirion.buildframework.util.TransactionManager;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.SequenceTransaction;
@@ -29,6 +31,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
 import static com.ellirion.buildframework.util.WorldHelper.*;
+import static org.bukkit.block.BlockFace.*;
 
 public class TerrainCorrector {
 
@@ -166,9 +169,16 @@ public class TerrainCorrector {
 
         result.put(currentEntry.getBlock(), currentEntry.getDepth());
 
+        BlockFace[] faces = {
+                NORTH,
+                EAST,
+                SOUTH,
+                WEST
+        };
+
         // Loop through the adjacent blocks
-        for (int dir = 0; dir < 4; dir++) {
-            Block nextBlock = getRelativeBlock(dir, currentEntry.getBlock(), world);
+        for (BlockFace face : faces) {
+            Block nextBlock = getRelativeBlock(face, currentEntry.getBlock(), world);
 
             int percentage = currentEntry.getPercentage();
             int maxOffset = currentEntry.getMaxDepthOffset();
@@ -204,9 +214,9 @@ public class TerrainCorrector {
         Block currentBlock = getBlock(world, block.getX(), block.getY() - startDepth, block.getZ());
 
         // Loop tough all blocks below the starting block that are air or not solid
-        while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
+        while (currentBlock.isEmpty() || !MinecraftHelper.isPathSolid(currentBlock.getType())) {
             sendSyncBlockChanges(currentBlock, data);
-            currentBlock = getRelativeBlock(5, currentBlock, world);
+            currentBlock = getRelativeBlock(DOWN, currentBlock, world);
         }
     }
 

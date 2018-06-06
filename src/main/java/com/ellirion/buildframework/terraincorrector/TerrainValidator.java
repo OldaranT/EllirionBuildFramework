@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
 import static com.ellirion.buildframework.util.WorldHelper.*;
+import static org.bukkit.block.BlockFace.*;
 
 public class TerrainValidator {
 
@@ -210,10 +211,10 @@ public class TerrainValidator {
 
         for (Block b : blocks) {
             if (b.isLiquid() &&
-                ((b.getX() == minX && getRelativeBlock(3, b, world).isLiquid()) ||
-                 (b.getX() == maxX && getRelativeBlock(1, b, world).isLiquid()) ||
-                 (b.getZ() == minZ && getRelativeBlock(0, b, world).isLiquid()) ||
-                 (b.getZ() == maxZ && getRelativeBlock(2, b, world).isLiquid()))) {
+                ((b.getX() == minX && getRelativeBlock(WEST, b, world).isLiquid()) ||
+                 (b.getX() == maxX && getRelativeBlock(EAST, b, world).isLiquid()) ||
+                 (b.getZ() == minZ && getRelativeBlock(NORTH, b, world).isLiquid()) ||
+                 (b.getZ() == maxZ && getRelativeBlock(SOUTH, b, world).isLiquid()))) {
                 return true;
             }
         }

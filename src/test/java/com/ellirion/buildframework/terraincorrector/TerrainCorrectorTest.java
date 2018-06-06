@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.junit.Before;
@@ -64,6 +65,8 @@ public class TerrainCorrectorTest {
         when(WorldHelper.setBlock(any(), anyInt(), anyInt(), anyInt(), any(),
                                   eq((byte) 0))).thenCallRealMethod();
         when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
+        when(WorldHelper.getRelativeBlock(any(BlockFace.class), any(Block.class),
+                                          any(World.class))).thenCallRealMethod();
     }
 
     @Before

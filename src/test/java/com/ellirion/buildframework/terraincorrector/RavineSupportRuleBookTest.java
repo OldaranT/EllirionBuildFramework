@@ -37,7 +37,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 0);
+        assertEquals(0, outcome);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 1);
+        assertEquals(1, outcome);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 2);
+        assertEquals(2, outcome);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 2);
+        assertEquals(2, outcome);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 3);
+        assertEquals(3, outcome);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 3);
+        assertEquals(3, outcome);
     }
 
     @Test
@@ -139,7 +139,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 4);
+        assertEquals(4, outcome);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 4);
+        assertEquals(4, outcome);
     }
 
     @Test
@@ -173,7 +173,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 5);
+        assertEquals(5, outcome);
     }
 
     @Test
@@ -190,7 +190,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 5);
+        assertEquals(5, outcome);
     }
 
     @Test
@@ -207,7 +207,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 6);
+        assertEquals(6, outcome);
     }
 
     @Test
@@ -224,7 +224,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 7);
+        assertEquals(7, outcome);
     }
 
     @Test
@@ -241,7 +241,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 8);
+        assertEquals(8, outcome);
     }
 
     @Test
@@ -258,7 +258,7 @@ public class RavineSupportRuleBookTest {
         }
 
         // Assert
-        assertTrue(outcome == 9);
+        assertEquals(9, outcome);
     }
 
     private void setKeysAndFacts(int hMinX, int xMin, int hMaxX, int xMax, int hMinZ,
