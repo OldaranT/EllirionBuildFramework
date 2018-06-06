@@ -3,7 +3,6 @@ package com.ellirion.buildframework.terraincorrector;
 import com.deliveredtechnologies.rulebook.FactMap;
 import com.deliveredtechnologies.rulebook.Result;
 import com.deliveredtechnologies.rulebook.lang.RuleBookBuilder;
-import com.google.common.collect.Lists;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -420,18 +419,14 @@ public class TerrainCorrector {
 
     // Get blocks you need to replace below a specific point
     private List<Block> blocksToReplace(int x, int y, int z, int depth) {
-        Map<Block, Object> toChange = new HashMap<>();
+        List<Block> toChange = new ArrayList<>();
         Block b = getBlock(world, x, y, z);
         if (blocksBelowBoundingBoxOrWithinOffset(b, 0) && (b.isLiquid() || b.isEmpty())) {
-            if (!toChange.containsKey(b)) {
-                toChange.put(b, null);
-            }
-            for (Block block : getBlocksBelow(b, depth)) {
-                toChange.put(block, null);
+            if (!toChange.contains(b)) {
+                toChange.add(b);
             }
         }
-
-        return Lists.newArrayList(toChange.keySet());
+        return toChange;
     }
 
     private List<Block> createSupportsLocationMap() {
