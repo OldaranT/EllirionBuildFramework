@@ -24,6 +24,7 @@ public class CommandHidePath implements CommandExecutor {
         Player player = (Player) sender;
         PathingSession session = PathingManager.getSession(player);
         session.setPath(null);
+        session.setGraph(null);
 
         List<Point> visited = session.getVisited();
         World world = player.getWorld();

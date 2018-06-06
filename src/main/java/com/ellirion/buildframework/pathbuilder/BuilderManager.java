@@ -33,6 +33,7 @@ public class BuilderManager {
             changes.add(WorldHelper.setBlock(change.getLocation(), change.getMatAfter(), change.getMetadataAfter()));
         }
 
-        TransactionManager.addDoneTransaction(player, new SequenceTransaction(changes.toArray(new Transaction[0])));
+        TransactionManager.addDoneTransaction(player,
+                                              new SequenceTransaction(true, changes.toArray(new Transaction[0])));
     }
 }

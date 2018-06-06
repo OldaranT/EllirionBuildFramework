@@ -11,14 +11,14 @@ import java.util.Map;
 public class PathingGraph implements IGraph<Point> {
 
     private Map<Point, PathingVertex> vertices;
-    private Heap<PathingVertex, Double> heap;
+    private Heap<PathingVertex> heap;
 
     /**
      * Construct a new empty PathingGraph.
      */
     public PathingGraph() {
         vertices = new HashMap<>();
-        heap = new Heap<>(PathingVertex::getFScore);
+        heap = new Heap<>();
     }
 
     /**
@@ -30,7 +30,7 @@ public class PathingGraph implements IGraph<Point> {
     }
 
     /**
-     * Remove the vertex {@code v}.
+     * Remove vertex {@code v}.
      * @param v The vertex
      */
     public void removeVertex(final PathingVertex v) {
@@ -38,16 +38,16 @@ public class PathingGraph implements IGraph<Point> {
     }
 
     /**
-     * Re-add the vertex {@code v}.
+     * Add vertex {@code v}.
      * @param v The vertex
      */
     public void addVertex(final PathingVertex v) {
-        heap.insert(v);
+        heap.add(v);
     }
 
     @Override
     public PathingVertex find(Point point) {
-        return findOrCreate(point);
+        return vertices.getOrDefault(point, null);
     }
 
     @Override
@@ -56,7 +56,6 @@ public class PathingGraph implements IGraph<Point> {
         if (v == null) {
             v = new PathingVertex(this, point);
             vertices.put(point, v);
-            //heap.insert(v);
         }
         return v;
     }

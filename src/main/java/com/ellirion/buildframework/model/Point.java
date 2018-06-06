@@ -7,9 +7,9 @@ import org.bukkit.World;
 
 public class Point {
 
-    @Getter private double x;
-    @Getter private double y;
-    @Getter private double z;
+    @Getter private final double x;
+    @Getter private final double y;
+    @Getter private final double z;
 
     /**
      * Constructs a Point at (0,0,0).
@@ -130,7 +130,7 @@ public class Point {
         double t = Math.sqrt(s * (s - a) * (s - b) * (s - c));
 
         // Line defined by two points
-        // Denominator (rechts van /) = distance between p1 and p2
+        // Denominator = distance between p1 and p2
         // Numerator = twice the area of the triangle with its vertices at the three points.
         return 2 * t / a;
     }

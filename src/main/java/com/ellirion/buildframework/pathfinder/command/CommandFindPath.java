@@ -5,10 +5,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.pathfinder.AStar;
 import com.ellirion.buildframework.pathfinder.PathingManager;
 import com.ellirion.buildframework.pathfinder.model.PathingSession;
+
+import java.util.logging.Level;
 
 public class CommandFindPath implements CommandExecutor {
 
@@ -46,11 +49,14 @@ public class CommandFindPath implements CommandExecutor {
 
         // Calculate the path
         AStar astar = new AStar(player, start, goal);
-        astar.searchAsync().consumeSync((path) -> {
+        astar.searchAsync().then(path -> {
             // Show the new path
             PathingManager.getSession(player).setPath(path);
-        }).consumeFailSync((ex) -> {
-            player.sendMessage("Heap failed: " + ex.getMessage());
+            PathingManager.getSession(player).setGraph(astar.getGraph());
+            return path;
+        }).except(ex -> {
+            player.sendMessage("Path finding failed: " + ex.getMessage());
+            BuildFramework.getInstance().getLogger().log(Level.SEVERE, "Path finding failed", ex);
         });
 
         return true;

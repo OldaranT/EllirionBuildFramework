@@ -17,42 +17,42 @@ import static org.junit.Assert.*;
 @PrepareForTest({BuildFramework.class, Bukkit.class})
 public class SequenceTransactionTest {
 
-    private Supplier<Promise<Boolean>> countUp(Counter counter) {
+    private Supplier<Promise<Boolean>> countUpSupplier(Counter counter) {
         return () -> new Promise<>(finisher -> {
             counter.increment();
             finisher.resolve(true);
         });
     }
 
-    private Supplier<Promise<Boolean>> countDown(Counter counter) {
+    private Supplier<Promise<Boolean>> countDownSupplier(Counter counter) {
         return () -> new Promise<>(finisher -> {
             counter.decrement();
             finisher.resolve(true);
         });
     }
 
-    private Supplier<Promise<Boolean>> fail() {
+    private Supplier<Promise<Boolean>> failSupplier() {
         return () -> new Promise<>(finisher -> finisher.resolve(false));
     }
 
-    private Supplier<Promise<Boolean>> succeed() {
+    private Supplier<Promise<Boolean>> successSupplier() {
         return () -> new Promise<>(finisher -> finisher.resolve(true));
     }
 
     private Transaction counting(Counter counter) {
-        return new SimpleTransaction(countUp(counter), countDown(counter));
+        return new SimpleTransaction(countUpSupplier(counter), countDownSupplier(counter));
     }
 
     private Transaction countAndFail(Counter counter) {
-        return new SimpleTransaction(countUp(counter), fail());
+        return new SimpleTransaction(countUpSupplier(counter), failSupplier());
     }
 
     private Transaction failing() {
-        return new SimpleTransaction(fail(), fail());
+        return new SimpleTransaction(failSupplier(), failSupplier());
     }
 
     private Transaction succeeding() {
-        return new SimpleTransaction(succeed(), succeed());
+        return new SimpleTransaction(successSupplier(), successSupplier());
     }
 
     @Test
@@ -187,6 +187,65 @@ public class SequenceTransactionTest {
     }
 
     @Test
+    public void apply_whenChildIsPending_shouldWaitForChildToFinish() {
+        Counter c = new Counter(0);
+        Counter c1 = new Counter(0);
+        Counter c2 = new Counter(0);
+        Transaction t1 = new SimpleTransaction(countUpSupplier(c1), () -> new Promise<>(f -> {
+            try {
+                Thread.sleep(100);
+            } catch (Exception ex) {
+                fail();
+            }
+            c1.decrement();
+            f.resolve(true);
+        }));
+        Transaction t2 = counting(c2);
+        SequenceTransaction t = new SequenceTransaction(false, t1, t2);
+        t.apply();
+        t.revert();
+
+        // This apply() takes 100ms to process, since revert() of t1 is still pending.
+        Promise<Boolean> p = t.apply();
+        p.then(bool -> {
+            assertEquals(0, c.get());
+            c.increment();
+        });
+
+        p.await();
+        assertEquals(1, c.get());
+    }
+
+    @Test
+    public void apply_whenChildIsPendingApplied_shouldThrowException() {
+        Counter c = new Counter(0);
+        Counter c1 = new Counter(0);
+        Transaction t1 = new SimpleTransaction(() -> new Promise<>(f -> {
+            try {
+                Thread.sleep(100);
+            } catch (Exception ex) {
+                fail();
+            }
+            c1.decrement();
+            f.resolve(true);
+        }), countDownSupplier(c1));
+        t1.apply();
+
+        Transaction t = new SequenceTransaction(false, t1);
+
+        // This apply() takes 100ms to process, after which an exception will be thrown
+        // due to the child Transaction ending up in an unexpected applied state.
+        Promise<Boolean> p = t.apply();
+        p.except(ex -> {
+            assertEquals(0, c.get());
+            c.increment();
+        });
+
+        p.await();
+        assertEquals(1, c.get());
+    }
+
+    @Test
     public void revert_whenChildrenSucceed_shouldResolveTrue() {
         Counter c = new Counter(1);
         Counter c1 = new Counter(0);
@@ -235,5 +294,34 @@ public class SequenceTransactionTest {
         p2.await();
         assertEquals(0, c.get());
         assertEquals(1, c1.get());
+    }
+
+    @Test
+    public void revert_whenChildIsPending_shouldWaitForChildToFinish() {
+        Counter c = new Counter(0);
+        Counter c1 = new Counter(0);
+        Counter c2 = new Counter(0);
+        Transaction t1 = new SimpleTransaction(() -> new Promise<>(f -> {
+            try {
+                Thread.sleep(100);
+            } catch (Exception ex) {
+                fail();
+            }
+            c1.increment();
+            f.resolve(true);
+        }), countDownSupplier(c1));
+        Transaction t2 = counting(c2);
+        SequenceTransaction t = new SequenceTransaction(false, t1, t2);
+        t.apply();
+
+        // This revert() takes 100ms to process, since apply() of t1 is still pending.
+        Promise<Boolean> p = t.revert();
+        p.then(bool -> {
+            assertEquals(0, c.get());
+            c.increment();
+        });
+
+        p.await();
+        assertEquals(1, c.get());
     }
 }

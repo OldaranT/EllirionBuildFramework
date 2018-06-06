@@ -79,30 +79,9 @@ public class BuildFramework extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
-        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
-        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
-        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
-        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
-        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
-        getCommand("Validate").setExecutor(new ValidateCommand());
-        getCommand("AddMarker").setExecutor(new CommandAddMarker());
-        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
-        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
-        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
-        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
-        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
-        getCommand("CreatePath").setExecutor(new CommandCreatePath());
-        getCommand("PathBuilder").setExecutor(new CommandPathBuilder());
-        getCommand("FindPath").setExecutor(new CommandFindPath());
-        getCommand("HidePath").setExecutor(new CommandHidePath());
-        getCommand("HideVisited").setExecutor(new CommandHideVisited());
-        getCommand("PathConfig").setExecutor(new CommandPathConfig());
-        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
-        getCommand("Undo").setExecutor(new PlayerUndoCommand());
-        getCommand("Redo").setExecutor(new PlayerRedoCommand());
-        getServer().getPluginManager().registerEvents(new EventListener(), this);
-        getServer().getPluginManager().registerEvents(new PathingListener(), this);
+        registerCommands();
+        registerTabCompleters();
+        registerListeners();
         createConfig();
         createFilePaths();
         createBlockValueConfig();
@@ -209,5 +188,48 @@ public class BuildFramework extends JavaPlugin {
         } catch (IOException e) {
             getLogger().throwing(BuildFramework.class.toString(), "createTemplateFormatConfig", e);
         }
+    }
+
+    private void registerCommands() {
+        // Template engine
+        getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
+        getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
+        getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
+        getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
+        getCommand("AddMarker").setExecutor(new CommandAddMarker());
+        getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
+        getCommand("CreateHologram").setExecutor(new CommandCreateTemplateHologram());
+        getCommand("RemoveHologram").setExecutor(new CommandRemoveHologram());
+        getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
+
+        // Terrain validator
+        getCommand("Validate").setExecutor(new ValidateCommand());
+
+        // Transactions
+        getCommand("Undo").setExecutor(new PlayerUndoCommand());
+        getCommand("Redo").setExecutor(new PlayerRedoCommand());
+
+        // Path finder
+        getCommand("FindPath").setExecutor(new CommandFindPath());
+        getCommand("HidePath").setExecutor(new CommandHidePath());
+        getCommand("HideVisited").setExecutor(new CommandHideVisited());
+        getCommand("PathConfig").setExecutor(new CommandPathConfig());
+        getCommand("PathTool").setExecutor(new PathingListener());
+
+        // Path builder
+        getCommand("CreatePath").setExecutor(new CommandCreatePath());
+        getCommand("PathBuilder").setExecutor(new CommandPathBuilder());
+    }
+
+    private void registerListeners() {
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
+        getServer().getPluginManager().registerEvents(new PathingListener(), this);
+    }
+
+    private void registerTabCompleters() {
+        getCommand("CreateTemplate").setTabCompleter(new TabCompletionNameCreator());
+        getCommand("ImportTemplate").setTabCompleter(new TabCompletionFileNameList());
+        getCommand("AddMarker").setTabCompleter(new TabCompletionMarkerNameList());
+        getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
     }
 }

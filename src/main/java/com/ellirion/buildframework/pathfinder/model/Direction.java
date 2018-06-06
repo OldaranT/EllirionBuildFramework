@@ -96,6 +96,7 @@ public enum Direction {
 
     /**
      * Gets the Direction that, when applied to Point {@code a}, will yield Point {@code b}.
+     * Points {@code a} and {@code b} have to be adjacent.
      * @param a The first Point
      * @param b The second Point
      * @return The determined Direction
