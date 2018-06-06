@@ -464,7 +464,7 @@ public class MinecraftHelper {
 
     /**
      * Check if the material is 'solid' for the path finder.
-     * @param m th ematerial to check
+     * @param m the material to check
      * @return whether the given material is solid or not
      */
     public static boolean isPathSolid(Material m) {
