@@ -106,7 +106,6 @@ public class TerrainCorrector {
     }
 
     private void correctHole(Hole hole) {
-
         if (!hole.onlyBelowBoundingBox(boundingBox) && hole.exceedsMaxDepth()) {
             buildRavineSupports(hole);
             return;
@@ -125,9 +124,7 @@ public class TerrainCorrector {
 
     private void fillHoleAtSidePartially(Hole hole) {
         BlockData data = getFloorMaterial();
-
         List<Block> blocks = hole.getTopBlocks();
-
         Map<Block, Integer> startingDepthMap = calculateStartingDepthMap(blocks);
 
         placeBlocksAccordingToDepthMap(startingDepthMap, data);
@@ -166,7 +163,7 @@ public class TerrainCorrector {
 
         result.put(currentEntry.getBlock(), currentEntry.getDepth());
 
-        //Loop through the adjacent blocks
+        // Loop through the adjacent blocks
         for (int dir = 0; dir < 4; dir++) {
             Block nextBlock = getRelativeBlock(dir, currentEntry.getBlock(), world);
 
@@ -176,7 +173,7 @@ public class TerrainCorrector {
 
             if (!blocksBelowBoundingBoxOrWithinOffset(nextBlock, minWidth)) {
 
-                //introduce randomization for blocks not below the bounding box
+                // Introduce randomization for blocks not below the bounding box
                 Double rand = ThreadLocalRandom.current().nextDouble(0, 100);
 
                 if (rand < currentEntry.getPercentage()) {
@@ -268,23 +265,12 @@ public class TerrainCorrector {
     }
 
     private void buildRavineSupports(Hole hole) {
-        final String minHoleXFactKey = "minHoleX";
-        final String minXFactKey = "minX";
-        final String maxHoleXFactKey = "maxHoleX";
-        final String maxXFactKey = "maxX";
-        final String minHoleZFactKey = "minHoleZ";
-        final String minZFactKey = "minZ";
-        final String maxHoleZFactKey = "maxHoleZ";
-        final String maxZFactKey = "maxZ";
 
         RavineSupportsRuleBook ravineSupportsRuleBook = (RavineSupportsRuleBook) RuleBookBuilder
                 .create(RavineSupportsRuleBook.class)
                 .withResultType(Integer.class)
                 .withDefaultResult(Integer.MAX_VALUE)
                 .build();
-
-        ravineSupportsRuleBook.setKeys(minHoleXFactKey, minXFactKey, maxHoleXFactKey, maxXFactKey, minHoleZFactKey,
-                                       minZFactKey, maxHoleZFactKey, maxZFactKey);
 
         FactMap ravineSupportsFacts = new FactMap();
 
@@ -294,10 +280,10 @@ public class TerrainCorrector {
         int minZ = boundingBox.getZ1();
         int maxZ = boundingBox.getZ2();
 
-        ravineSupportsFacts.setValue(minXFactKey, minX);
-        ravineSupportsFacts.setValue(maxXFactKey, maxX);
-        ravineSupportsFacts.setValue(minZFactKey, minZ);
-        ravineSupportsFacts.setValue(maxZFactKey, maxZ);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.minX, minX);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxX, maxX);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.minZ, minZ);
+        ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxZ, maxZ);
 
         int minHoleX;
         int maxHoleX;
@@ -332,15 +318,15 @@ public class TerrainCorrector {
             minHoleZ = h.getMinZ();
             maxHoleZ = h.getMaxZ();
 
-            ravineSupportsFacts.setValue(minHoleXFactKey, h.getMinX());
-            ravineSupportsFacts.setValue(maxHoleXFactKey, h.getMaxX());
-            ravineSupportsFacts.setValue(minHoleZFactKey, h.getMinZ());
-            ravineSupportsFacts.setValue(maxHoleZFactKey, h.getMaxZ());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.minHoleX, h.getMinX());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxHoleX, h.getMaxX());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.minHoleZ, h.getMinZ());
+            ravineSupportsFacts.setValue(RavineSupportsRuleBook.maxHoleZ, h.getMaxZ());
 
-            // run the values through the rules in the rulebook.
+            // Run the values through the rules in the rulebook.
             ravineSupportsRuleBook.run(ravineSupportsFacts);
-            // if the rulebook returns are result get the to change blocks
-            // else create an empty list to prevent a NPE
+            // If the rulebook returns are result get the to change blocks
+            // Else create an empty list to prevent a NPE
             if (ravineSupportsRuleBook.getResult().isPresent()) {
                 Result result = ravineSupportsRuleBook.getResult().get();
                 toChange = supportSelector((int) result.getValue(), minHoleX, maxHoleX, minHoleZ, maxHoleZ);
@@ -378,7 +364,7 @@ public class TerrainCorrector {
         double centerClearance;
         switch (dir) {
             case 0:
-                // Z AXIS
+                // Z-axis
                 holeCentre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
                 maxDepth = (maxHoleZ - minHoleZ) / 2;
                 centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
@@ -398,7 +384,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 1:
-                // X AXIS
+                // X-axis
                 holeCentre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 maxDepth = (maxHoleX - minHoleX) / 2;
                 centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
@@ -493,7 +479,7 @@ public class TerrainCorrector {
 
         switch (dir) {
             case 0:
-                //NORTH TO SOUTH
+                // North to south
                 maxDepth = maxHoleZ - minHoleZ;
                 centre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 distance = (maxHoleX - minHoleX) / 2;
@@ -508,7 +494,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 1:
-                //EAST TO WEST
+                // East to west
                 maxDepth = maxHoleX - minHoleX;
                 centre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
                 distance = (maxHoleZ - minHoleZ) / 2;
@@ -523,7 +509,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 2:
-                //SOUTH TO NORTH
+                // South to north
                 maxDepth = maxHoleZ - minHoleZ;
                 centre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 distance = (maxHoleX - minHoleX) / 2;
@@ -538,7 +524,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 3:
-                //WEST TO EAST
+                // West to east
                 maxDepth = maxHoleX - minHoleX;
                 centre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
                 distance = (maxHoleZ - minHoleZ) / 2;
@@ -566,7 +552,7 @@ public class TerrainCorrector {
 
         switch (dir) {
             case 0:
-                // NORTH EAST TO SOUTH WEST
+                // North east to south west
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
@@ -580,7 +566,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 1:
-                //SOUTH EAST TO NORTH WEST
+                // South east to north west
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
@@ -594,7 +580,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 2:
-                // SOUTH WEST TO NORTH EAST
+                // South west to north east
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
@@ -608,7 +594,7 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 3:
-                // NORTH WEST TO SOUTH EAST
+                // North west to south east
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
@@ -633,25 +619,25 @@ public class TerrainCorrector {
     private List<Block> supportSelector(int method, int minHoleX, int maxHoleX,
                                         int minHoleZ, int maxHoleZ) {
         switch (method) {
-            //BRIDGE STYLE SUPPORTS
+            // Bridge style supports
             case 0:
             case 1:
                 return getBridgeSupport(method, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-            //THE ONE SIDED SUPPORTS
+            // One sided supports
             case 2:
             case 3:
             case 4:
             case 5:
                 return oneSidedSupportMap(method - 2, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-            // CORNER SUPPORTS
+            // Corner supports
             case 6:
             case 7:
             case 8:
             case 9:
                 return cornerSupportMap(method - 6, minHoleX, maxHoleX, minHoleZ, maxHoleZ);
             default:
-                // FOR UNEXPECTED SCENARIO'S JUST FILL FROM OUTSIDE IN ON ALL SIDES
-                // build building supports under the bounding box from all sides inwards.
+                // For unexpected scenario's just fill from outside in on all sides.
+                // Build building supports under the bounding box from all sides inwards.
                 return createSupportsLocationMap();
         }
     }

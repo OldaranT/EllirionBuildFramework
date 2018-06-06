@@ -35,7 +35,6 @@ import java.util.List;
 
 public class BuildFramework extends JavaPlugin {
 
-    @SuppressWarnings("PMD.SuspiciousConstantFieldName")
     private static BuildFramework INSTANCE;
     private FileConfiguration config = getConfig();
     private FileConfiguration blockValueConfig;
@@ -88,19 +87,19 @@ public class BuildFramework extends JavaPlugin {
 
     private void createConfig() {
         config.options().header("Ellirion-BuildFramework configuration file");
-        // terrain validation config settings
+        // Terrain validation config settings
         config.addDefault("TerrainCorrector.OverheadLimit", 20);
         config.addDefault("TerrainCorrector.BlocksLimit", 40);
         config.addDefault("TerrainCorrector.TotalLimit", 50);
         config.addDefault("TerrainCorrector.Offset", 5);
         config.addDefault("TerrainCorrector.BoundingBoxMinDist", 5);
-        // terrain corrector config settings
+        // Terrain corrector config settings
         config.addDefault("TerrainCorrector.MaxHoleDepth", 5);
         config.addDefault("TerrainCorrector.AreaLimitOffset", 5);
         config.addDefault("TerrainCorrector.BridgeCenterSupportClearancePercentage", 15);
         config.addDefault("TerrainCorrector.HoleFillerMaxDepth", 5);
         config.addDefault("TerrainCorrector.HoleFillerChanceToChangeDepth", 10);
-        // template config settings
+        // Template config settings
         config.addDefault("TemplateEngine.Path", "plugins/Ellirion-BuildFramework/templates/");
         config.options().copyDefaults(true);
         saveConfig();
@@ -120,7 +119,7 @@ public class BuildFramework extends JavaPlugin {
 
         blockValueConfig.options().copyDefaults(true);
 
-        //try and save the file
+        // Try and save the file
 
         try {
             blockValueConfig.save(blockValueConfigFile);
@@ -130,7 +129,7 @@ public class BuildFramework extends JavaPlugin {
     }
 
     private void createTemplateFormatConfig() {
-        //set the variables that are needed for the config
+        // Set the variables that are needed for the config
 
         List<String> raceList = Arrays.asList("ARGORIAN", "DWARF", "ELF", "KHAJIIT", "ORC", "VIKING", "INFECTED",
                                               "HUMAN");
@@ -152,7 +151,7 @@ public class BuildFramework extends JavaPlugin {
         String levelPath = "Levels";
         String markersPath = "Markers";
 
-        //get the file and load the config from the file
+        // Get the file and load the config from the file
         File templateFormatConfigFile = new File(getDataFolder(), "TemplateFormat.yml");
         templateFormatConfig = YamlConfiguration.loadConfiguration(templateFormatConfigFile);
 
