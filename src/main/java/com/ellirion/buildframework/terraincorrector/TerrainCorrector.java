@@ -126,6 +126,7 @@ public class TerrainCorrector {
     private void fillHoleAtSidePartially(Hole hole) {
         BlockData data = getFloorMaterial();
         List<Block> blocks = hole.getTopBlocks();
+
         // Make a map of the block and the the depth that the filling should start at.
         Map<Block, Integer> startingDepthMap = calculateStartingDepthMap(blocks);
 
@@ -197,6 +198,7 @@ public class TerrainCorrector {
                 todo.addLast(new ToDoEntry(nextBlock, depth, percentage, maxOffset));
                 continue;
             }
+
             // Add a entry to the todoList with depth 0 because this item is below the bounding box.
             todo.addLast(new ToDoEntry(nextBlock, 0, initialPercentage, maxOffset));
         }
@@ -295,13 +297,16 @@ public class TerrainCorrector {
         int maxHoleX;
         int minHoleZ;
         int maxHoleZ;
+
         // Get the topBlocks from the hole.
         List<Block> topBlocks = hole.getTopBlocks();
         List<Hole> subHoles = new ArrayList<>();
+
         // Loop through the top blocks of the hole and create sub holes from the top blocks under the BoundingBox.
         for (Block b : topBlocks) {
             int blockX = b.getX();
             int blockZ = b.getZ();
+
             // Check if the block is under the BoundingBox and if they are not already in a subHole.
             if (!(blockX < minX || blockX > maxX || blockZ < minZ || blockZ > maxZ) &&
                 subHoles.stream().noneMatch(subHole -> subHole.contains(b))) {
@@ -315,12 +320,14 @@ public class TerrainCorrector {
                 subHoles.add(h);
             }
         }
+
         // Loop through the subHoles and create the appropriate supports.
         for (Hole h : subHoles) {
             minHoleX = h.getMinX();
             maxHoleX = h.getMaxX();
             minHoleZ = h.getMinZ();
             maxHoleZ = h.getMaxZ();
+
             // Set the outer hole coordinates in the fact map.
             ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMinHoleX(), h.getMinX());
             ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMaxHoleX(), h.getMaxX());
@@ -329,6 +336,7 @@ public class TerrainCorrector {
 
             // Run the values through the rules in the rulebook.
             ravineSupportsRuleBook.run(ravineSupportsFacts);
+
             // If the rulebook returns a result get the to change blocks
             if (ravineSupportsRuleBook.getResult().isPresent()) {
                 Result result = ravineSupportsRuleBook.getResult().get();
@@ -364,6 +372,7 @@ public class TerrainCorrector {
         List<Block> toChange = new ArrayList<>();
         int maxDepth;
         double centerClearance;
+
         // Go either over the North to South line or the East to West line.
         switch (dir) {
             case 0:
@@ -372,6 +381,7 @@ public class TerrainCorrector {
                 maxDepth = (maxHoleZ - minHoleZ) / 2;
                 centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
                 for (int x = minHoleX; x <= maxHoleX; x++) {
+
                     // This causes a 1 block spacing between the supports.
                     if (Math.abs(x) % 2 == 0) {
                         for (int i = 0; i <= maxDepth; i++) {
@@ -380,6 +390,7 @@ public class TerrainCorrector {
                                 holeCentre - centerClearance - i < minHoleZ) {
                                 break;
                             }
+
                             // Add the blocks to the toChange list on both sides of the centre.
                             toChange.addAll(
                                     blocksToReplace(x, y, holeCentre + (int) centerClearance + i, i));
@@ -390,19 +401,23 @@ public class TerrainCorrector {
                 }
                 return toChange;
             case 1:
+
                 // X-axis
                 holeCentre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 maxDepth = (maxHoleX - minHoleX) / 2;
                 centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
                 for (int z = minHoleZ; z <= maxHoleZ; z++) {
+
                     // This causes a 1 block spacing between the supports.
                     if (Math.abs(z) % 2 == 0) {
                         for (int i = 0; i <= maxDepth; i++) {
+
                             // Check if you are not past the BoundingBox
                             if (holeCentre + centerClearance + i > maxHoleX ||
                                 holeCentre - centerClearance - i < minHoleX) {
                                 break;
                             }
+
                             // Add the blocks to the toChange list on both sides of the centre.
                             toChange.addAll(
                                     blocksToReplace(holeCentre + (int) centerClearance + i, y, z, i));
@@ -492,10 +507,12 @@ public class TerrainCorrector {
                 maxDepth = maxHoleZ - minHoleZ;
                 centre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 distance = (maxHoleX - minHoleX) / 2;
+
                 // If the distance is uneven make it 1 longer so you don't stop without completing to add supports.
                 if (Math.abs(distance) % 2 == 1) {
                     distance++;
                 }
+
                 // This causes a 1 block spacing between the supports.
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
@@ -510,10 +527,12 @@ public class TerrainCorrector {
                 maxDepth = maxHoleX - minHoleX;
                 centre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
                 distance = (maxHoleZ - minHoleZ) / 2;
+
                 // If the distance is uneven make it 1 longer so you don't stop without completing to add supports.
                 if (Math.abs(distance) % 2 == 1) {
                     distance++;
                 }
+
                 // This causes a 1 block spacing between the supports.
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
@@ -528,13 +547,16 @@ public class TerrainCorrector {
                 maxDepth = maxHoleZ - minHoleZ;
                 centre = maxHoleX - ((maxHoleX - minHoleX) / 2);
                 distance = (maxHoleX - minHoleX) / 2;
+
                 // If the distance is uneven make it 1 longer so you don't stop without completing to add supports.
                 if (Math.abs(distance) % 2 == 1) {
                     distance++;
                 }
+
                 // This causes a 1 block spacing between the supports.
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
+
                         // Add supports on both sides of the center
                         toChange.addAll(blocksToReplace(centre + dis, y, maxHoleZ - i, i));
                         toChange.addAll(blocksToReplace(centre - dis, y, maxHoleZ - i, i));
@@ -546,6 +568,7 @@ public class TerrainCorrector {
                 maxDepth = maxHoleX - minHoleX;
                 centre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
                 distance = (maxHoleZ - minHoleZ) / 2;
+
                 // If the distance is uneven make it 1 longer so you don't stop without completing to add supports.
                 if (Math.abs(distance) % 2 == 1) {
                     distance++;
@@ -553,6 +576,7 @@ public class TerrainCorrector {
                 // This causes a 1 block spacing between the supports.
                 for (int dis = 0; dis <= distance; dis += 2) {
                     for (int i = 0; i <= maxDepth; i++) {
+
                         // Add supports on both sides of the center
                         toChange.addAll(blocksToReplace(minHoleX + i, y, centre + dis, i));
                         toChange.addAll(blocksToReplace(minHoleX + i, y, centre - dis, i));
@@ -574,10 +598,12 @@ public class TerrainCorrector {
         switch (dir) {
             case 0:
                 // North east to south west
+
                 // Move from the outside in and every time you drop 1 Y down go 1 block in on the X and Z axis
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
+
                             // Get the block and check if it is empty and if it is then add it to the list.
                             Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
@@ -590,10 +616,12 @@ public class TerrainCorrector {
                 return toChange;
             case 1:
                 // South east to north west
+
                 // Move from the outside in and every time you drop 1 Y down go 1 block in on the X and Z axis
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = maxHoleX - i; x >= minHoleX; x--) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
+
                             // Get the block and check if it is empty and if it is then add it to the list.
                             Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
@@ -606,10 +634,12 @@ public class TerrainCorrector {
                 return toChange;
             case 2:
                 // South west to north east
+
                 // Move from the outside in and every time you drop 1 Y down go 1 block in on the X and Z axis
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = maxHoleZ - i; z >= minHoleZ; z--) {
+
                             // Get the block and check if it is empty and if it is then add it to the list.
                             Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
@@ -622,10 +652,12 @@ public class TerrainCorrector {
                 return toChange;
             case 3:
                 // North west to south east
+
                 // Move from the outside in and every time you drop 1 Y down go 1 block in on the X and Z axis
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
+                            
                             // Get the block and check if it is empty and if it is then add it to the list.
                             Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {

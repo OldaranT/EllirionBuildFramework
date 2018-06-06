@@ -217,7 +217,6 @@ public class TerrainValidatorTest {
     public void validate_whenFlooredAndHasLiquidOneBlockOutsideBoundingBox_shouldReturnFalse() {
         // Arrange
         setFloor(world);
-
         when(world.getBlockAt(-1, 1, 0)).thenReturn(MOCK_BLOCK_LIQUID);
 
         // Act
@@ -231,7 +230,6 @@ public class TerrainValidatorTest {
     public void validate_whenFlooredAndHasThreeNormalBlocksOneBlockOutSideTheBoundingBox_shouldReturnTrue() {
         // Arrange
         setFloor(world);
-
         when(world.getBlockAt(-1, 0, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(2, -1, 0)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(2, 2, 2)).thenReturn(MOCK_BLOCK_STONE);
@@ -313,7 +311,6 @@ public class TerrainValidatorTest {
     public void validate_whenExactlyOnBlockLimitAndFloored_shouldReturnFalse() {
         // Arrange
         setFloor(world);
-
         when(world.getBlockAt(anyInt(), eq(1), anyInt())).thenReturn(MOCK_BLOCK_STONE);
 
         // Act
@@ -327,7 +324,6 @@ public class TerrainValidatorTest {
     public void validate_whenOneBelowBlockLimitWithSporadicBlockPlacementAndFloored_shouldReturnTrue() {
         // Arrange
         setFloor(world);
-
         when(world.getBlockAt(-2, 2, 12)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(-3, 8, 6)).thenReturn(MOCK_BLOCK_STONE);
         when(world.getBlockAt(1, 13, 10)).thenReturn(MOCK_BLOCK_STONE);
@@ -349,7 +345,6 @@ public class TerrainValidatorTest {
     public void validate_whenAnotherBoundingBoxWithinBoundingBox_shouldReturnFalse() {
         // Arrange
         setFloor(world);
-
         List<BoundingBox> boxList = new ArrayList<>();
         boxList.add(boundingBox);
 
@@ -366,7 +361,6 @@ public class TerrainValidatorTest {
     public void validate_whenAnotherBoundingBoxWithinCheckingRadius_shouldReturnFalse() {
         // Arrange
         setFloor(world);
-
         List<BoundingBox> boxList = new ArrayList<>();
         boxList.add(new BoundingBox(new Point(11, 11, 11), new Point(12, 12, 12)));
 
