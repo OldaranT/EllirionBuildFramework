@@ -111,7 +111,7 @@ public class BuildFramework extends JavaPlugin {
         reloadConfig();
     }
 
-    //create filepaths if they don't exist yet
+    // Create filepaths if they don't exist yet
     private void createFilePaths() {
         Path path = Paths.get(config.getString("templatePath"));
         if (!Files.exists(path) && !(path.toFile().mkdirs())) {

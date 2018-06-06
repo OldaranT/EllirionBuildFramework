@@ -8,6 +8,6 @@ public class StringHelper {
      * @return whether the given filename is valid
      */
     public static boolean invalidFileName(String filename) {
-        return (!filename.matches("^[^.\\\\\\\\/:*?\\\"<>|]?[^\\\\\\\\/:*?\\\"<>|]*") || filename.length() > 240);
+        return filename.matches("^[a-zA-Z0-9-_]+$") && filename.length() < 240;
     }
 }

@@ -44,8 +44,8 @@ public class PathBuilder {
             new Point().down().translate(new Point(0, 0, -2)),
             new Point().down().translate(new Point().west()),
             new Point().down().translate(new Point(-2, 0, 0)),
-            new Point().down().translate(new Point().down()),
-            };
+            new Point().down().translate(new Point().down())
+    };
 
     @Getter @Setter private String name;
     @Getter private HashMap<PathMaterial, Double> weightedBlocks;
@@ -54,7 +54,7 @@ public class PathBuilder {
     private double stepsWeight;
     @Getter @Setter private Material supportType;
     @Getter @Setter private int radius;
-    private Random r;
+    private Random random;
 
     /**
      * Create a path builder with a given name.
@@ -64,7 +64,7 @@ public class PathBuilder {
         this.name = name;
         weightedBlocks = new HashMap<>();
         weightedSteps = new HashMap<>();
-        r = new Random();
+        random = new Random();
         supportType = Material.FENCE;
     }
 
@@ -118,8 +118,7 @@ public class PathBuilder {
      * @param data the metadata on the material to remove
      */
     public void removeBlock(final Material mat, byte data) {
-        PathMaterial toRemove = new PathMaterial(mat, data);
-        weightedBlocks.remove(toRemove);
+        weightedBlocks.remove(new PathMaterial(mat, data));
     }
 
     /**
@@ -134,17 +133,18 @@ public class PathBuilder {
         List<BlockChange> blockChanges = new LinkedList<>();
 
         for (Point p : points) {
-            // Get all 'locations' around the point within radius r
+            // Get all 'points' around the point within radius r
             List<Point> nearbyPoints = getNearbyPoints(p);
 
             // Replace these blocks according to the weight map
             for (Point point : nearbyPoints) {
                 Block b = w.getBlockAt(point.toLocation(w));
-                double random = r.nextDouble();
+                double random = this.random.nextDouble();
                 PathMaterial pm = getPathMaterial(weightedBlocks, random);
                 blockChanges.add(
                         new BlockChange(pm.getMat(), pm.getData(), b.getLocation()));
             }
+
             // If the path at this point isn't grounded, create supports
             if (count % (radius * 3) == 0 && !isGrounded(p, w)) {
                 // Get all points within certain radius, and build towards anchor point
@@ -192,7 +192,6 @@ public class PathBuilder {
         }
 
         smoothPath(blockChanges, map);
-
         addSteps(blockChanges, map);
 
         return blockChanges;
@@ -225,7 +224,7 @@ public class PathBuilder {
     }
 
     private void addSteps(List<BlockChange> blockChanges, HashMap<Point, BlockChange> map) {
-        if (weightedSteps.size() == 0) {
+        if (weightedSteps.size() == 0 || blockChanges.size() == 0) {
             return;
         }
 
@@ -279,8 +278,8 @@ public class PathBuilder {
                 blockChanges.get(north),
                 blockChanges.get(east),
                 blockChanges.get(south),
-                blockChanges.get(west),
-                };
+                blockChanges.get(west)
+        };
 
         int i = 0;
         List<Material> pathMats = Arrays.asList(getPathMaterials());
@@ -329,22 +328,6 @@ public class PathBuilder {
         }
         return weight;
     }
-
-    //    private double getTotalBlockWeight() {
-    //        double weight = 0;
-    //        for (double d : weightedBlocks.values()) {
-    //            weight += d;
-    //        }
-    //        return weight;
-    //    }
-    //
-    //    private double getTotalStepWeight() {
-    //        double weight = 0;
-    //        for (double d : weightedSteps.values()) {
-    //            weight += d;
-    //        }
-    //        return weight;
-    //    }
 
     private void denormalizeWeights(HashMap<PathMaterial, Double> weightMap, double totalWeight) {
         double previous = 0;
@@ -492,6 +475,7 @@ public class PathBuilder {
             visited.put(curr, true);
 
             steps++;
+            //TODO config
             if (steps >= 5000000) {
                 BuildFramework.getInstance().getLogger().info("Could not find anchor point for " + p.toString());
                 anchorFound = true;

@@ -44,9 +44,7 @@ public class PathMaterial {
         Material mat = Material.valueOf(ntc.getString("mat"));
         byte data = ntc.getByte("data");
 
-        PathMaterial pm = new PathMaterial(mat, data);
-
-        return pm;
+        return new PathMaterial(mat, data);
     }
 
     @Override
@@ -55,7 +53,6 @@ public class PathMaterial {
             return false;
         }
         PathMaterial other = (PathMaterial) obj;
-
         return mat == other.mat && data == other.data;
     }
 

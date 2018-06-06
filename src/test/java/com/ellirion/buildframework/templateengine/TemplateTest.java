@@ -31,7 +31,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.*;
 
-//@RunWith(Enclosed.class)
 public class TemplateTest {
 
     @RunWith(PowerMockRunner.class)

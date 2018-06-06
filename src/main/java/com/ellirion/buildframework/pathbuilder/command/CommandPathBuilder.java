@@ -113,6 +113,9 @@ public class CommandPathBuilder implements CommandExecutor {
         try {
             PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
             int radius = Integer.parseInt(strings[1]);
+            if (radius < 1) {
+                throw new Exception();
+            }
             builder.setRadius(radius);
             player.sendMessage(
                     "The radius of the path in path builder " + builder.getName() + " was set to " + radius);
@@ -146,7 +149,6 @@ public class CommandPathBuilder implements CommandExecutor {
         } catch (NumberFormatException e) {
             player.sendMessage(
                     ChatColor.DARK_RED +
-                    //                    "Something went wrong when trying to add this block. Did you make sure you entered everything correctly?");
                     "Weights and metadata have to be entered as numbers");
         }
     }
@@ -210,7 +212,7 @@ public class CommandPathBuilder implements CommandExecutor {
     // Params: none
     private void save(Player player, String[] strings) {
         PathBuilder builder = BuilderManager.getBuilderSessions().get(player);
-        //filter out illegal characters
+        // Filter out illegal characters
         String name = builder.getName();
         if (StringHelper.invalidFileName(name)) {
             player.sendMessage(ChatColor.DARK_RED + "The name of the path builder is invalid");
@@ -238,7 +240,7 @@ public class CommandPathBuilder implements CommandExecutor {
 
         String path = BuildFramework.getInstance().getConfig().getString("PathBuilder.pathbuilderPath") + name + ".nbt";
         PathBuilder builder = PathBuilder.load(path);
-        if (builder == null) {
+        if (builder == null || builder.getRadius() < 1) {
             player.sendMessage(ChatColor.DARK_RED + "This path builder could not be loaded");
             return;
         }
