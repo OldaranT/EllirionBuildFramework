@@ -55,7 +55,6 @@ public class TerrainCorrector {
      * @param player The player that wants to change the world
      * @return the {@link Promise} in which the correction will be executed
      */
-
     public Promise<Object> correctTerrain(BoundingBox boundingBox, World world, Player player) {
         return new Promise<>(finisher -> {
             this.boundingBox = boundingBox;
@@ -658,7 +657,7 @@ public class TerrainCorrector {
                 for (int i = 0; i <= maxDepth; i++) {
                     for (int x = minHoleX + i; x <= maxHoleX; x++) {
                         for (int z = minHoleZ + i; z <= maxHoleZ; z++) {
-                            
+
                             // Get the block and check if it is empty and if it is then add it to the list.
                             Block b = getBlock(world, x, y - i, z);
                             if ((!b.isEmpty() && !b.isLiquid())) {
