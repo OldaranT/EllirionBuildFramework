@@ -80,7 +80,7 @@ public class PathingListener implements Listener, CommandExecutor {
     @EventHandler
     public void onPlayerBreakBlock(BlockBreakEvent event) {
         Player p = event.getPlayer();
-        if (p.getItemOnCursor().getType() == Material.STICK) {
+        if (p.getItemOnCursor().equals(PATHING_TOOL)) {
             event.setCancelled(true);
         }
     }
@@ -93,7 +93,7 @@ public class PathingListener implements Listener, CommandExecutor {
         Player player = event.getPlayer();
 
         // Only debug when holding a stick
-        if (player.getInventory().getItemInMainHand().getType() != Material.STICK) {
+        if (!player.getInventory().getItemInMainHand().equals(PATHING_TOOL)) {
             return;
         }
 
