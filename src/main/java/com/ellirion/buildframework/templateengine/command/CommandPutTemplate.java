@@ -28,7 +28,7 @@ public class CommandPutTemplate implements CommandExecutor {
             return true;
         }
 
-        ts.getTemplate().putTemplateInWorld(th.getLocation());
+        ts.getTemplate().putTemplateInWorld(player.getLocation(), player);
         return true;
     }
 }

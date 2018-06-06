@@ -38,7 +38,11 @@ public class MinecraftHelper {
             Material.WOODEN_DOOR,
             Material.IRON_DOOR_BLOCK,
             Material.MELON_STEM,
-            Material.PUMPKIN_STEM
+            Material.PUMPKIN_STEM,
+            Material.WATER,
+            Material.LAVA,
+            Material.STATIONARY_LAVA,
+            Material.STATIONARY_WATER
     };
 
     private static final Material[] TO_ROTATE = new Material[] {
@@ -189,6 +193,16 @@ public class MinecraftHelper {
             Material.RED_MUSHROOM,
             Material.BROWN_MUSHROOM
     };
+
+    private static final HashMap<Material, List<Integer>> SPECIAL_SNOWFLAKE_DATA = new HashMap<>();
+    static {
+        SPECIAL_SNOWFLAKE_DATA.put(Material.TORCH, Arrays.asList(0, 5));
+        SPECIAL_SNOWFLAKE_DATA.put(Material.REDSTONE_TORCH_OFF, Arrays.asList(0, 5));
+        SPECIAL_SNOWFLAKE_DATA.put(Material.REDSTONE_TORCH_ON, Arrays.asList(0, 5));
+        SPECIAL_SNOWFLAKE_DATA.put(Material.STONE_BUTTON, Arrays.asList(5));
+        SPECIAL_SNOWFLAKE_DATA.put(Material.WOOD_BUTTON, Arrays.asList(5));
+        SPECIAL_SNOWFLAKE_DATA.put(Material.LEVER, Arrays.asList(5, 6));
+    }
 
     private static final HashMap<Material, int[]> MATERIAL_ROTATION_DATA = new HashMap<>();
     static {
@@ -419,6 +433,20 @@ public class MinecraftHelper {
      */
     public static boolean isDoor(Material mat) {
         return mat.toString().contains("DOOR") && !mat.toString().contains("TRAP");
+    }
+
+    /**
+     * Check if their is a specific combination of material and metadata.
+     * @param mat current material to check.
+     * @param meta current metadata to check.
+     * @return true if their is a specific occasion.
+     */
+    public static boolean isSpecialSnowflake(Material mat, int meta) {
+        List<Integer> list = SPECIAL_SNOWFLAKE_DATA.get(mat);
+        if (list == null) {
+            return false;
+        }
+        return list.contains(meta);
     }
 
     /**
