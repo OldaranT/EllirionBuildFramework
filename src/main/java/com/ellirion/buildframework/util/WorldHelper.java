@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.Transaction;
@@ -166,27 +167,27 @@ public class WorldHelper {
      * @param world the world where you are looking in.
      * @return return the found block.
      */
-    public static Block getRelativeBlock(int dir, Block block, World world) {
+    public static Block getRelativeBlock(BlockFace dir, Block block, World world) {
         int x = block.getX();
         int y = block.getY();
         int z = block.getZ();
         switch (dir) {
-            case 0:
+            case NORTH:
                 // NORTH
                 return getBlock(world, x, y, z - 1);
-            case 1:
+            case EAST:
                 // EAST
                 return getBlock(world, x + 1, y, z);
-            case 2:
+            case SOUTH:
                 // SOUTH
                 return getBlock(world, x, y, z + 1);
-            case 3:
+            case WEST:
                 // WEST
                 return getBlock(world, x - 1, y, z);
-            case 4:
+            case UP:
                 // UP
                 return getBlock(world, x, y + 1, z);
-            case 5:
+            case DOWN:
                 // DOWN
                 return getBlock(world, x, y - 1, z);
 

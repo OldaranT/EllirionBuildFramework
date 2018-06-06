@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import com.ellirion.buildframework.BuildFramework;
@@ -30,6 +31,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.ellirion.buildframework.terraincorrector.util.HoleUtil.*;
 import static com.ellirion.buildframework.util.WorldHelper.*;
+import static org.bukkit.block.BlockFace.*;
 
 public class TerrainCorrector {
 
@@ -161,9 +163,16 @@ public class TerrainCorrector {
 
         result.put(currentEntry.getBlock(), currentEntry.getDepth());
 
+        BlockFace[] faces = {
+                NORTH,
+                EAST,
+                SOUTH,
+                WEST
+        };
+
         // Loop through the adjacent blocks
-        for (int dir = 0; dir < 4; dir++) {
-            Block nextBlock = getRelativeBlock(dir, currentEntry.getBlock(), world);
+        for (BlockFace face : faces) {
+            Block nextBlock = getRelativeBlock(face, currentEntry.getBlock(), world);
 
             int percentage = currentEntry.getPercentage();
             int maxOffset = currentEntry.getMaxDepthOffset();
@@ -198,7 +207,7 @@ public class TerrainCorrector {
 
         while (currentBlock.isEmpty() || !MinecraftHelper.isPathSolid(currentBlock.getType())) {
             sendSyncBlockChanges(currentBlock, data);
-            currentBlock = getRelativeBlock(5, currentBlock, world);
+            currentBlock = getRelativeBlock(DOWN, currentBlock, world);
         }
     }
 

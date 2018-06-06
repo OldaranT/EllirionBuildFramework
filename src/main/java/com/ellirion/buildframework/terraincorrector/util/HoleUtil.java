@@ -2,6 +2,7 @@ package com.ellirion.buildframework.terraincorrector.util;
 
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.terraincorrector.model.Hole;
 
@@ -10,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.ellirion.buildframework.util.WorldHelper.*;
+import static org.bukkit.block.BlockFace.*;
 
 public class HoleUtil {
 
@@ -82,9 +84,17 @@ public class HoleUtil {
             minZ -= offset;
             maxZ += offset;
         }
+        BlockFace[] faces = {
+                NORTH,
+                EAST,
+                SOUTH,
+                WEST,
+                UP,
+                DOWN
+        };
 
-        for (int i = 0; i < 6; i++) {
-            Block b = getRelativeBlock(i, block, world);
+        for (BlockFace face : faces) {
+            Block b = getRelativeBlock(face, block, world);
 
             if (!(b.getY() <= maxY && (b.isLiquid() || b.isEmpty() || !b.getType().isSolid()) &&
                   !hole.contains(b))) {
