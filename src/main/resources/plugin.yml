@@ -4,10 +4,22 @@ version: 0.0.1
 description: Ellirion-BuildFramework
 authors: [OldaranT, Chris Coerdes, Nick Kronenberg, Joris Klein Tijssink, Richard de Vries]
 commands:
+  GetBoundingBoxes:
+    description: Get currently stored BoundingBoxes.
+    usage: /GetBoundingBoxes, /getbb
+    aliases: [getbb]
+  AddBoundingBox:
+    description: Add a BoundingBox
+    usage: /AddBoundingBox, /addbb
+    aliases: [addbb]
+  CorrectTerain:
+    description: Smooths the terain.
+    usage: /CorrectTerain, /cor
+    aliases: [cor]
   Validate:
     description: Validates the terrain for terrain smoothing.
-    usage: /Validate, /va
-    aliases: [va]
+    usage: /Validate, /val
+    aliases: [val]
   CreateTemplate:
     description: create a template of the selected area
     usage: /CreateTemplate <name>, /ct <name>
@@ -40,6 +52,30 @@ commands:
     description: Remove the selected hologram
     usage: /RemoveHologram, /rh
     aliases: [rh]
+  CreatePath:
+    description: Create a pre-programmed path
+    usage: /CreatePath, /cp
+    aliases: [cp]
+  PathBuilder:
+    description: All path builder commands
+    usage: /PathBuilder <Action> [parameters]
+    aliases: [pb]
+  FindPath:
+    description: find a path between two WorldEdit selections
+    usage: /findpath, /fp
+    aliases: [findpath, fp]
+  HidePath:
+    description: hides the current path if it exists
+    usage: /hidepath, /hp
+    aliases: [hidepath, hp]
+  HideVisited:
+    description: hides the current visisted blocks if it exists
+    usage: /hidevisited, /hv
+    aliases: [hidevisited, hv]
+  PathConfig:
+    description: changes the pathfinder config
+    usage: /pathconfig, /pc
+    aliases: [pathconfig, pc]
   LoadTemplate:
     description: load a template
     usage: /LoadTemplate, /lt
@@ -52,3 +88,7 @@ commands:
     description: Redo the last undone action
     usage: /Redo
     aliases:
+  PathTool:
+    description: give the player the pathing tool
+    usage: /PathTool, /pt
+    aliases: [pt]

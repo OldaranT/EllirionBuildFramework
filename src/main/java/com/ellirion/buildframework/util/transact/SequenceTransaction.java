@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SequenceTransaction extends Transaction {
 
-    private List<Transaction> children;
+    @Getter private List<Transaction> children;
     @Getter private boolean finalized;
 
     /**

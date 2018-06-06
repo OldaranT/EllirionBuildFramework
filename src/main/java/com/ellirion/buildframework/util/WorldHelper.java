@@ -2,19 +2,24 @@ package com.ellirion.buildframework.util;
 
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.TileEntity;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import com.ellirion.buildframework.util.async.Promise;
 import com.ellirion.buildframework.util.transact.Transaction;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class WorldHelper {
 
+    private static final Map<Chunk, Long> CHUNK_ACTIVITY = new HashMap<>();
     private static final BlockingQueue<PendingBlockChange> PENDING = new LinkedBlockingQueue<>();
 
     /**
@@ -85,9 +90,11 @@ public class WorldHelper {
         // Load chunk if necessary
         int chunkX = Math.floorDiv(x, 16);
         int chunkZ = Math.floorDiv(z, 16);
+
         if (!world.isChunkLoaded(chunkX, chunkZ)) {
             Promise p = new Promise<>(finisher -> {
                 world.loadChunk(chunkX, chunkZ);
+                markChunkActive(world.getChunkAt(chunkX, chunkZ));
                 finisher.resolve(null);
             }, false);
 
@@ -96,6 +103,31 @@ public class WorldHelper {
 
         // Get the block
         return world.getBlockAt(x, y, z);
+    }
+
+    /**
+     * Marks the given Chunk as active.
+     * @param c The Chunk to mark as active
+     */
+    public static void markChunkActive(Chunk c) {
+        CHUNK_ACTIVITY.put(c, System.currentTimeMillis());
+    }
+
+    /**
+     * Marks the given Chunk as inactive.
+     * @param c The Chunk to mark as inactive
+     */
+    public static void markChunkInactive(Chunk c) {
+        CHUNK_ACTIVITY.remove(c);
+    }
+
+    /**
+     * Check if the Chunk {@code c} is marked 'active' (has been accessed recently).
+     * @param c The Chunk to check
+     * @return Whether this Chunk is marked active or not
+     */
+    public static boolean isChunkActive(Chunk c) {
+        return System.currentTimeMillis() - CHUNK_ACTIVITY.getOrDefault(c, 0L) < 5000;
     }
 
     /**
@@ -129,6 +161,41 @@ public class WorldHelper {
         }
     }
 
+    /**
+     * @param dir in what direction it needs to look.
+     * @param block the block from where it needs to look.
+     * @param world the world where you are looking in.
+     * @return return the found block.
+     */
+    public static Block getRelativeBlock(BlockFace dir, Block block, World world) {
+        int x = block.getX();
+        int y = block.getY();
+        int z = block.getZ();
+        switch (dir) {
+            case NORTH:
+                // NORTH
+                return getBlock(world, x, y, z - 1);
+            case EAST:
+                // EAST
+                return getBlock(world, x + 1, y, z);
+            case SOUTH:
+                // SOUTH
+                return getBlock(world, x, y, z + 1);
+            case WEST:
+                // WEST
+                return getBlock(world, x - 1, y, z);
+            case UP:
+                // UP
+                return getBlock(world, x, y + 1, z);
+            case DOWN:
+                // DOWN
+                return getBlock(world, x, y - 1, z);
+
+            default:
+                throw new IndexOutOfBoundsException();
+        }
+    }
+
     private static class BlockChange {
 
         private Location location;
@@ -141,8 +208,8 @@ public class WorldHelper {
         }
 
         BlockChange(final Location loc, final Material mat, final byte data, final NBTTagCompound nbt) {
-            this.location = loc;
-            this.material = mat;
+            location = loc;
+            material = mat;
             this.data = data;
             this.nbt = nbt;
         }
@@ -156,8 +223,12 @@ public class WorldHelper {
                                                                                location.getBlockY(),
                                                                                location.getBlockZ());
             if (te != null) {
-                change = new BlockChange(location, block.getType(), block.getData(), te.save(new NBTTagCompound()));
-                te.load(nbt);
+                NBTTagCompound ntc = te.save(new NBTTagCompound());
+                ntc.setInt("x", location.getBlockX());
+                ntc.setInt("y", location.getBlockY());
+                ntc.setInt("z", location.getBlockZ());
+                change = new BlockChange(location, block.getType(), block.getData(), ntc);
+                te.load(new NBTTagCompound());
             } else {
                 change = new BlockChange(location, block.getType(), block.getData());
             }
@@ -166,6 +237,14 @@ public class WorldHelper {
             block.setType(material);
             block.setData(data);
 
+            if (nbt != null) {
+                TileEntity te2 = ((CraftWorld) location.getWorld()).getTileEntityAt(location.getBlockX(),
+                                                                                    location.getBlockY(),
+                                                                                    location.getBlockZ());
+                if (te2 != null) {
+                    te2.load(nbt);
+                }
+            }
             // Return the BlockChange to be used for reverting.
             return change;
         }
@@ -178,7 +257,7 @@ public class WorldHelper {
 
         PendingBlockChange(final BlockChange change) {
             this.change = change;
-            this.promise = new Promise<>();
+            promise = new Promise<>();
         }
 
         BlockChange apply() {
@@ -194,8 +273,8 @@ public class WorldHelper {
         private BlockChange after;
 
         BlockChangeTransaction(final BlockChange change) {
-            this.before = null;
-            this.after = change;
+            before = null;
+            after = change;
         }
 
         @Override

@@ -14,11 +14,17 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
 import com.ellirion.buildframework.util.MinecraftHelper;
+import com.ellirion.buildframework.util.TransactionManager;
+import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.async.Promise;
+import com.ellirion.buildframework.util.transact.SequenceTransaction;
+import com.ellirion.buildframework.util.transact.Transaction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,115 +98,138 @@ public class Template {
     }
 
     /**
-     * Place a template in the world at a given location.
-     * @param loc location to place the template.
+     * Put the template in the world asynchronously.
+     * @param loc the location of the template
+     * @param player the player that placed the template
+     * @return a promise
      */
-    public void putTemplateInWorld(Location loc) {
-        int xDepth = templateBlocks.length;
-        int yDepth = templateBlocks[0].length;
-        int zDepth = templateBlocks[0][0].length;
+    public Promise<Boolean> putTemplateInWorld(Location loc, Player player) {
+        return new Promise<>(f -> {
+            List<Transaction> list = new ArrayList<>();
 
-        CraftWorld w = (CraftWorld) loc.getWorld();
+            int xDepth = templateBlocks.length;
+            int yDepth = templateBlocks[0].length;
+            int zDepth = templateBlocks[0][0].length;
 
-        HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
-        List<DoorWrapper> doors = new ArrayList<>();
-        List<Material> toPlaceLate = Arrays.asList(MinecraftHelper.getPlaceLate());
+            CraftWorld w = (CraftWorld) loc.getWorld();
 
-        for (int x = 0; x < xDepth; x++) {
-            for (int y = 0; y < yDepth; y++) {
-                for (int z = 0; z < zDepth; z++) {
-                    if (toPlaceLate.contains(templateBlocks[x][y][z].getMaterial())) {
-                        if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
-                            if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
-                                doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
-                                                          templateBlocks[x][y + 1][z].getMetadata(),
-                                                          new Point(loc.getBlockX() + x, loc.getBlockY() + y,
-                                                                    loc.getBlockZ() + z)));
-                            }
-                        } else {
-                            toPlaceLast.put(new Point(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z),
-                                            templateBlocks[x][y][z]);
+            HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
+            List<DoorWrapper> doors = new ArrayList<>();
+            List<Material> toPlaceLate = Arrays.asList(MinecraftHelper.getPlaceLate());
+            List<Material> toRotate = Arrays.asList(MinecraftHelper.getToRotate());
+
+            for (int x = 0; x < xDepth; x++) {
+                for (int y = 0; y < yDepth; y++) {
+                    for (int z = 0; z < zDepth; z++) {
+
+                        int locX = loc.getBlockX() + x;
+                        int locY = loc.getBlockY() + y;
+                        int locZ = loc.getBlockZ() + z;
+
+                        Material wMaterial = w.getBlockAt(locX, locY, locZ).getType();
+                        Material tMaterial = templateBlocks[x][y][z].getMaterial();
+
+                        // Skip equal blocks.
+                        if (wMaterial.equals(tMaterial) &&
+                            !toPlaceLate.contains(tMaterial) &&
+                            !toRotate.contains(w.getBlockAt(locX, locY, locZ).getType())) {
+                            continue;
                         }
-                        continue;
-                    }
+                        if (toPlaceLate.contains(tMaterial) && !MinecraftHelper.isSpecialSnowflake(tMaterial,
+                                                                                                   (int) templateBlocks[x][y][z].getMetadata().getData())) {
+                            if (MinecraftHelper.isDoor(tMaterial)) {
+                                if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
+                                    doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
+                                                              templateBlocks[x][y + 1][z].getMetadata(),
+                                                              new Point(loc.getBlockX() + x, loc.getBlockY() + y,
+                                                                        loc.getBlockZ() + z)));
+                                }
+                            } else {
+                                toPlaceLast.put(
+                                        new Point(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z),
+                                        templateBlocks[x][y][z]);
+                            }
+                            continue;
+                        }
 
-                    int locX = loc.getBlockX() + x;
-                    int locY = loc.getBlockY() + y;
-                    int locZ = loc.getBlockZ() + z;
-
-                    Block b = w.getBlockAt(locX, locY, locZ);
-                    b.setType(templateBlocks[x][y][z].getMaterial(), false);
-                    b.getState().update();
-
-                    MaterialData copiedState = getTemplateBlocks()[x][y][z].getMetadata();
-                    BlockState blockState = b.getState();
-                    blockState.setData(copiedState);
-                    blockState.update(false, false);
-
-                    TileEntity te = w.getHandle().getTileEntity(new BlockPosition(locX, locY, locZ));
-
-                    if (te != null) {
-                        NBTTagCompound ntc = getTemplateBlocks()[x][y][z].getData();
-                        ntc.setInt("x", locX);
-                        ntc.setInt("y", locY);
-                        ntc.setInt("z", locZ);
-                        te.load(ntc);
+                        TemplateBlock tb = templateBlocks[x][y][z];
+                        NBTTagCompound ntc = tb.getData();
+                        if (ntc != null) {
+                            ntc.setInt("x", locX);
+                            ntc.setInt("y", locY);
+                            ntc.setInt("z", locZ);
+                        }
+                        list.add(WorldHelper.setBlock(w, locX, locY, locZ, tb.getMaterial(),
+                                                      tb.getMetadata().getData(), tb.getData()));
                     }
                 }
             }
-        }
 
-        // Place blocks that need other blocks to stay on their position.
-        for (Map.Entry pair : toPlaceLast.entrySet()) {
-            Point p = (Point) pair.getKey();
-            TemplateBlock block = (TemplateBlock) pair.getValue();
-            Block b = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+            // Place blocks that need other blocks to stay on their position.
+            for (Map.Entry pair : toPlaceLast.entrySet()) {
+                Point p = (Point) pair.getKey();
+                TemplateBlock block = (TemplateBlock) pair.getValue();
+                Block b = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
 
-            Block below = b.getRelative(BlockFace.DOWN);
-            Material belowMaterial = below.getType();
-            byte metadata = below.getState().getData().getData();
-            NBTTagCompound ntc = new NBTTagCompound();
-            TileEntity te = w.getHandle().getTileEntity(
-                    new BlockPosition(below.getX(), below.getY(), below.getZ()));
-            if (te != null) {
-                ntc = te.save(ntc);
-                te.load(new NBTTagCompound());
+                Block below = b.getRelative(BlockFace.DOWN);
+                Material belowMaterial = below.getType();
+                byte metadata = below.getState().getData().getData();
+                NBTTagCompound ntc = new NBTTagCompound();
+
+                if (p.getBlockY() - loc.getBlockY() > 0) {
+                    TemplateBlock tb = templateBlocks[p.getBlockX() - loc.getBlockX()]
+                            [p.getBlockY() - loc.getBlockY() - 1]
+                            [p.getBlockZ() - loc.getBlockZ()];
+                    ntc = tb.getData();
+                    belowMaterial = tb.getMaterial();
+                    metadata = tb.getMetadata().getData();
+                } else {
+                    TileEntity te = w.getHandle().getTileEntity(
+                            new BlockPosition(below.getX(), below.getY(), below.getZ()));
+                    if (te != null) {
+                        ntc = te.save(ntc);
+                    }
+                }
+
+                Transaction blockBelow = WorldHelper.setBlock(below.getLocation(),
+                                                              Material.STONE, (byte) 0);
+                NBTTagCompound nbt = block.getData();
+                if (nbt != null) {
+                    nbt.setInt("x", p.getBlockX());
+                    nbt.setInt("y", p.getBlockY());
+                    nbt.setInt("z", p.getBlockZ());
+                }
+                Transaction blockChange = WorldHelper.setBlock(b.getLocation(),
+                                                               block.getMaterial(), block.getMetadata().getData(),
+                                                               nbt);
+                Transaction revertBelow = WorldHelper.setBlock(below.getLocation(),
+                                                               belowMaterial, metadata, ntc);
+                list.add(new SequenceTransaction(true, blockBelow, blockChange, revertBelow));
             }
 
-            below.setType(Material.STONE, false);
+            // Place doors last.
+            for (DoorWrapper dw : doors) {
+                Point p = dw.getPoint();
 
-            b.setType(block.getMaterial(), false);
-            BlockState state = b.getState();
-            state.setData(block.getMetadata());
-            state.update();
+                Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
+                Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
 
-            below.setTypeIdAndData(belowMaterial.ordinal(), metadata, false);
-            te = w.getHandle().getTileEntity(
-                    new BlockPosition(below.getX(), below.getY(), below.getZ()));
-            if (te != null) {
-                te.load(ntc);
+                MaterialData bot = dw.getBottomMaterialData();
+                MaterialData top = dw.getTopMaterialData();
+
+                Transaction topDoor = WorldHelper.setBlock(doorTop.getLocation(), top.getItemType(),
+                                                           top.getData());
+                Transaction botDoor = WorldHelper.setBlock(doorBottom.getLocation(), bot.getItemType(),
+                                                           bot.getData());
+                list.add(topDoor);
+                list.add(botDoor);
             }
-        }
 
-        // Place doors last.
-        for (DoorWrapper dw : doors) {
-            Point p = dw.getPoint();
+            TransactionManager.addDoneTransaction(player,
+                                                  new SequenceTransaction(true, list.toArray(new Transaction[0])));
 
-            Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
-            Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
-
-            doorBottom.setType(dw.getBottomMaterialData().getItemType(), false);
-            doorTop.setType(dw.getTopMaterialData().getItemType(), false);
-
-            BlockState bottomState = doorBottom.getState();
-            BlockState topState = doorTop.getState();
-
-            bottomState.setData(dw.getBottomMaterialData());
-            topState.setData(dw.getTopMaterialData());
-
-            topState.update();
-            bottomState.update();
-        }
+            f.resolve(true);
+        });
     }
 
     private void addMarker(String name, Point point) {

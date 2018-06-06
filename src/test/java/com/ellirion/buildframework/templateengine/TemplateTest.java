@@ -7,12 +7,14 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -23,16 +25,20 @@ import com.ellirion.buildframework.templateengine.model.Template;
 import com.ellirion.buildframework.templateengine.model.TemplateBlock;
 import com.ellirion.buildframework.templateengine.model.TemplateHologram;
 import com.ellirion.buildframework.util.MockHelper;
+import com.ellirion.buildframework.util.TransactionManager;
+import com.ellirion.buildframework.util.WorldHelper;
+import com.ellirion.buildframework.util.transact.SequenceTransaction;
+import com.ellirion.buildframework.util.transact.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.*;
 
-@RunWith(Enclosed.class)
 public class TemplateTest {
 
     @RunWith(PowerMockRunner.class)
@@ -414,7 +420,7 @@ public class TemplateTest {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PrepareForTest({BuildFramework.class})
+    @PrepareForTest({BuildFramework.class, WorldHelper.class, TransactionManager.class})
     @PowerMockIgnore("javax.management.*")
     public static class TemplatePutTests {
 
@@ -438,15 +444,27 @@ public class TemplateTest {
         }
 
         @Test
-        public void putTemplateInWorld_whenCorrect_shouldSetBlocksCorrectAmountOfTimes() {
+        public void putTemplateInWorld_whenCorrect_shouldSetBlocksCorrectAmountOfTimes() throws Exception {
             Template t = createTemplate();
 
-            t.putTemplateInWorld(createDefaultLocation());
+            Location l = createDefaultLocation();
 
-            TemplateBlock[][][] blocks = t.getTemplateBlocks();
-            int invocationCount = blocks.length * blocks[0].length * blocks[0][0].length;
+            mockStatic(WorldHelper.class);
+            mockStatic(TransactionManager.class);
+            Transaction mockTransaction = mock(Transaction.class);
+            when(WorldHelper.setBlock(any(Location.class), any(Material.class),
+                                      anyByte())).thenReturn(mockTransaction);
+            when(WorldHelper.setBlock(eq(l.getWorld()), anyInt(), anyInt(), anyInt(), any(),
+                                      eq((byte) 0))).thenCallRealMethod();
+            when(WorldHelper.getBlock(any(Location.class))).thenCallRealMethod();
 
-            verify(MockHelper.MOCK_AIR_BLOCK, times(invocationCount)).setType(any(), eq(false));
+            ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
+            PowerMockito.doNothing().when(
+                    TransactionManager.class, "addDoneTransaction", any(Player.class), captor.capture());
+
+            t.putTemplateInWorld(l, mock(Player.class)).await();
+
+            assertEquals(27, ((SequenceTransaction) captor.getValue()).getChildren().size());
         }
 
         private Template createTemplate() {

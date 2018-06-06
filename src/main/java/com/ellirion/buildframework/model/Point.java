@@ -7,9 +7,9 @@ import org.bukkit.World;
 
 public class Point {
 
-    @Getter private double x;
-    @Getter private double y;
-    @Getter private double z;
+    @Getter private final double x;
+    @Getter private final double y;
+    @Getter private final double z;
 
     /**
      * Constructs a Point at (0,0,0).
@@ -112,6 +112,27 @@ public class Point {
         return Math.abs(p.x - x) +
                Math.abs(p.y - y) +
                Math.abs(p.z - z);
+    }
+
+    /**
+     * Calculates the Euclidian distance between this Point and the line that passes through
+     * both Point {@code p1} and Point {@code p2}.
+     * @param p1 The first point
+     * @param p2 The second point
+     * @return The Euclidian distance between this Point and the line
+     */
+    public double distanceFromLine(Point p1, Point p2) {
+        // Heron's formula
+        double a = p1.distanceEuclidian(p2); // p1 => p2
+        double b = p2.distanceEuclidian(this); // p2 => p0
+        double c = this.distanceEuclidian(p1); // p0 => p1
+        double s = (a + b + c) / 2;
+        double t = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+
+        // Line defined by two points
+        // Denominator = distance between p1 and p2
+        // Numerator = twice the area of the triangle with its vertices at the three points.
+        return 2 * t / a;
     }
 
     /**
