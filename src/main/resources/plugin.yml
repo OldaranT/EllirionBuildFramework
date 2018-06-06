@@ -52,18 +52,14 @@ commands:
     description: Remove the selected hologram
     usage: /RemoveHologram, /rh
     aliases: [rh]
-  LoadTemplate:
-    description: load a template
-    usage: /LoadTemplate, /lt
-    aliases: [lt]
-  Undo:
-    description: Undo the last action
-    usage: /Undo
-    aliases:
-  Redo:
-    description: Redo the last undone action
-    usage: /Redo
-    aliases:
+  CreatePath:
+    description: Create a pre-programmed path
+    usage: /CreatePath, /cp
+    aliases: [cp]
+  PathBuilder:
+    description: All path builder commands
+    usage: /PathBuilder <Action> [parameters]
+    aliases: [pb]
   FindPath:
     description: find a path between two WorldEdit selections
     usage: /findpath, /fp
@@ -80,6 +76,18 @@ commands:
     description: changes the pathfinder config
     usage: /pathconfig, /pc
     aliases: [pathconfig, pc]
+  LoadTemplate:
+    description: load a template
+    usage: /LoadTemplate, /lt
+    aliases: [lt]
+  Undo:
+    description: Undo the last action
+    usage: /Undo
+    aliases:
+  Redo:
+    description: Redo the last undone action
+    usage: /Redo
+    aliases:
   PathTool:
     description: give the player the pathing tool
     usage: /PathTool, /pt
