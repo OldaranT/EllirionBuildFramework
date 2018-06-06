@@ -265,7 +265,7 @@ public class RavineSupportRuleBookTest {
                                  int zMin, int hMaxZ, int zMax) {
 
         facts.setValue(RavineSupportsRuleBook.getMinHoleX(), hMinX);
-        facts.setValue(RavineSupportsRuleBook.getMaxX(), xMin);
+        facts.setValue(RavineSupportsRuleBook.getMinX(), xMin);
         facts.setValue(RavineSupportsRuleBook.getMaxHoleX(), hMaxX);
         facts.setValue(RavineSupportsRuleBook.getMaxX(), xMax);
         facts.setValue(RavineSupportsRuleBook.getMinHoleZ(), hMinZ);

@@ -280,7 +280,6 @@ public class TerrainCorrector {
         int maxHoleZ;
 
         List<Block> topBlocks = hole.getTopBlocks();
-        List<Block> toChange;
         List<Hole> subHoles = new ArrayList<>();
 
         for (Block b : topBlocks) {
@@ -312,17 +311,13 @@ public class TerrainCorrector {
 
             // Run the values through the rules in the rulebook.
             ravineSupportsRuleBook.run(ravineSupportsFacts);
-            // If the rulebook returns are result get the to change blocks
-            // Else create an empty list to prevent a NPE
+            // If the rulebook returns a result get the to change blocks
             if (ravineSupportsRuleBook.getResult().isPresent()) {
                 Result result = ravineSupportsRuleBook.getResult().get();
-                toChange = supportSelector((int) result.getValue(), minHoleX, maxHoleX, minHoleZ, maxHoleZ);
-            } else {
-                toChange = new ArrayList<>();
-            }
-
-            for (Block b : toChange) {
-                sendSyncBlockChanges(b, new BlockData(Material.FENCE, (byte) 0));
+                List<Block> toChange = supportSelector((int) result.getValue(), minHoleX, maxHoleX, minHoleZ, maxHoleZ);
+                for (Block b : toChange) {
+                    sendSyncBlockChanges(b, new BlockData(Material.FENCE, (byte) 0));
+                }
             }
         }
     }
