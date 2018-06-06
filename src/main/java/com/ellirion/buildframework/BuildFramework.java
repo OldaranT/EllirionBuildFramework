@@ -7,6 +7,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.ellirion.buildframework.command.PlayerRedoCommand;
 import com.ellirion.buildframework.command.PlayerUndoCommand;
+import com.ellirion.buildframework.pathfinder.command.CommandFindPath;
+import com.ellirion.buildframework.pathfinder.command.CommandHidePath;
+import com.ellirion.buildframework.pathfinder.command.CommandHideVisited;
+import com.ellirion.buildframework.pathfinder.command.CommandPathConfig;
+import com.ellirion.buildframework.pathfinder.event.PathingListener;
 import com.ellirion.buildframework.templateengine.command.CommandAddMarker;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplate;
 import com.ellirion.buildframework.templateengine.command.CommandCreateTemplateHologram;
@@ -175,11 +180,11 @@ public class BuildFramework extends JavaPlugin {
     }
 
     private void registerCommands() {
+        // Template engine
         getCommand("CreateTemplate").setExecutor(new CommandCreateTemplate());
         getCommand("PutTemplate").setExecutor(new CommandPutTemplate());
         getCommand("ExportTemplate").setExecutor(new CommandExportTemplate());
         getCommand("ImportTemplate").setExecutor(new CommandImportTemplate());
-        getCommand("Validate").setExecutor(new ValidateCommand());
         getCommand("AddMarker").setExecutor(new CommandAddMarker());
         getCommand("RemoveMarker").setExecutor(new CommandRemoveMarker());
         getCommand("RemoveMarker").setTabCompleter(new TabCompletionMarkerNameList());
@@ -189,12 +194,25 @@ public class BuildFramework extends JavaPlugin {
         getCommand("GetBoundingboxes").setExecutor(new GetBoundingBoxesCommand());
         getCommand("AddBoundingBox").setExecutor(new AddBoundingBoxCommand());
         getCommand("LoadTemplate").setExecutor(new CommandLoadTemplate());
+
+        // Terrain validator
+        getCommand("Validate").setExecutor(new ValidateCommand());
+
+        // Transactions
         getCommand("Undo").setExecutor(new PlayerUndoCommand());
         getCommand("Redo").setExecutor(new PlayerRedoCommand());
+
+        // Path finder
+        getCommand("FindPath").setExecutor(new CommandFindPath());
+        getCommand("HidePath").setExecutor(new CommandHidePath());
+        getCommand("HideVisited").setExecutor(new CommandHideVisited());
+        getCommand("PathConfig").setExecutor(new CommandPathConfig());
+        getCommand("PathTool").setExecutor(new PathingListener());
     }
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new EventListener(), this);
+        getServer().getPluginManager().registerEvents(new PathingListener(), this);
     }
 
     private void registerTabCompleters() {
