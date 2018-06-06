@@ -439,13 +439,13 @@ public class TerrainCorrector {
         int z1 = boundingBox.getZ1();
         int z2 = boundingBox.getZ2();
 
-        int width = x2 - x1 + 1;
-        int depth = z2 - z1 + 1;
+        int width = x2 - x1;
+        int depth = z2 - z1;
 
         int minX = 0;
-        int maxX = width - 1;
+        int maxX = width;
         int minZ = 0;
-        int maxZ = depth - 1;
+        int maxZ = depth;
 
         int baseY = boundingBox.getY1();
         int offsetY = 1;
