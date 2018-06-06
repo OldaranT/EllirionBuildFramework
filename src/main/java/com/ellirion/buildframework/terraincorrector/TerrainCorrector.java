@@ -125,6 +125,7 @@ public class TerrainCorrector {
     private void fillHoleAtSidePartially(Hole hole) {
         BlockData data = getFloorMaterial();
         List<Block> blocks = hole.getTopBlocks();
+        // Make a map of the block and the the depth that the filling should start at.
         Map<Block, Integer> startingDepthMap = calculateStartingDepthMap(blocks);
 
         placeBlocksAccordingToDepthMap(startingDepthMap, data);
@@ -137,10 +138,13 @@ public class TerrainCorrector {
 
         Map<Block, Integer> result = new HashMap<>();
         LinkedList<ToDoEntry> todo = new LinkedList<>();
+
+        // Get a random block below the boundingBox and make an TodoEntry.
         Block block = blocks.stream().filter(x -> blocksBelowBoundingBoxOrWithinOffset(x, 0)).findAny().get();
         ToDoEntry entry = new ToDoEntry(block, 0, chancePercentage, 0);
         todo.add(entry);
 
+        // Do a flood fill of the area surrounding the hole.
         while ((entry = todo.poll()) != null) {
             exploreDepthOfAdjacentBlocks(entry, result, todo, minimalFillingWidth, maxDepth, chancePercentage);
         }
@@ -152,6 +156,8 @@ public class TerrainCorrector {
                                               LinkedList<ToDoEntry> todo,
                                               int minWidth, int maxDepth, int initialPercentage) {
 
+        // Check if the current block is still within the area
+        // and if the block is already known check if the known result is higher than the current depth.
         if ((result.containsKey(currentEntry.getBlock()) &&
              result.get(currentEntry.getBlock()) <= currentEntry.getDepth()) ||
             currentEntry.getDepth() >= maxDepth) {
@@ -179,9 +185,11 @@ public class TerrainCorrector {
                     depth -= 1;
                 }
 
+                // Add a entry to the todoList with the new depth
                 todo.addLast(new ToDoEntry(nextBlock, depth, percentage, maxOffset));
                 continue;
             }
+            // Add a entry to the todoList with depth 0 because this item is below the bounding box.
             todo.addLast(new ToDoEntry(nextBlock, 0, initialPercentage, maxOffset));
         }
     }
@@ -195,6 +203,7 @@ public class TerrainCorrector {
     private void fillDownwards(Block block, BlockData data, int startDepth) {
         Block currentBlock = getBlock(world, block.getX(), block.getY() - startDepth, block.getZ());
 
+        // Loop tough all blocks below the starting block that are air or not solid
         while (currentBlock.isEmpty() || !currentBlock.getType().isSolid()) {
             sendSyncBlockChanges(currentBlock, data);
             currentBlock = getRelativeBlock(5, currentBlock, world);
