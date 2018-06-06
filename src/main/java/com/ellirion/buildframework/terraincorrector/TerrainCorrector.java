@@ -67,10 +67,10 @@ public class TerrainCorrector {
      * @param player The player that wants to change the world
      */
 
-    public void correctTerrain(BoundingBox boundingBox, World world, Player player) {
+    public Promise correctTerrain(BoundingBox boundingBox, World world, Player player) {
         ravineSupportsRuleBook.setKeys(minHoleXFactKey, minXFactKey, maxHoleXFactKey, maxXFactKey, minHoleZFactKey,
                                        minZFactKey, maxHoleZFactKey, maxZFactKey);
-        new Promise<>(finisher -> {
+        return new Promise<>(finisher -> {
             TRANSACTIONS = new ArrayList<>();
             this.boundingBox = boundingBox;
             this.world = world;
@@ -86,6 +86,7 @@ public class TerrainCorrector {
             TransactionManager.addDoneTransaction(player,
                                                   new SequenceTransaction(true,
                                                                           TRANSACTIONS.toArray(new Transaction[0])));
+            finisher.resolve(null);
         }, true);
     }
 

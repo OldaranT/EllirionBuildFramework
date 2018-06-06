@@ -90,16 +90,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
-
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -116,15 +109,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -141,15 +128,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -166,15 +147,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -191,15 +166,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -216,14 +185,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -240,15 +204,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -265,15 +223,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(5, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -291,15 +243,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -317,15 +263,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(6, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -341,15 +281,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(18, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -359,15 +293,9 @@ public class TerrainCorrectorTest {
         setBlockAtCoordinatesHelper(2, 0, 2, air, mockWorld);
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(1, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
@@ -379,15 +307,9 @@ public class TerrainCorrectorTest {
         }
 
         // Act
-        corrector.correctTerrain(boundingBox, mockWorld, player);
+        corrector.correctTerrain(boundingBox, mockWorld, player).await();
 
         // Assert
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            fail();
-        }
         assertEquals(3, ((SequenceTransaction) captor.getValue()).getChildren().size());
     }
 
