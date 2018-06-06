@@ -475,8 +475,7 @@ public class PathBuilder {
             visited.put(curr, true);
 
             steps++;
-            //TODO config
-            if (steps >= 5000000) {
+            if (steps >= BuildFramework.getInstance().getConfig().getInt("PathBuilder.floodFillDepth")) {
                 BuildFramework.getInstance().getLogger().info("Could not find anchor point for " + p.toString());
                 anchorFound = true;
             }

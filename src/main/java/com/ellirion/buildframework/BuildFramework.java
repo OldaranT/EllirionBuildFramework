@@ -104,6 +104,7 @@ public class BuildFramework extends JavaPlugin {
         config.addDefault("TemplateEngine.Path", "plugins/Ellirion-BuildFramework/templates/");
         // Path builder config
         config.addDefault("PathBuilder.pathbuilderPath", "plugins/Ellirion-BuildFramework/pathbuilders/");
+        config.addDefault("PathBuilder.floodFillDepth", 5000000);
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
