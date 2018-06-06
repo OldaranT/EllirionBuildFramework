@@ -205,6 +205,20 @@ public class BoundingBox {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BoundingBox) {
+            BoundingBox bb = (BoundingBox) obj;
+            return x1 == bb.x1 && y1 == bb.y1 && z1 == bb.z1 && x2 == bb.x2 && y2 == bb.y2 && z2 == bb.z2;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
     public String toString() {
         return String.format("BoundingBox(x1=%d, y1=%d, z1=%d, x2=%d, y2=%d, z2=%d)",
                              x1, y1, z1, x2, y2, z2);

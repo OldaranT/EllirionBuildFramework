@@ -18,6 +18,7 @@ import org.bukkit.material.MaterialData;
 import com.ellirion.buildframework.BuildFramework;
 import com.ellirion.buildframework.model.BoundingBox;
 import com.ellirion.buildframework.model.Point;
+import com.ellirion.buildframework.util.MinecraftHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,37 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Template {
-
-    private static final Material[] PLACE_LATE = new Material[] {
-            Material.WALL_SIGN,
-            Material.WALL_BANNER,
-            Material.BANNER,
-            Material.LADDER,
-            Material.PAINTING,
-            Material.ITEM_FRAME,
-            Material.STONE_BUTTON,
-            Material.WOOD_BUTTON,
-            Material.LEVER,
-            Material.REDSTONE,
-            Material.REDSTONE_TORCH_OFF,
-            Material.REDSTONE_TORCH_ON,
-            Material.VINE,
-            Material.TRIPWIRE_HOOK,
-            Material.PAINTING,
-            Material.PISTON_BASE,
-            Material.PISTON_EXTENSION,
-            Material.PISTON_STICKY_BASE,
-            Material.TORCH,
-            Material.ACACIA_DOOR,
-            Material.BIRCH_DOOR,
-            Material.DARK_OAK_DOOR,
-            Material.IRON_DOOR,
-            Material.JUNGLE_DOOR,
-            Material.SPRUCE_DOOR,
-            Material.WOOD_DOOR,
-            Material.WOODEN_DOOR,
-            Material.IRON_DOOR_BLOCK
-    };
 
     private static final String DATA = "data";
     private static final List<String> POSSIBLE_MARKERS = BuildFramework.getInstance().getTemplateFormatConfig().getStringList(
@@ -134,17 +104,16 @@ public class Template {
 
         HashMap<Point, TemplateBlock> toPlaceLast = new HashMap<>();
         List<DoorWrapper> doors = new ArrayList<>();
+        List<Material> toPlaceLate = Arrays.asList(MinecraftHelper.getPlaceLate());
 
         for (int x = 0; x < xDepth; x++) {
             for (int y = 0; y < yDepth; y++) {
                 for (int z = 0; z < zDepth; z++) {
-                    if (Arrays.asList(PLACE_LATE).contains(templateBlocks[x][y][z].getMaterial())) {
-                        if (templateBlocks[x][y][z].getMaterial().toString().contains("DOOR") &&
-                            !templateBlocks[x][y][z].getMaterial().toString().contains("TRAP")) {
+                    if (toPlaceLate.contains(templateBlocks[x][y][z].getMaterial())) {
+                        if (MinecraftHelper.isDoor(templateBlocks[x][y][z].getMaterial())) {
                             if ((int) templateBlocks[x][y][z].getMetadata().getData() < 8) {
                                 doors.add(new DoorWrapper(templateBlocks[x][y][z].getMetadata(),
-                                                          templateBlocks[x][y + 1][z].getMetadata().getData(),
-                                                          templateBlocks[x][y][z].getMetadata().getData(),
+                                                          templateBlocks[x][y + 1][z].getMetadata(),
                                                           new Point(loc.getBlockX() + x, loc.getBlockY() + y,
                                                                     loc.getBlockZ() + z)));
                             }
@@ -160,7 +129,7 @@ public class Template {
                     int locZ = loc.getBlockZ() + z;
 
                     Block b = w.getBlockAt(locX, locY, locZ);
-                    b.setType(templateBlocks[x][y][z].getMaterial());
+                    b.setType(templateBlocks[x][y][z].getMaterial(), false);
                     b.getState().update();
 
                     MaterialData copiedState = getTemplateBlocks()[x][y][z].getMetadata();
@@ -198,9 +167,9 @@ public class Template {
                 te.load(new NBTTagCompound());
             }
 
-            below.setType(Material.STONE);
+            below.setType(Material.STONE, false);
 
-            b.setType(block.getMaterial());
+            b.setType(block.getMaterial(), false);
             BlockState state = b.getState();
             state.setData(block.getMetadata());
             state.update();
@@ -220,14 +189,17 @@ public class Template {
             Block doorBottom = w.getBlockAt(p.getBlockX(), p.getBlockY(), p.getBlockZ());
             Block doorTop = w.getBlockAt(p.getBlockX(), p.getBlockY() + 1, p.getBlockZ());
 
-            doorBottom.setType(dw.getMaterialData().getItemType());
-            doorTop.setType(dw.getMaterialData().getItemType());
+            doorBottom.setType(dw.getBottomMaterialData().getItemType(), false);
+            doorTop.setType(dw.getTopMaterialData().getItemType(), false);
 
-            doorBottom.setData(dw.getBottom());
-            doorTop.setData(dw.getTop());
+            BlockState bottomState = doorBottom.getState();
+            BlockState topState = doorTop.getState();
 
-            doorBottom.getState().update();
-            doorTop.getState().update();
+            bottomState.setData(dw.getBottomMaterialData());
+            topState.setData(dw.getTopMaterialData());
+
+            topState.update();
+            bottomState.update();
         }
     }
 
@@ -427,6 +399,76 @@ public class Template {
     }
 
     /**
+     * Rotate the template 90 degrees in a direction.
+     * @param clockwise True = clockwise, false = counter clockwise
+     */
+    public void rotateTemplate(boolean clockwise) {
+        int xDepth = templateBlocks.length;
+        int yDepth = templateBlocks[0].length;
+        int zDepth = templateBlocks[0][0].length;
+
+        TemplateBlock[][][] rotatedTemplateBlock = new TemplateBlock[zDepth][yDepth][xDepth];
+
+        List<Material> toRotate = Arrays.asList(MinecraftHelper.getToRotate());
+
+        for (int y = 0; y < yDepth; y++) {
+            for (int x = 0; x < zDepth; x++) {
+                for (int z = 0; z < xDepth; z++) {
+                    TemplateBlock block;
+                    if (clockwise) {
+                        block = templateBlocks[z][y][zDepth - x - 1];
+                    } else {
+                        block = templateBlocks[xDepth - z - 1][y][x];
+                    }
+                    if (toRotate.contains(block.getMaterial())) {
+                        Material currentMaterial = block.getMaterial();
+                        int currentMetaData = (int) block.getMetadata().getData();
+                        // Some materials have the same array, so to prevent copying and pasting of the same array 16 times, we get other arrays that are the same
+                        if (currentMaterial.toString().contains("GLAZED_TERRACOTTA")) {
+                            currentMaterial = Material.BLACK_GLAZED_TERRACOTTA;
+                        }
+                        if (MinecraftHelper.isDoor(currentMaterial)) {
+                            currentMaterial = Material.ACACIA_DOOR;
+                        }
+                        if (MinecraftHelper.isStair(currentMaterial)) {
+                            currentMaterial = Material.ACACIA_STAIRS;
+                        }
+                        if (MinecraftHelper.isFenceGate(currentMaterial)) {
+                            currentMaterial = Material.FENCE_GATE;
+                        }
+
+                        int newMetaData = MinecraftHelper.getMaterialRotationData(currentMaterial, currentMetaData,
+                                                                                  clockwise);
+                        block.getMetadata().setData((byte) newMetaData);
+                    }
+                    rotatedTemplateBlock[x][y][z] = block;
+                }
+            }
+        }
+
+        this.templateBlocks = rotatedTemplateBlock;
+        rotateMarkers(clockwise);
+    }
+
+    private void rotateMarkers(boolean clockwise) {
+        int xDepth = templateBlocks.length;
+        int zDepth = templateBlocks[0][0].length;
+
+        for (Map.Entry pair : getMarkers().entrySet()) {
+            Point oldPoint = (Point) pair.getValue();
+            if (clockwise) {
+                Point clockwisePoint = new Point((xDepth - oldPoint.getBlockZ() - 1), oldPoint.getBlockY(),
+                                                 oldPoint.getBlockX());
+                markers.put((String) pair.getKey(), clockwisePoint);
+                continue;
+            }
+            Point counterClockwisePoint = new Point(oldPoint.getBlockZ(), oldPoint.getBlockY(),
+                                                    (zDepth - oldPoint.getBlockX() - 1));
+            markers.put((String) pair.getKey(), counterClockwisePoint);
+        }
+    }
+
+    /**
      * Convert the enum to a string and returns it.
      * @return Enum in strong form.
      */
@@ -439,3 +481,4 @@ public class Template {
         return markers;
     }
 }
+
