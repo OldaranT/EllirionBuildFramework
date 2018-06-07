@@ -1,5 +1,6 @@
 package com.ellirion.buildframework.util;
 
+import net.minecraft.server.v1_12_R1.MinecraftServer;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import net.minecraft.server.v1_12_R1.TileEntity;
 import org.bukkit.Chunk;
@@ -91,7 +92,9 @@ public class WorldHelper {
         int chunkX = Math.floorDiv(x, 16);
         int chunkZ = Math.floorDiv(z, 16);
 
-        if (!world.isChunkLoaded(chunkX, chunkZ)) {
+        if (!world.isChunkLoaded(chunkX, chunkZ) &&
+            (MinecraftServer.getServer() == null || Thread.currentThread() !=
+                                                    MinecraftServer.getServer().primaryThread)) {
             Promise p = new Promise<>(finisher -> {
                 world.loadChunk(chunkX, chunkZ);
                 markChunkActive(world.getChunkAt(chunkX, chunkZ));
@@ -223,8 +226,12 @@ public class WorldHelper {
                                                                                location.getBlockY(),
                                                                                location.getBlockZ());
             if (te != null) {
-                change = new BlockChange(location, block.getType(), block.getData(), te.save(new NBTTagCompound()));
-                te.load(nbt);
+                NBTTagCompound ntc = te.save(new NBTTagCompound());
+                ntc.setInt("x", location.getBlockX());
+                ntc.setInt("y", location.getBlockY());
+                ntc.setInt("z", location.getBlockZ());
+                change = new BlockChange(location, block.getType(), block.getData(), ntc);
+                te.load(new NBTTagCompound());
             } else {
                 change = new BlockChange(location, block.getType(), block.getData());
             }
@@ -233,6 +240,14 @@ public class WorldHelper {
             block.setType(material);
             block.setData(data);
 
+            if (nbt != null) {
+                TileEntity te2 = ((CraftWorld) location.getWorld()).getTileEntityAt(location.getBlockX(),
+                                                                                    location.getBlockY(),
+                                                                                    location.getBlockZ());
+                if (te2 != null) {
+                    te2.load(nbt);
+                }
+            }
             // Return the BlockChange to be used for reverting.
             return change;
         }
