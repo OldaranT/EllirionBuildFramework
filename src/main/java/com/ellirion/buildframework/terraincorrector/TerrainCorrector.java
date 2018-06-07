@@ -327,6 +327,9 @@ public class TerrainCorrector {
             minHoleZ = h.getMinZ();
             maxHoleZ = h.getMaxZ();
 
+            //            BuildFramework.getInstance().getLogger().info(
+            //                    "minHoleX " + minHoleX + " maxHoleX " + maxHoleX + " minHoleZ " + minHoleZ + " maxHoleZ " +
+            //                    maxHoleZ);
             // Set the outer hole coordinates in the fact map.
             ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMinHoleX(), h.getMinX());
             ravineSupportsFacts.setValue(RavineSupportsRuleBook.getMaxHoleX(), h.getMaxX());
@@ -367,8 +370,10 @@ public class TerrainCorrector {
     private List<Block> getBridgeSupport(int dir, int minHoleX, int maxHoleX,
                                          int minHoleZ, int maxHoleZ) {
         int holeCentre;
+        int distanceToCover;
         int y = boundingBox.getY1() - 1;
         List<Block> toChange = new ArrayList<>();
+        int evenBlockNumberCompensator = 0;
         int maxDepth;
         double centerClearance;
 
@@ -376,17 +381,22 @@ public class TerrainCorrector {
         switch (dir) {
             case 0:
                 // Z-axis
-                holeCentre = maxHoleZ - ((maxHoleZ - minHoleZ) / 2);
-                maxDepth = (maxHoleZ - minHoleZ) / 2;
+                distanceToCover = Math.abs(maxHoleZ - minHoleZ);
+                if (distanceToCover % 2 == 1) {
+                    evenBlockNumberCompensator = 1;
+                }
+                maxDepth = (distanceToCover / 2);
+                holeCentre = maxHoleZ - (distanceToCover / 2);
                 centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
+                maxDepth += evenBlockNumberCompensator;
                 for (int x = minHoleX; x <= maxHoleX; x++) {
 
                     // This causes a 1 block spacing between the supports.
                     if (Math.abs(x) % 2 == 0) {
                         for (int i = 0; i <= maxDepth; i++) {
                             // Check if you are not past the BoundingBox
-                            if (holeCentre + centerClearance + i > maxHoleZ ||
-                                holeCentre - centerClearance - i < minHoleZ) {
+                            if (holeCentre + i + (int) centerClearance > (maxHoleZ + evenBlockNumberCompensator) ||
+                                holeCentre - i - (int) centerClearance < minHoleZ) {
                                 break;
                             }
 
@@ -402,9 +412,14 @@ public class TerrainCorrector {
             case 1:
 
                 // X-axis
-                holeCentre = maxHoleX - ((maxHoleX - minHoleX) / 2);
-                maxDepth = (maxHoleX - minHoleX) / 2;
+                distanceToCover = Math.abs(maxHoleX - minHoleX);
+                if (distanceToCover % 2 == 1) {
+                    evenBlockNumberCompensator = 1;
+                }
+                maxDepth = (distanceToCover / 2);
+                holeCentre = maxHoleX - (distanceToCover / 2);
                 centerClearance = ((double) maxDepth / 100D) * bridgeSupportClearancePercentage;
+                maxDepth += evenBlockNumberCompensator;
                 for (int z = minHoleZ; z <= maxHoleZ; z++) {
 
                     // This causes a 1 block spacing between the supports.
@@ -412,8 +427,8 @@ public class TerrainCorrector {
                         for (int i = 0; i <= maxDepth; i++) {
 
                             // Check if you are not past the BoundingBox
-                            if (holeCentre + centerClearance + i > maxHoleX ||
-                                holeCentre - centerClearance - i < minHoleX) {
+                            if (holeCentre + i + (int) centerClearance > (maxHoleX + evenBlockNumberCompensator) ||
+                                holeCentre - i - (int) centerClearance < minHoleX) {
                                 break;
                             }
 
