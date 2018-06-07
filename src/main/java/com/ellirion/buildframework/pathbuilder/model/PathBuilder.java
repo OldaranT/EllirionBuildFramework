@@ -131,6 +131,7 @@ public class PathBuilder {
         int count = 0;
 
         List<BlockChange> blockChanges = new LinkedList<>();
+        HashMap<Point, Boolean> pathBlocks = new HashMap<>();
 
         for (Point p : points) {
             // Get all 'points' around the point within radius r
@@ -138,15 +139,18 @@ public class PathBuilder {
 
             // Replace these blocks according to the weight map
             for (Point point : nearbyPoints) {
-                Block b = w.getBlockAt(point.toLocation(w));
-                double random = this.random.nextDouble();
-                PathMaterial pm = getPathMaterial(weightedBlocks, random);
-                blockChanges.add(
-                        new BlockChange(pm.getMat(), pm.getData(), b.getLocation()));
+                if (!pathBlocks.containsKey(point)) {
+                    pathBlocks.put(point, true);
+                    Block b = w.getBlockAt(point.toLocation(w));
+                    double random = this.random.nextDouble();
+                    PathMaterial pm = getPathMaterial(weightedBlocks, random);
+                    blockChanges.add(new BlockChange(pm.getMat(), pm.getData(), b.getLocation()));
+                }
             }
 
             // If the path at this point isn't grounded, create supports
-            if (count % (radius * 3) == 0 && !isGrounded(p, w)) {
+            if (count % (radius * 8) == 0 && !isGrounded(p, w)) {
+                HashMap<Point, Boolean> supports = new HashMap<>();
                 // Get all points within certain radius, and build towards anchor point
                 // Create multiple anchor points to build towards
                 List<Point> anchorPoints = getAnchorPoints(p.down(), w);
@@ -156,7 +160,13 @@ public class PathBuilder {
                 for (Point supportPoint : getNearbyPoints(p.down())) {
                     if (w.getBlockAt(supportPoint.toLocation(w)).getType() == Material.AIR) {
                         for (Point anchorPoint : anchorPoints) {
-                            blockChanges.addAll(BresenhamLine3D.drawLine(supportPoint, anchorPoint, w, supportType));
+                            for (BlockChange change : BresenhamLine3D.drawLine(supportPoint, anchorPoint, w,
+                                                                               supportType)) {
+                                if (!supports.containsKey(new Point(change.getLocation()))) {
+                                    supports.put(new Point(change.getLocation()), true);
+                                    blockChanges.add(change);
+                                }
+                            }
                         }
                     }
                 }
