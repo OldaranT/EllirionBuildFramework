@@ -253,7 +253,7 @@ public class TerrainCorrector {
         final int topBlockZ = boundingBox.getZ2();
 
         for (int x = bottomBlockX; x <= topBlockX; x++) {
-            for (int y = bottomBlockY; y <= topBlockY; y++) {
+            for (int y = topBlockY; y >= bottomBlockY; y--) {
                 for (int z = bottomBlockZ; z <= topBlockZ; z++) {
                     final Block b = getBlock(world, x, y, z);
                     if (!b.isLiquid() && !b.isEmpty()) {

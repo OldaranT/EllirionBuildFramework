@@ -81,8 +81,8 @@ public class BuildFramework extends JavaPlugin {
     @Override
     public void onEnable() {
         registerCommands();
-        registerTabCompleters();
         registerListeners();
+        registerTabCompleters();
         createConfig();
         createFilePaths();
         createBlockValueConfig();

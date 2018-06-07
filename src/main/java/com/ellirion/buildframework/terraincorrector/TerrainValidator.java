@@ -59,7 +59,7 @@ public class TerrainValidator {
         final double overhangScore = calculateOverhang();
 
         if (overhangScore >= overhangLimit) {
-            model.getErrors().add("The amount of blocks that needs to be filled is to high");
+            model.getErrors().add("The amount of blocks that needs to be filled is too high");
             model.setSucceeded(false);
         }
 
@@ -72,7 +72,7 @@ public class TerrainValidator {
         // This step also needs to check if the model has succeeded thus far
         // Because we don't want to add unnecessary information.
         if (blocksScore + overhangScore >= totalLimit && model.isSucceeded()) {
-            model.getErrors().add("the amount of blocks that need to be changed is to high");
+            model.getErrors().add("The amount of blocks that need to be changed is too high");
             model.setSucceeded(false);
         }
 
