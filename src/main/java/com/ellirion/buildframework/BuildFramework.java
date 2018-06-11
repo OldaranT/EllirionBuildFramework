@@ -121,7 +121,7 @@ public class BuildFramework extends JavaPlugin {
 
     // Create filepaths if they don't exist yet
     private void createFilePaths() {
-        Path path = Paths.get(config.getString("templatePath"));
+        Path path = Paths.get(config.getString("TemplateEngine.Path"));
         if (!Files.exists(path) && !path.toFile().mkdirs()) {
             getLogger().warning("The path for templates could not be created");
         }
