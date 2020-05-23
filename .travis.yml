@@ -10,8 +10,7 @@ install:
 script:
     # grep so that download counts don't appear in log files
     - if [ ! -d $HOME/.m2/repository/org/spigotmc/spigot/1.12.2-R0.1-SNAPSHOT/ ]; then echo "Spigot build not found, running BuildTools."; java -jar BuildTools.jar --rev 1.12.2; fi;
-    - if [ ! -d $HOME/.m2/repository/org/spigotmc/spigot/1.12.2-R0.1-SNAPSHOT/ ]; then echo "Spigot build still not found."; fi;
-    - if [  -d $HOME/.m2/repository/org/spigotmc/spigot/1.12.2-R0.1-SNAPSHOT/ ]; then echo "Spigot build is found."; fi;
+    - if [ ! -d $HOME/.m2/repository/org/spigotmc/spigot/1.12.2-R0.1-SNAPSHOT/ ]; then echo "Spigot build still not found."; else echo "Spigot build is found."; fi;
     - mvn verify
     
 before_script:
